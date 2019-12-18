@@ -19,4 +19,5 @@ module Tesi
 	include("matlab.jl")
 	include("geometry.jl")
 	include("mapper.jl")
+	include("torusfit.jl")
 end

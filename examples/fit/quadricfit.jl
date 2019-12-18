@@ -5,7 +5,7 @@ using Tesi
 using MATLAB
 
 ################################################################################ Sphere fit
-V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(1.5)([50,50]))
+V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([50,50]))
 #V,FV = Lar.apply(Lar.r(-pi/4,0,0),Lar.cylinder(1.)([100,20]))
 #V,FV = Lar.cylinder(1.)([10,10])
 
@@ -24,7 +24,7 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-
+Tesi.pointsprojsphere(V,center,radius)
 # studio distanza e residuo di un punto
 p = V[:,3]
 params = (center,radius)
@@ -37,10 +37,10 @@ ressphere = max(Lar.abs.([Tesi.ressphere(V[:,i],center,radius) for i in 1:size(V
 
 
 ################################################################################ Cylinder fit
-V,FV = Lar.apply(Lar.r(-pi/3,0,0),Lar.apply(Lar.t(0,0,-10),Lar.cylinder(10.7,20)([100,20])))
+V,FV = Lar.apply(Lar.r(-pi/3,0,0),Lar.apply(Lar.t(0,0,-10),Lar.cylinder(10.7,20)([100,10])))
 V,FV = Lar.cylinder(1.,2)([10,10])
 
-V = AlphaStructures.matrixPerturbation(V,atol=0.1)
+V = AlphaStructures.matrixPerturbation(V,atol=0.5)
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,V'))
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
@@ -55,6 +55,7 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
+Tesi.pointsprojcyl(V,direction,center,radius)
 # studio distanza e residuo di un punto
 p = V[:,546]
 params = (direction,center,radius,height)
@@ -99,8 +100,8 @@ GL.VIEW([
 ################################################################################ Toro fit
 
 
-V,CV = Lar.toroidal(2,4,2*pi,pi/2)()
-V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(0,pi/6,0),Lar.toroidal(2,5,2*pi,2*pi)([64,64])))
+V,CV = Lar.toroidal(2,4,2*pi,2*pi)()
+V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(0,pi/6,0),Lar.toroidal(2,5,2*pi,pi/2)([64,64])))
 V = AlphaStructures.matrixPerturbation(V,atol=0.1)
 
 

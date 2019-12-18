@@ -73,12 +73,60 @@ function projection(e,v)
 end
 
 """
-	proiezione di tutti i punti
+	proiezione di tutti i punti sul piano ortogonale a N
 """
 function pointsproj(V,N,C)
 	npoints = size(V,2)
 	for i in 1:npoints
 		V[:,i] = Tesi.projection(N,V[:,i]-C) + C
+	end
+	return convert(Lar.Points,V)
+end
+
+"""
+	proiezione di tutti i punti sul cilindro
+"""
+function pointsprojcyl(V,axis,C,r)
+	npoints = size(V,2)
+	for i in 1:npoints
+		p = V[:,i]-C
+		c0 = Lar.dot(axis,p)*(axis)
+		N = (p-c0)/Lar.norm(p-c0)
+		c=r*N
+		V[:,i] = Tesi.projection(N,p-c) + c + C
+	end
+	return convert(Lar.Points,V)
+end
+
+
+
+"""
+	proiezione di tutti i punti sulla sfera
+"""
+function pointsprojsphere(V,C,r)
+	npoints = size(V,2)
+	for i in 1:npoints
+		p = V[:,i]-C
+		N = p/Lar.norm(p)
+		c = r*N
+		V[:,i] = Tesi.projection(N,p-c) + c + C
+	end
+	return convert(Lar.Points,V)
+end
+
+
+#TODO
+"""
+	proiezione di tutti i punti sul cono
+"""
+function pointsprojcone(V,axis,C,r)
+	npoints = size(V,2)
+	for i in 1:npoints
+		p = V[:,i]-C
+		c0 = Lar.dot(axis,p)*(axis)
+		N = (p-c0)/Lar.norm(p-c0)
+		c=r*N
+		V[:,i] = Tesi.projection(N,p-c) + c + C
 	end
 	return convert(Lar.Points,V)
 end
