@@ -1,0 +1,62 @@
+# ```
+# ci voglio mettere il fit finale automatico che parte e cerca tutto
+
+
+"""
+	findallplane(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64,N=1::Int64)
+
+Finds `N` planes with more than `NOTPLANE` points in LAR model `(V,FV)`.
+"""
+function findallplane(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64,N=1::Int64)
+	# 1. - initialization
+	Vremained = copy(V)
+	FVremained = copy(FV)
+	allplanes = [[],[]]
+
+	i = 0 # number of plane found
+
+	while i < N
+		pointsonplane = nothing
+		plane = nothing
+		println("number of points remained: $(size(Vremained,2))")
+
+		while isnothing(pointsonplane)
+			pointsonplane,plane = Tesi.planeshape(Vremained,FVremained,par,NOTPLANE)
+		end
+
+		i = i+1
+		println("$i planes found")
+		Vplane, FVplane = Tesi.larmodelplane(pointsonplane,plane)
+		push!(allplanes[1],Vplane)
+		push!(allplanes[2],FVplane)
+		Vremained,FVremained = Tesi.modelremained(Vremained,FVremained,pointsonplane)
+
+	end
+
+	return allplanes,Vremained,FVremained
+end
+
+"""
+	modelremained(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
+
+Returns LAR model remained after removing points on plane.
+"""
+function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+	cscFV = Lar.characteristicMatrix(FV)
+	todel = [Tesi.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to delete
+	tokeep = setdiff(collect(1:cscFV.n), todel) # index of point to keep
+    face = cscFV[:,tokeep]
+	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
+	Vremained = V[:,tokeep] #points remained
+	rgbremained = rgb[:,tokeep]
+	return Vremained,FVremained,rgbremained
+end
+
+"""
+	 findnearestof(indeces::Array{Int64,1},visitedvertex::Array{Int64,1},adj::Array{Array{Int64,1},1})
+
+Returns indeces neighbors list of `indverts`, removing verteces already visited.
+"""
+function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
+	return setdiff(union(adj[indverts]...),visitedverts)
+end
