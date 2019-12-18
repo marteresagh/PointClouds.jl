@@ -20,15 +20,23 @@ end
 V = convert(Lar.Points,hcat(xs,ys,zs)')
 
 VV = [[i] for i = 1:size(V,2)]
-plane = Tesi.planefit(V)
-Vplane,FVplane = Tesi.larmodelplane(V,plane)
+N,C = Tesi.planefit(V)
+
+Vplane,FVplane = Tesi.larmodelplane(V,(N...,Lar.dot(N,C)))
 
 GL.VIEW([
     GL.GLPoints(convert(Lar.Points,V'))
 	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
 ]);
 
-resplane = max(Lar.abs.([Tesi.resplane(V[:,i],plane) for i in 1:size(V,2)])...)
+Tesi.pointsproj(V,N,C) #TODO?? così sto modificando i punti originali della nuvola
+GL.VIEW([
+    GL.GLPoints(convert(Lar.Points,V'))
+	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
+]);
+Tesi.distpointplane(V[:,1],N,C)
+Tesi.resplane(V[:,1],N,C) 
+resplane = max(Lar.abs.([Tesi.resplane(V[:,i],N,C) for i in 1:size(V,2)])...)
 
 
 #

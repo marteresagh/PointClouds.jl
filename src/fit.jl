@@ -60,3 +60,25 @@ Returns indeces neighbors list of `indverts`, removing verteces already visited.
 function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
 	return setdiff(union(adj[indverts]...),visitedverts)
 end
+
+
+"""
+	projection(e,v)
+e è la normale della superficie e v è il punto da proiettare
+"""
+#TODO ad esempio sul cilindro come faccio a proiettare v sulla superficie?? quale normale uso??
+function projection(e,v)
+	p = v-Lar.dot(e,v)*e
+	return p
+end
+
+"""
+	proiezione di tutti i punti
+"""
+function pointsproj(V,N,C)
+	npoints = size(V,2)
+	for i in 1:npoints
+		V[:,i] = Tesi.projection(N,V[:,i]-C) + C
+	end
+	return convert(Lar.Points,V)
+end

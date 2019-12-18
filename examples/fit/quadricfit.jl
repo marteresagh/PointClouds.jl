@@ -2,6 +2,7 @@ using LinearAlgebraicRepresentation, AlphaStructures, ViewerGL
 Lar = LinearAlgebraicRepresentation
 GL = ViewerGL
 using Tesi
+using MATLAB
 
 ################################################################################ Sphere fit
 V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(1.5)([50,50]))
@@ -97,16 +98,19 @@ GL.VIEW([
 
 ################################################################################ Toro fit
 
+
 V,CV = Lar.toroidal(2,4,2*pi,pi/2)()
-V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(0,pi/2,0),Lar.toroidal(2,5,2*pi,2*pi)()))
+V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(0,pi/6,0),Lar.toroidal(2,5,2*pi,2*pi)([64,64])))
 V = AlphaStructures.matrixPerturbation(V,atol=0.1)
+
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
- 	#GL.GLGrid(V,CV,GL.COLORS[4],0.8)
+ 	#GL.GLGrid(V,FV,GL.COLORS[4],0.8)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
+N,C,r1,r0 = Tesi.initialtorus(V)
 N,C,r1,r0 = Tesi.torusfit(V)  # se i dati hanno molto rumore funziona meglio LM
 C,N,r1,r0 = Tesi.mattorusfit(V) # se i dati non hanno rumore funziona meglio GN
 Vcone, FVcone = Tesi.larmodeltorus(N,C,r0,r1)()

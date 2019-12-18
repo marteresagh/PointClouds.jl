@@ -368,128 +368,105 @@ end
 
 ################################################################################ Torus fit
 """
-	center(points,plane)
-
-find center of torus.
-"""
-function toruscenter(points,plane)
-	npoints=size(points,2)
-	circle=[]
-	for i in 1:npoints
-		p = points[:,i]
-		if Tesi.isinplane(p,plane,0.01)
-			push!(circle,p)
-		end
-	end
-	V = hcat(circle...)
-	# devo prendere solo i punti su una circonferenza, credo di dover separare in base alla distanza
-	x,y,z = Tesi.lar2matlab(W)
-	X = [x y z]
-	@mput X
-	mat"[centerLoc, circleNormal, radius] = CircFit3D(X)"
-	@mget centerLoc
-	@mget radius
- 	return reshape(centerLoc,3,1)[:,1]
-end
-
-"""
 	initialtorus(points)
 
 stime dei valori iniziali.
 """
-function initialtorus(points)
-	npoints=size(points,2)
-	plane,C = Tesi.planefit(points)
-	N = collect(plane[1:3])
-	# punti sul piano e calcolo il centro in 2d e lo riporto in 3d solo di una circonferenza
-	# come le divido??
-	# una volta che ho il centro più o meno buono il resto dovrei trovarlo abbastanza bene
-#TODO meglio creare una funzione che trova gli assi di rotazione più il centro.
-	#C = Tesi.toruscenter(points,plane)
+#input anche le normali
+function initialtorus(points,normals)
+	# TODO
+	# dalle normali ricavo gli assi di rotazione
+	# dagli assi di rotazione genero l'immagine della circonferenza
+	# su un piano e fitto con una circonferenza trovando così r
+	# e il centro lo trovo con la proiezione sull'asse.
 
-	a0 = 0.
-	a1 = 0.
-	a2 = 0.
-	b0 = 0.
-	c0 = 0.
-	c1 = 0.
-	c2 = 0.
-	c3 = copy(npoints)
-
-	for i in 1:npoints
-		delta = C-points[:,i]
-		dot = Lar.dot(N, delta)
-		L = Lar.dot(delta, delta)
-		L2 = L^2
-		L3 = L^3
-		S = 4*(L-dot^2)
-		S2 = S^2
-		a2 += S
-		a1 += S*L
-		a0 += S*L2
-		b0 += S2
-		c2 += L
-		c1 += L2
-		c0 += L3
-	end
-
-	d1 = copy(a2)
-	d0 = copy(a1)
-
-	a1*=2
-	c2*=3
-	c1*=3
-
-	#invB0 = 1/b0
-	e0 = a0/b0
-	e1 = a1/b0
-	e2 = a2/b0
-
-	f0 = c0 - d0 * e0
-    f1 = c1 - d1 * e0 - d0 * e1
-    f2 = c2 - d1 * e1 - d0 * e2
-    f3 = c3 - d1 * e2
-
-	roots = Polynomials.roots(Poly([f0,f1,f2,f3]))
-	@show roots
-
-	hmin = Inf
-	umin = 0.
-	vmin = 0.
-
-	for element in roots
-		if imag(element) == 0.
-			v = real(element)
-			if v > 0.
-				u = e0 + v*(e1 + v*e2)
-				if u > v
-					h = 0.
-					for i in 1:npoints
-						delta = C-points[:,i]
-						dot = Lar.dot(N, delta)
-						L =  Lar.dot(delta, delta)
-						S = 4* (L - dot^2)
-						sum = v + L
-						term = sum^2 - S*u
-						h+= term^2
-					end
-					if h<hmin
-						hmin = h
-						umin = u
-						vmin = v
-					end
-				end
-			end
-		end
-	end
-
-	if hmin == Inf
-		println("no fitting")
-		return N,C,nothing,nothing
-	end
-	r0 = sqrt(umin)
-	r1 = sqrt(umin-vmin)
-	return N,C,r0,r1
+	# npoints=size(points,2)
+	# plane,C = Tesi.planefit(points)
+	# N = collect(plane[1:3])
+	#
+	# a0 = 0.
+	# a1 = 0.
+	# a2 = 0.
+	# b0 = 0.
+	# c0 = 0.
+	# c1 = 0.
+	# c2 = 0.
+	# c3 = copy(npoints)
+	#
+	# for i in 1:npoints
+	# 	delta = C-points[:,i]
+	# 	dot = Lar.dot(N, delta)
+	# 	L = Lar.dot(delta, delta)
+	# 	L2 = L^2
+	# 	L3 = L^3
+	# 	S = 4*(L-dot^2)
+	# 	S2 = S^2
+	# 	a2 += S
+	# 	a1 += S*L
+	# 	a0 += S*L2
+	# 	b0 += S2
+	# 	c2 += L
+	# 	c1 += L2
+	# 	c0 += L3
+	# end
+	#
+	# d1 = copy(a2)
+	# d0 = copy(a1)
+	#
+	# a1*=2
+	# c2*=3
+	# c1*=3
+	#
+	# #invB0 = 1/b0
+	# e0 = a0/b0
+	# e1 = a1/b0
+	# e2 = a2/b0
+	#
+	# f0 = c0 - d0 * e0
+    # f1 = c1 - d1 * e0 - d0 * e1
+    # f2 = c2 - d1 * e1 - d0 * e2
+    # f3 = c3 - d1 * e2
+	#
+	# roots = Polynomials.roots(Poly([f0,f1,f2,f3]))
+	# @show roots
+	#
+	# hmin = Inf
+	# umin = 0.
+	# vmin = 0.
+	#
+	# for element in roots
+	# 	if imag(element) == 0.
+	# 		v = real(element)
+	# 		if v > 0.
+	# 			u = e0 + v*(e1 + v*e2)
+	# 			if u > v
+	# 				h = 0.
+	# 				for i in 1:npoints
+	# 					delta = C-points[:,i]
+	# 					dot = Lar.dot(N, delta)
+	# 					L =  Lar.dot(delta, delta)
+	# 					S = 4* (L - dot^2)
+	# 					sum = v + L
+	# 					term = sum^2 - S*u
+	# 					h+= term^2
+	# 				end
+	# 				if h<hmin
+	# 					hmin = h
+	# 					umin = u
+	# 					vmin = v
+	# 				end
+	# 			end
+	# 		end
+	# 	end
+	# end
+	#
+	# if hmin == Inf
+	# 	println("no fitting")
+	# 	return N,C,nothing,nothing
+	# end
+	# r0 = sqrt(umin)
+	# r1 = sqrt(umin-vmin)
+	# return N,C,r0,r1
 end
 
 

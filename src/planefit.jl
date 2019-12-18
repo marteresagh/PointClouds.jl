@@ -40,9 +40,10 @@ function planefit(points::Lar.Points)
         b = xy*xz - yz*xx
         c = Dz
     end
-
-    plane = (a/Dmax,b/Dmax,c/Dmax,Lar.dot([a,b,c],centroid)/Dmax)
-    return plane, centroid
+	N = [a/Dmax,b/Dmax,c/Dmax]
+	N/=Lar.norm(N)
+    #plane = (a/Dmax,b/Dmax,c/Dmax,Lar.dot([a,b,c],centroid)/Dmax)
+    return N, centroid
 end
 
 """
@@ -72,7 +73,7 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
 	idxneighbors = Tesi.findnearestof([idxponplane],visitedverts,adj)
 	idxponplane = union(idxponplane,idxneighbors)
 	pointsonplane = V[:,idxponplane]
-	plane = Tesi.planefit(pointsonplane)
+	axis,centroid = Tesi.planefit(pointsonplane)
 	visitedverts = copy(idxponplane)
 	idxneighbors = Tesi.findnearestof(idxponplane,visitedverts,adj)
 
@@ -82,7 +83,7 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
 	    for i in idxneighbors
             p = V[:,i]
 
-            if Tesi.isinplane(p,plane,par)
+            if Tesi.isinplane(p,axis,centroid,par)
 				push!(idxponplane,i)
             end
 
@@ -91,7 +92,7 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
         end
 
 		pointsonplane = V[:,idxponplane]
-		plane = Tesi.planefit(pointsonplane)
+		axis,centroid = Tesi.planefit(pointsonplane)
         idxneighbors = Tesi.findnearestof(idxponplane,visitedverts,adj)
     end
 
@@ -99,7 +100,7 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
 		println("planeshape: not a valid plane")
 		return nothing, nothing
 	end
-    return  pointsonplane,plane
+    return  pointsonplane,axis,centroid
 end
 
 
@@ -107,9 +108,8 @@ end
 	resplane(point, params)
 """
 
-function resplane(point, params)
-	a,b,c,d = params
-	return Lar.dot(point,[a,b,c])-d
+function resplane(point, axis, centroid)
+	return Lar.dot(point,axis)-Lar.dot(axis,centroid)
 end
 
 """
@@ -118,9 +118,9 @@ end
 Returns the intersection polygon between the `plane` and the AABB of `pointsonplane`.
 `u` enlarges the shape of AABB.
 """
-function larmodelplane(pointsonplane::Lar.Points, plane::NTuple{4,Float64}, u=0.01)
+function larmodelplane(pointsonplane::Lar.Points, axis,centroid, u=0.01)
 	AABB = Lar.boundingbox(pointsonplane).+([-u,-u,-u],[u,u,u])
-    V = Tesi.intersectAABBplane(AABB,plane)
+    V = Tesi.intersectAABBplane(AABB,axis,centroid)
 	#triangulate vertex projected in plane XY
  	FV = Tesi.DTprojxy(V)
     return V, sort.(FV)

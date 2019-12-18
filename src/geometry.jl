@@ -59,9 +59,8 @@ end
 
 Computes distance from a point `p` to a `plane`.
 """
-function distpointplane(p::Array{Float64,1},plane::NTuple{4,Float64})::Float64
-	a,b,c,d = plane
-    return Lar.abs(Lar.dot([a,b,c],p)-d)/Lar.norm([a,b,c])
+function distpointplane(p::Array{Any,1},axis,centroid)::Float64
+    return Lar.abs(Lar.dot(axis,p)-Lar.dot(axis,centroid))/Lar.norm(axis)
 end
 
 """
@@ -69,8 +68,8 @@ end
 
 Checks if a point `p` in near enough to the `plane`.
 """
-function isinplane(p::Array{Float64,1},plane::NTuple{4,Float64},par::Float64)::Bool
-    return distpointplane(p,plane)<=par
+function isinplane(p::Array{Float64,1},axis,centroid,par::Float64)::Bool
+    return distpointplane(p,axis,centroid)<=par
 end
 
 """
@@ -93,13 +92,12 @@ end
 
 Returns verteces of the intersection of a `plane` and an `AABB`.
 """
-function intersectAABBplane(AABB::Tuple{Array{Float64,2},Array{Float64,2}}, plane::NTuple{4,Float64})
+function intersectAABBplane(AABB::Tuple{Array{Float64,2},Array{Float64,2}}, axis,centroid)
 
     function pointint(i,j,lambda,allverteces)
         return allverteces[i]+lambda*(allverteces[j]-allverteces[i])
     end
 
-    a,b,c,d = plane
 	coordAABB = hcat(AABB...)
 
     allverteces = []
@@ -113,7 +111,7 @@ function intersectAABBplane(AABB::Tuple{Array{Float64,2},Array{Float64,2}}, plan
 
     vertexpolygon = []
     for (i,j) in Lar.larGridSkeleton([1,1,1])(1)
-        lambda = (d-Lar.dot([a,b,c],allverteces[i]))/Lar.dot([a,b,c],allverteces[j]-allverteces[i])
+        lambda = (Lar.dot(axis,centroid)-Lar.dot(axis,allverteces[i]))/Lar.dot(axis,allverteces[j]-allverteces[i])
         if lambda>=0 && lambda<=1
             push!(vertexpolygon,pointint(i,j,lambda,allverteces))
         end

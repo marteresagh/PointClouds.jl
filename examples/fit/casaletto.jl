@@ -35,8 +35,8 @@ GL.VIEW(
 	]
 );
 
-pointsonplane,plane = Tesi.planeshape(V,FV,0.02,20)
-Vplane, FVplane = Tesi.larmodelplane(pointsonplane, plane)
+pointsonplane,axis,centroid = Tesi.planeshape(V,FV,0.02,20)
+Vplane, FVplane = Tesi.larmodelplane(pointsonplane, axis,centroid)
 GL.VIEW([
     colorview(V,VV,rgb)
 	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
