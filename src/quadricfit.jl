@@ -360,10 +360,10 @@ function conefit(points)
 			radius = Lar.abs(r)
 		end
 	end
-
+	angle = atan(radius/height)
 	#radius = height*tan(coneAngle)
 
-	return coneVertex, coneaxis, radius, height
+	return coneVertex, coneaxis, angle, height
 end
 
 
@@ -396,7 +396,8 @@ end
 """
 	larmodelcone(center,radius)(shape = [36,1])
 """
-function larmodelcone(direction,apex,radius,height)
+function larmodelcone(direction,apex,angle,height)
+	radius = height*tan(angle)
 	function larmodelcone0(shape = [36,1])
 		cone = Tesi.cone(radius,height)(shape)
 		matrixaffine = hcat(Lar.nullspace(Matrix(direction')),direction)

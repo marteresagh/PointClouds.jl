@@ -119,14 +119,14 @@ end
 """
 	proiezione di tutti i punti sul cono
 """
-function pointsprojcone(V,axis,C,r)
+function pointsprojcone(V,axis,apex,angle)
 	npoints = size(V,2)
 	for i in 1:npoints
-		p = V[:,i]-C
+		p = V[:,i]-apex
 		c0 = Lar.dot(axis,p)*(axis)
 		N = (p-c0)/Lar.norm(p-c0)
-		c=r*N
-		V[:,i] = Tesi.projection(N,p-c) + c + C
+		c=Lar.dot(axis,c0)*tan(angle)*N
+		V[:,i] = Tesi.projection(N,p-c) + c + apex
 	end
 	return convert(Lar.Points,V)
 end

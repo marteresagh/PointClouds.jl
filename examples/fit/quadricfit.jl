@@ -87,15 +87,16 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-coneVertex, coneaxis, radius, height = Tesi.conefit(V)
-Vcone, FVcone = Tesi.larmodelcone(coneaxis, coneVertex, radius, height)()
-
+coneVertex, coneaxis, angle, height = Tesi.conefit(V)  # invece che il raggio mi devo far tornare l'angolo e quindi il raggio lo calcolo in larmodelcone
+Vcone, FVcone = Tesi.larmodelcone(coneaxis, coneVertex, angle, height)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
  	GL.GLGrid(Vcone,FVcone,GL.COLORS[4],0.8)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
+
+Tesi.pointsprojcone(V,coneaxis,coneVertex,angle)
 
 ################################################################################ Toro fit
 
