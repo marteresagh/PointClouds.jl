@@ -52,7 +52,7 @@ end
 Returns all the points `pointsonshape` liyng on the `plane` found.
 
 """
-function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
+function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64;index=0,NOTPLANE=3::Int64)
 
 	# 1. list of adjacency verteces
 	EV = Lar.simplexFacets(FV)
@@ -60,22 +60,26 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
 
 	# # 2. first three points
     # i = rand(1:length(FV))
-	# idxponplane = copy(FV[i])
-    # pointsonplane = V[:,idxponplane]
+	# index = copy(FV[i])
+    # pointsonplane = V[:,index]
 	# plane = Tesi.planefit(pointsonplane)
 	#
 	# # 3. find neighbors of points on plane
-	# visitedverts = copy(idxponplane)
-	# idxneighbors = Tesi.findnearestof(idxponplane,visitedverts,adj)
+	# visitedverts = copy(index)
+	# idxneighbors = Tesi.findnearestof(index,visitedverts,adj)
 
-	idxponplane = rand(1:size(V,2))
-	visitedverts = [idxponplane]
-	idxneighbors = Tesi.findnearestof([idxponplane],visitedverts,adj)
-	idxponplane = union(idxponplane,idxneighbors)
-	pointsonplane = V[:,idxponplane]
+	# 2. first samples
+	if index==0
+		index = rand(1:size(V,2))
+	end
+	@show index
+	visitedverts = [index]
+	idxneighbors = Tesi.findnearestof([index],visitedverts,adj)
+	index = union(index,idxneighbors)
+	pointsonplane = V[:,index]
 	axis,centroid = Tesi.planefit(pointsonplane)
-	visitedverts = copy(idxponplane)
-	idxneighbors = Tesi.findnearestof(idxponplane,visitedverts,adj)
+	visitedverts = copy(index)
+	idxneighbors = Tesi.findnearestof(index,visitedverts,adj)
 
 	# 4. check if this neighbors are other points of plane
     while !isempty(idxneighbors)
@@ -84,16 +88,16 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
             p = V[:,i]
 
             if Tesi.isinplane(p,axis,centroid,par)
-				push!(idxponplane,i)
+				push!(index,i)
             end
 
 			push!(visitedverts,i)
 
         end
 
-		pointsonplane = V[:,idxponplane]
+		pointsonplane = V[:,index]
 		axis,centroid = Tesi.planefit(pointsonplane)
-        idxneighbors = Tesi.findnearestof(idxponplane,visitedverts,adj)
+        idxneighbors = Tesi.findnearestof(index,visitedverts,adj)
     end
 
 	if size(pointsonplane,2) <= NOTPLANE

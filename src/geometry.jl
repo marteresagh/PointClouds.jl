@@ -28,20 +28,6 @@ function distpointcyl(p,params)::Float64
 	return Lar.abs(Tesi.distpointline(p,W,C)-r)
 end
 
-"""
-	distpointellipsoid  #TODO da finire e verificare se effettivamente serve
-
-"""
-function distpointellipsoid(p,params,par)::Bool
-	center, radii, rot = params
-	diff = p-center
-	y = zeros(3)
-	for i in 1:3
-		y[i]=Lar.dot(diff,rot[:,i])
-	end
-	x=Lar.norm(radii,y)
-	return testsurf && testheight
-end
 
 """
 	distpointline
@@ -59,7 +45,7 @@ end
 
 Computes distance from a point `p` to a `plane`.
 """
-function distpointplane(p::Array{Any,1},axis,centroid)::Float64
+function distpointplane(p,axis,centroid)::Float64
     return Lar.abs(Lar.dot(axis,p)-Lar.dot(axis,centroid))/Lar.norm(axis)
 end
 

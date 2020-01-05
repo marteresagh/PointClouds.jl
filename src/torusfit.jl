@@ -6,7 +6,7 @@ stima la normale e curvatura di un punto attraverso i suoi vicini
 """
 #input anche le normali
 function computenormals(V,FV)
-	#usa i vicini della triangolazione
+	#per i vicini uso la triangolazione
 
 	return normals,curvature
 end
@@ -23,6 +23,8 @@ function _initialtorus(points,normals)
 	return N,C,r0,r1
 end
 
+
+#TODO da modificare
 function initialtorus(points)
 	npoints=size(points,2)
 	plane,C = Tesi.planefit(points)
@@ -112,6 +114,8 @@ function initialtorus(points)
 	r1 = sqrt(umin-vmin)
 	return N,C,r0,r1
 end
+
+
 """
 	mattorusfit(points)
 

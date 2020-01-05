@@ -1,3 +1,8 @@
+#TODO
+# sistemare codice,
+# rendere incrementale
+# creare una struct per ogni forma con i parametri?
+#
 ################################################################################ Cylinder fit
 """
 	preprocess
@@ -456,7 +461,7 @@ end
 	restorus
 """
 function restorus(point,C, N, rM, rm)
-	D =  C - point
+	D =  point - C
 	DdotD = Lar.dot(D,D)
 	NdotD = Lar.dot(N,D)
 	sum = DdotD + rM^2-rm^2

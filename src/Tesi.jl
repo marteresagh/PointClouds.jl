@@ -10,6 +10,7 @@ module Tesi
 	using MATLAB
 	using Polynomials
 	using LsqFit
+	using QHull
 
 	include("fit.jl")
 	include("quadricfit.jl")
@@ -20,4 +21,5 @@ module Tesi
 	include("geometry.jl")
 	include("mapper.jl")
 	include("torusfit.jl")
+	include("voxel.jl")
 end

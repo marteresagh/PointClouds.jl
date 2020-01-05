@@ -1,5 +1,5 @@
 # ```
-# ci voglio mettere il fit finale automatico che parte e cerca tutto
+# finalizzare la procedura
 
 
 """
@@ -34,22 +34,6 @@ function findallplane(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64
 	end
 
 	return allplanes,Vremained,FVremained
-end
-
-"""
-	modelremained(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
-
-Returns LAR model remained after removing points on plane.
-"""
-function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
-	cscFV = Lar.characteristicMatrix(FV)
-	todel = [Tesi.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to delete
-	tokeep = setdiff(collect(1:cscFV.n), todel) # index of point to keep
-    face = cscFV[:,tokeep]
-	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
-	Vremained = V[:,tokeep] #points remained
-	rgbremained = rgb[:,tokeep]
-	return Vremained,FVremained,rgbremained
 end
 
 """
@@ -129,4 +113,37 @@ function pointsprojcone(V,axis,apex,angle)
 		V[:,i] = Tesi.projection(N,p-c) + c + apex
 	end
 	return convert(Lar.Points,V)
+end
+
+
+"""
+	extractionmodel(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
+
+model triangulate of pointonplane
+"""
+function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+	cscFV = Lar.characteristicMatrix(FV)
+	tokeep = [Tesi.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to keep
+	todel = setdiff(collect(1:cscFV.n), tokeep) # index of point to delete
+    face = cscFV[:,tokeep]
+	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
+	Vremained = V[:,tokeep] #points remained
+	rgbremained = rgb[:,tokeep]
+	return Vremained,FVremained,rgbremained
+end
+
+"""
+	modelremained(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
+
+Returns LAR model remained after removing points on plane.
+"""
+function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+	cscFV = Lar.characteristicMatrix(FV)
+	todel = [Tesi.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to delete
+	tokeep = setdiff(collect(1:cscFV.n), todel) # index of point to keep
+    face = cscFV[:,tokeep]
+	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
+	Vremained = V[:,tokeep] #points remained
+	rgbremained = rgb[:,tokeep]
+	return Vremained,FVremained,rgbremained
 end
