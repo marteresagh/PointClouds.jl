@@ -30,7 +30,21 @@ function mat3DT(V::Lar.Points)
 	return DT
 end
 
+"""
+	mat2DT(V::Lar.Points)
 
+2D Delaunay triangulation algorithm in MATLAB.
+"""
+function mat2DT(V::Lar.Points)
+	x,y = Tesi.lar2matlab(V)
+	@mput x
+	@mput y
+	mat"DT = delaunay(x,y)"
+	@mget DT
+	DT = convert(Array{Int64,2},DT)
+	DT = [DT[i,:] for i in 1:size(DT,1)]
+	return DT
+end
 
 """
 	DTprojxy(V::Lar.Points)
