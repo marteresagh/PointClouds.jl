@@ -53,7 +53,7 @@ function voxel(V,p,N)
 	W,CW = Lar.simplifyCells(newV[:,2:end],CV)
 
 	W,FW = PointClouds.extracttriangles(W,CW)
-
+	#estrai bordo
 
 	return W, (FW, CW)
 end

@@ -147,3 +147,33 @@ function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points
 	rgbremained = rgb[:,tokeep]
 	return Vremained,FVremained,rgbremained
 end
+
+"""
+	extractshape(P,axis,centroid,α)
+
+
+"""
+function extractshape(P,axis,centroid,α)
+	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
+	W = Lar.inv(mrot)*(P)
+	W1 = W[[1,2],:]
+	DT = PointClouds.mat2DT(W1)
+	filtration = AlphaStructures.alphaFilter(W1, DT);
+	VV, _, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
+
+	#convex hull
+	# ch = QHull.chull(convert(Lar.Points,W1'))
+	# verts = ch.vertices
+	# EV = ch.simplices
+
+
+	#o boundary??
+	EV = Lar.simplexFacets(FV)
+	Mbound = Lar.u_boundary_2(FV,EV)
+	ev=(Mbound'*ones(length(FV))).%2
+	EV=EV[Bool.(ev)]
+
+
+
+	return P,EV
+end

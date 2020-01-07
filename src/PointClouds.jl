@@ -11,6 +11,7 @@ module PointClouds
 	using Polynomials
 	using LsqFit
 	using QHull
+	using AlphaStructures
 
 	include("fit.jl")
 	include("quadricfit.jl")

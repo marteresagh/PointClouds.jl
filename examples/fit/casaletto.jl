@@ -45,34 +45,12 @@ GL.VIEW([
 ]);
 
 P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsonplane)
-GL.VIEW(
-	[
-		colorview(P,FP,Prgb);
-		GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
-	]
-);
-
 PointClouds.pointsproj(P,axis,centroid)
 
-function chplane(P,axis,centroid,α)
-	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
-	W = Lar.inv(mrot)*(P)
-	W1 = W[[1,2],:]
-	DT = PointClouds.mat2DT(W1)
-	filtration = AlphaStructures.alphaFilter(W1, DT);
-	VV, EV, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
-	return W1,FV
-end
 
-W1,FV = chplane(P,axis,centroid,0.2)
+
+W,EW =  PointClouds.extractshape(P,axis,centroid,0.2)
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,P'))
-	GL.GLGrid(W1,FV)
+	GL.GLGrid(W,EW)
 ]);
-
-GL.VIEW(
-	[
-		colorview(P,FP,Prgb);
-		#GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
-	]
-);
