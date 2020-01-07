@@ -8,18 +8,18 @@ end
 	A = ([0.,0.,0.],[1.,1.,1.])
 
 	B = ([0.5,0.5,0.5],[1.5,1.5,1.5])
-	@test Tesi.AABBdetection(A,B)
+	@test PointClouds.AABBdetection(A,B)
 
 	B = ([0.,0.,0.],[1.,1.,1.])
-	@test Tesi.AABBdetection(A,B)
+	@test PointClouds.AABBdetection(A,B)
 
 	B = ([0.2,0.2,0.2],[0.6,0.6,0.6])
-	@test Tesi.AABBdetection(A,B)
+	@test PointClouds.AABBdetection(A,B)
 
 	B = ([1.,1.,1.],[2.,2.,2.])
-	@test !Tesi.AABBdetection(A,B)
+	@test !PointClouds.AABBdetection(A,B)
 
 	B = ([1.5,1.5,1.5],[2.5,2.5,2.5])
-	@test !Tesi.AABBdetection(A,B)
+	@test !PointClouds.AABBdetection(A,B)
 
 end

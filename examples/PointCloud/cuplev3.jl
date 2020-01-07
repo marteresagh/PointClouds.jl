@@ -1,6 +1,6 @@
 using LinearAlgebraicRepresentation, AlphaStructures
 Lar = LinearAlgebraicRepresentation
-using Tesi
+using PointClouds
 using MATLAB
 
 include("./viewfunction.jl")
@@ -55,7 +55,7 @@ fname28 = "examples/PointCloud/pointCloud/CUPConvegno/r171.las"
 
 
 
-Vtot,VV,rgb = Tesi.loadlas(fname1,fname2,fname3,fname4,fname5,fname6,fname7,fname8,fname9,fname10,
+Vtot,VV,rgb = PointClouds.loadlas(fname1,fname2,fname3,fname4,fname5,fname6,fname7,fname8,fname9,fname10,
 							fname11,fname12,fname13,fname14,fname15,fname16,fname17,fname18,fname19,fname20,
 							fname21,fname22,fname23,fname24,fname25,fname26,fname27,fname28)
 V,VV = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,VV])
@@ -67,7 +67,7 @@ GL.VIEW(
 	]
 );
 
-DT = Tesi.mat3DT(V)
+DT = PointClouds.mat3DT(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 
 α = 0.06

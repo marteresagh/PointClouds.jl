@@ -161,7 +161,7 @@ GL.VIEW([
     GL.GLFrame2
 ]);
 
-x,y,z = Tesi.lar2matlab(V)
+x,y,z = PointClouds.lar2matlab(V)
 @mput x
 @mput y
 @mput z

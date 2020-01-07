@@ -13,19 +13,19 @@ end
 
 function ispointinsphere(p,params,par)::Bool
 	center,radius = params
-	return Tesi.distpointsphere(p,params) <= radius
+	return PointClouds.distpointsphere(p,params) <= radius
 end
 
 """
 	distpointcyl
 """
 function ispointincyl(p,params,par)::Bool
-	return Tesi.distpointcyl(p,params) <= par
+	return PointClouds.distpointcyl(p,params) <= par
 end
 
 function distpointcyl(p,params)::Float64
 	W,C,r,height = params
-	return Lar.abs(Tesi.distpointline(p,W,C)-r)
+	return Lar.abs(PointClouds.distpointline(p,W,C)-r)
 end
 
 
@@ -65,7 +65,7 @@ Compute the average of the data points and traslate data.
 """
 function subtractaverage(points::Lar.Points)
 	m,npoints = size(points)
-	centroid = Tesi.centroid(points)
+	centroid = PointClouds.centroid(points)
 	affineMatrix = Lar.t(-centroid...)
 	V = [points; fill(1.0, (1,npoints))]
 	Y = (affineMatrix * V)[1:m,1:npoints]

@@ -8,7 +8,7 @@ function cone(radius, height, ang=2*pi)
 		apex = [0.;0.;0.]
         V = hcat(map(p->let(theta, v)=p;[v/height*radius*cos(theta);v/height*radius*sin(theta);
         	v] end, W)...)
-		index = Tesi.matchcolumn(apex,V)
+		index = PointClouds.matchcolumn(apex,V)
         W, CW = Lar.simplifyCells(V, CV)
 		for cell in CW
 			if length(cell)<3
@@ -30,7 +30,7 @@ function paraboloid(radii,ang=2*pi)
         W = [V[:, k] for k=1:size(V, 2)]
         V = hcat(map(p->let(v,u)=p;[a*sqrt(u/c)*cos(v),b*sqrt(u/c)*sin(v),c*u] end, W)...)
 		apex = [0.;0.;0.]
-		index = Tesi.matchcolumn(apex,V)
+		index = PointClouds.matchcolumn(apex,V)
         W, CW = Lar.simplifyCells(V, CV)
 		for cell in CW
 			if length(cell)<3

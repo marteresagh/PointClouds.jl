@@ -27,7 +27,7 @@ end
 #TODO da modificare
 function initialtorus(points)
 	npoints=size(points,2)
-	plane,C = Tesi.planefit(points)
+	plane,C = PointClouds.planefit(points)
 	N = collect(plane[1:3])
 
 	a0 = 0.
@@ -122,10 +122,10 @@ end
 codice matlab per gauss_newton minimizer per tori.
 """
 function mattorusfit(points)
-	a0,x0,r0,s0 = Tesi.initialtorus(points)
+	a0,x0,r0,s0 = PointClouds.initialtorus(points)
 	tolp=1.e-12;
 	tolg=1.e-12;
-  	x,y,z = Tesi.lar2matlab(points)
+  	x,y,z = PointClouds.lar2matlab(points)
 	X = [x y z]
 	@mput X
 	@mput x0
@@ -227,7 +227,7 @@ function torusfit(points)
 
 
 	npoints = size(points,2)
-	N0,C0,r00,r10 = Tesi.initialtorus(points)
+	N0,C0,r00,r10 = PointClouds.initialtorus(points)
 
 	initial = ones(7)
 

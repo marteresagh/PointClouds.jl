@@ -1,7 +1,7 @@
 using LinearAlgebraicRepresentation, AlphaStructures, ViewerGL
 Lar = LinearAlgebraicRepresentation
 GL = ViewerGL
-using Tesi
+using PointClouds
 using MATLAB
 
 ################################################################################ Sphere fit
@@ -15,8 +15,8 @@ GL.VIEW([
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);
 
-center,radius = Tesi.spherefit(V)
-Vsphere, FVsphere = Tesi.larmodelsphere(center,radius)()
+center,radius = PointClouds.spherefit(V)
+Vsphere, FVsphere = PointClouds.larmodelsphere(center,radius)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -24,15 +24,15 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-Tesi.pointsprojsphere(V,center,radius)
+PointClouds.pointsprojsphere(V,center,radius)
 # studio distanza e residuo di un punto
 p = V[:,3]
 params = (center,radius)
 par = 0.02
-distance = Tesi.distpointsphere(p,params)
-res = Tesi.ressphere(p,center,radius)
+distance = PointClouds.distpointsphere(p,params)
+res = PointClouds.ressphere(p,center,radius)
 
-ressphere = max(Lar.abs.([Tesi.ressphere(V[:,i],center,radius) for i in 1:size(V,2)])...)
+ressphere = max(Lar.abs.([PointClouds.ressphere(V[:,i],center,radius) for i in 1:size(V,2)])...)
 
 
 
@@ -46,8 +46,8 @@ GL.VIEW([
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);
 
-direction,center,radius,height = Tesi.cylinderfit(V)
-Vcyl, FVcyl = Tesi.larmodelcyl(direction,center,radius,height)()
+direction,center,radius,height = PointClouds.cylinderfit(V)
+Vcyl, FVcyl = PointClouds.larmodelcyl(direction,center,radius,height)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -55,20 +55,20 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-Tesi.pointsprojcyl(V,direction,center,radius)
+PointClouds.pointsprojcyl(V,direction,center,radius)
 # studio distanza e residuo di un punto
 p = V[:,546]
 params = (direction,center,radius,height)
 par = 0.02
-distance = Tesi.distpointcyl(p,params)
-res = Tesi.rescyl(p,direction,center,radius)
+distance = PointClouds.distpointcyl(p,params)
+res = PointClouds.rescyl(p,direction,center,radius)
 
-rescyl = max(Lar.abs.([Tesi.rescyl(V[:,i],direction,center,radius) for i in 1:size(V,2)])...)
+rescyl = max(Lar.abs.([PointClouds.rescyl(V[:,i],direction,center,radius) for i in 1:size(V,2)])...)
 
 ################################################################################ Cone fit
-V,CV = Tesi.cone(4.,7.)([64,64])
-#V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(pi/3,0,0),Tesi.cone(2.,2.,2*pi)([36,64])))
-#V,CV=Lar.apply(Lar.r(0,-pi/5,0),Tesi.cone(3.,3.)([36,64]))
+V,CV = PointClouds.cone(4.,7.)([64,64])
+#V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(pi/3,0,0),PointClouds.cone(2.,2.,2*pi)([36,64])))
+#V,CV=Lar.apply(Lar.r(0,-pi/5,0),PointClouds.cone(3.,3.)([36,64]))
 V = AlphaStructures.matrixPerturbation(V,atol=0.1)
 W=[0;0;0]
 for i in 1:size(V,2)
@@ -87,8 +87,8 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-coneVertex, coneaxis, angle, height = Tesi.conefit(V)  # invece che il raggio mi devo far tornare l'angolo e quindi il raggio lo calcolo in larmodelcone
-Vcone, FVcone = Tesi.larmodelcone(coneaxis, coneVertex, angle, height)()
+coneVertex, coneaxis, angle, height = PointClouds.conefit(V)  # invece che il raggio mi devo far tornare l'angolo e quindi il raggio lo calcolo in larmodelcone
+Vcone, FVcone = PointClouds.larmodelcone(coneaxis, coneVertex, angle, height)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -96,7 +96,7 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-Tesi.pointsprojcone(V,coneaxis,coneVertex,angle)
+PointClouds.pointsprojcone(V,coneaxis,coneVertex,angle)
 
 ################################################################################ Toro fit
 
@@ -112,10 +112,10 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-N,C,r1,r0 = Tesi.initialtorus(V)
-N,C,r1,r0 = Tesi.torusfit(V)  # se i dati hanno molto rumore funziona meglio LM
-C,N,r1,r0 = Tesi.mattorusfit(V) # se i dati non hanno rumore funziona meglio GN
-Vcone, FVcone = Tesi.larmodeltorus(N,C,r0,r1)()
+N,C,r1,r0 = PointClouds.initialtorus(V)
+N,C,r1,r0 = PointClouds.torusfit(V)  # se i dati hanno molto rumore funziona meglio LM
+C,N,r1,r0 = PointClouds.mattorusfit(V) # se i dati non hanno rumore funziona meglio GN
+Vcone, FVcone = PointClouds.larmodeltorus(N,C,r0,r1)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -131,14 +131,14 @@ V,FV = Lar.apply(Lar.r(-pi/3,0,0),Lar.apply(Lar.t(0,0,-10),Lar.cylinder(1,20)([1
 V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(1.5)([50,50]))
 
 params = (1,2,1)
-V,FV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(-pi/3,pi/4,-pi/5),Tesi.ellipsoid(params)([50,50])))
+V,FV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(-pi/3,pi/4,-pi/5),PointClouds.ellipsoid(params)([50,50])))
 
 params=(1.,2.,3.)
-V,FV = Tesi.hyperboloid(params)([36,36])
+V,FV = PointClouds.hyperboloid(params)([36,36])
 
-V,CV = Tesi.cone(4.,7.)([64,64])
+V,CV = PointClouds.cone(4.,7.)([64,64])
 
-V,CV=Lar.apply(Lar.r(pi/5,0,0),Tesi.cylinderellip((10,5,20),2*pi)([36,36]))
+V,CV=Lar.apply(Lar.r(pi/5,0,0),PointClouds.cylinderellip((10,5,20),2*pi)([36,36]))
 
 V = AlphaStructures.matrixPerturbation(V,atol=0.01)
 
@@ -148,10 +148,10 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-center,radius = Tesi.spherefit(V)
-ressphere = max(Lar.abs.([Tesi.ressphere(V[:,i],center,radius) for i in 1:size(V,2)])...)
+center,radius = PointClouds.spherefit(V)
+ressphere = max(Lar.abs.([PointClouds.ressphere(V[:,i],center,radius) for i in 1:size(V,2)])...)
 
-Vsphere, FVsphere = Tesi.larmodelsphere(center,radius)()
+Vsphere, FVsphere = PointClouds.larmodelsphere(center,radius)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -160,10 +160,10 @@ GL.VIEW([
 ])
 
 
-direction,center,radius,height = Tesi.cylinderfit(V)
-rescyl = max(Lar.abs.([Tesi.rescyl(V[:,i],direction, center, radius) for i in 1:size(V,2)])...)
+direction,center,radius,height = PointClouds.cylinderfit(V)
+rescyl = max(Lar.abs.([PointClouds.rescyl(V[:,i],direction, center, radius) for i in 1:size(V,2)])...)
 
-Vcyl, FVcyl = Tesi.larmodelcyl(direction,center,radius,height)()
+Vcyl, FVcyl = PointClouds.larmodelcyl(direction,center,radius,height)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -171,9 +171,9 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-center, radii, rot = Tesi.hefit(V)
-reshe = max(Lar.abs.([Tesi.reshe(V[:,i],center, radii, rot) for i in 1:size(V,2)])...)
-Vell, FVell = Tesi.larmodelellipsoid(center, radii, rot)()
+center, radii, rot = PointClouds.hefit(V)
+reshe = max(Lar.abs.([PointClouds.reshe(V[:,i],center, radii, rot) for i in 1:size(V,2)])...)
+Vell, FVell = PointClouds.larmodelellipsoid(center, radii, rot)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -181,7 +181,7 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-Vhyp, FVhyp = Tesi.larmodelhyperboloid(center,radii, rot)()
+Vhyp, FVhyp = PointClouds.larmodelhyperboloid(center,radii, rot)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -189,10 +189,10 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-coneVertex, coneaxis, radius, height = Tesi.conefit(V)
-rescone = max(Lar.abs.([Tesi.rescone(V[:,i], coneVertex, coneaxis, radius, height) for i in 1:size(V,2)])...)
+coneVertex, coneaxis, radius, height = PointClouds.conefit(V)
+rescone = max(Lar.abs.([PointClouds.rescone(V[:,i], coneVertex, coneaxis, radius, height) for i in 1:size(V,2)])...)
 
-Vcone, FVcone = Tesi.larmodelcone(coneaxis,coneVertex,radius, height)()
+Vcone, FVcone = PointClouds.larmodelcone(coneaxis,coneVertex,radius, height)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -200,10 +200,10 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-center, radii, rot = Tesi.cylellipfit(V)
-reshe = max(Lar.abs.([Tesi.reshe(V[:,i], center, radii, rot) for i in 1:size(V,2)])...)
+center, radii, rot = PointClouds.cylellipfit(V)
+reshe = max(Lar.abs.([PointClouds.reshe(V[:,i], center, radii, rot) for i in 1:size(V,2)])...)
 
-Vcyl, FVcyl = Tesi.larmodelcylell(center, radii, rot)()
+Vcyl, FVcyl = PointClouds.larmodelcylell(center, radii, rot)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V[:,259]'))

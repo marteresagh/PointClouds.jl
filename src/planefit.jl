@@ -6,7 +6,7 @@ Returns fitting plane of `points`.
 function planefit(points::Lar.Points)
 
 	npoints = size(points,2)
-	centroid,V = Tesi.subtractaverage(points)
+	centroid,V = PointClouds.subtractaverage(points)
 
     # Matrix
     xx = 0.; xy = 0.; xz = 0.;
@@ -62,11 +62,11 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64;index=0,NOTPLANE=3:
     # i = rand(1:length(FV))
 	# index = copy(FV[i])
     # pointsonplane = V[:,index]
-	# plane = Tesi.planefit(pointsonplane)
+	# plane = PointClouds.planefit(pointsonplane)
 	#
 	# # 3. find neighbors of points on plane
 	# visitedverts = copy(index)
-	# idxneighbors = Tesi.findnearestof(index,visitedverts,adj)
+	# idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
 
 	# 2. first samples
 	if index==0
@@ -74,12 +74,12 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64;index=0,NOTPLANE=3:
 	end
 	@show index
 	visitedverts = [index]
-	idxneighbors = Tesi.findnearestof([index],visitedverts,adj)
+	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
 	index = union(index,idxneighbors)
 	pointsonplane = V[:,index]
-	axis,centroid = Tesi.planefit(pointsonplane)
+	axis,centroid = PointClouds.planefit(pointsonplane)
 	visitedverts = copy(index)
-	idxneighbors = Tesi.findnearestof(index,visitedverts,adj)
+	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
 
 	# 4. check if this neighbors are other points of plane
     while !isempty(idxneighbors)
@@ -87,7 +87,7 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64;index=0,NOTPLANE=3:
 	    for i in idxneighbors
             p = V[:,i]
 
-            if Tesi.isinplane(p,axis,centroid,par)
+            if PointClouds.isinplane(p,axis,centroid,par)
 				push!(index,i)
             end
 
@@ -96,8 +96,8 @@ function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64;index=0,NOTPLANE=3:
         end
 
 		pointsonplane = V[:,index]
-		axis,centroid = Tesi.planefit(pointsonplane)
-        idxneighbors = Tesi.findnearestof(index,visitedverts,adj)
+		axis,centroid = PointClouds.planefit(pointsonplane)
+        idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
     end
 
 	if size(pointsonplane,2) <= NOTPLANE
@@ -124,8 +124,8 @@ Returns the intersection polygon between the `plane` and the AABB of `pointsonpl
 """
 function larmodelplane(pointsonplane::Lar.Points, axis,centroid, u=0.01)
 	AABB = Lar.boundingbox(pointsonplane).+([-u,-u,-u],[u,u,u])
-    V = Tesi.intersectAABBplane(AABB,axis,centroid)
+    V = PointClouds.intersectAABBplane(AABB,axis,centroid)
 	#triangulate vertex projected in plane XY
- 	FV = Tesi.DTprojxy(V)
+ 	FV = PointClouds.DTprojxy(V)
     return V, sort.(FV)
 end

@@ -19,7 +19,7 @@ end
 3D Delaunay triangulation algorithm in MATLAB.
 """
 function mat3DT(V::Lar.Points)
-	x,y,z = Tesi.lar2matlab(V)
+	x,y,z = PointClouds.lar2matlab(V)
 	@mput x
 	@mput y
 	@mput z
@@ -36,7 +36,7 @@ end
 2D Delaunay triangulation algorithm in MATLAB.
 """
 function mat2DT(V::Lar.Points)
-	x,y = Tesi.lar2matlab(V)
+	x,y = PointClouds.lar2matlab(V)
 	@mput x
 	@mput y
 	mat"DT = delaunay(x,y)"
@@ -52,7 +52,7 @@ end
 Delaunay triangulation projected on xy plane with MATLAB algorithm.
 """
 function DTprojxy(V::Lar.Points)
-	x,y,z = Tesi.lar2matlab(V)
+	x,y,z = PointClouds.lar2matlab(V)
 	@mput x
 	@mput y
 	mat"DT = delaunay(x,y)"

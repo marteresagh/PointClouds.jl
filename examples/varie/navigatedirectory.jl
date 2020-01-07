@@ -1,5 +1,5 @@
 using LinearAlgebraicRepresentation
-using Tesi
+using PointClouds
 Lar=LinearAlgebraicRepresentation
 filename="partof"
 from="C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
@@ -12,4 +12,4 @@ V=[458168.08305569435 458168.08305569435 458168.08305569435 458168.08305569435 4
     196.68409729003906 221.88722229003906  196.68409729003906 221.88722229003906 196.68409729003906 221.88722229003906 196.68409729003906 221.88722229003906]
 V1,(VV,EV,FV,CV)=Lar.cuboid([1,1,1],true)
 model = V,EV,FV
-Tesi.segmentcloud(filename,from,to,model)
+PointClouds.segmentcloud(filename,from,to,model)

@@ -85,7 +85,7 @@ function segmentcloud(filename::String,
 			pointstaken = LasIO.LasPoint[]
 			if endswith(file, ".las")
 		        fname = joinpath(root, file) # path to files
-				AABB = Tesi.las2aabb(fname) # AABB of octree
+				AABB = PointClouds.las2aabb(fname) # AABB of octree
 				h, pdata = LasIO.FileIO.load(fname) # read data
 				if AABBdetection(AABB,aabb) # iff #TODO attenzione ai casi in cui interseca il bb ma non ho punti che ricadono nel modello
 					push!(headers,h)

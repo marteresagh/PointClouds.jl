@@ -1,6 +1,6 @@
 using LinearAlgebraicRepresentation, AlphaStructures
 Lar = LinearAlgebraicRepresentation
-using Tesi
+using PointClouds
 
 include("./viewfunction.jl")
 
@@ -19,7 +19,7 @@ include("./viewfunction.jl")
 #
 
 fname = "examples/PointCloud/pointCloud/CAVA/r.las"
-Vtot,VV,rgb = Tesi.loadlas(fname)
+Vtot,VV,rgb = PointClouds.loadlas(fname)
 V,VV = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,VV])
 
 GL.VIEW(

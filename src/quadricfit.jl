@@ -10,7 +10,7 @@
 function preprocess(points::Lar.Points)
 	#1. - translate centroid
 	npoints = size(points,2)
-	centroid,Y = Tesi.subtractaverage(points)
+	centroid,Y = PointClouds.subtractaverage(points)
 
 	#2. - compute mu
 	x = Y[1,:]
@@ -68,7 +68,7 @@ end
 """
 function cylinderfit(V::Lar.Points)
 	#1. - preprocess of data
-	centroid, Y, mu, F0, F1, F2 = Tesi.preprocess(V)
+	centroid, Y, mu, F0, F1, F2 = PointClouds.preprocess(V)
 
 	#2. - find direction, center and radius that minimize function G()
 	minerror = Inf
@@ -86,7 +86,7 @@ function cylinderfit(V::Lar.Points)
 			cstheta = cos(theta)
 			sntheta = sin(theta)
 			currentW = [cstheta*snphi, sntheta * snphi, csphi]
-			currentC,currentRsqr,error = Tesi.G(Y,mu,F0,F1,F2,currentW)
+			currentC,currentRsqr,error = PointClouds.G(Y,mu,F0,F1,F2,currentW)
 			if error < minerror
 				minerror = error
 				W = currentW
@@ -115,7 +115,7 @@ function spherefit(points::Lar.Points)
 
 	#1. - translation centroid
 	npoints = size(points,2)
-	centroid, Y = Tesi.subtractaverage(points)
+	centroid, Y = PointClouds.subtractaverage(points)
 
 	#2. - costruction matrix W upper triangle
 	W = zeros(5,5)
@@ -190,7 +190,7 @@ function initialcone(points)
 
 	npoints = size(points,2)
 	#1. - center pointcloud
-	centroid, Y = Tesi.subtractaverage(points)
+	centroid, Y = PointClouds.subtractaverage(points)
 
 	#2. - cone axis
 	coneaxis = [0.,0.,0.]
@@ -335,7 +335,7 @@ function conefit(points)
 
 
 	npoints = size(points,2)
-	coneaxis, coneVertex, coneCosAngle = Tesi.initialcone(points)
+	coneaxis, coneVertex, coneCosAngle = PointClouds.initialcone(points)
 
 	initial = vcat(coneVertex,coneaxis.*1/coneCosAngle)[:,1]
 	R1 = LsqFit.OnceDifferentiable(fc(points), jc(points),zeros(6),zeros(npoints); inplace = false)
@@ -379,7 +379,7 @@ end
 function larmodelcyl(direction,center,radius,height)
 	function larmodelcyl0(shape = [36,1])
 		cyl0 = Lar.cylinder(radius,height)(shape)
-		centroid = Tesi.centroid(cyl0[1])
+		centroid = PointClouds.centroid(cyl0[1])
 		cyl = Lar.apply(Lar.t(-centroid...),cyl0)
 		matrixaffine = hcat(Lar.nullspace(Matrix(direction')),direction)
 		mrot = vcat(hcat(matrixaffine,[0,0,0]),[0.,0.,0.,1.]')
@@ -404,7 +404,7 @@ end
 function larmodelcone(direction,apex,angle,height)
 	radius = height*tan(angle)
 	function larmodelcone0(shape = [36,1])
-		cone = Tesi.cone(radius,height)(shape)
+		cone = PointClouds.cone(radius,height)(shape)
 		matrixaffine = hcat(Lar.nullspace(Matrix(direction')),direction)
 		mrot = vcat(hcat(matrixaffine,[0,0,0]),[0.,0.,0.,1.]')
 		return Lar.apply(Lar.t(apex...),Lar.apply(mrot,cone))

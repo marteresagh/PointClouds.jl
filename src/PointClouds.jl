@@ -1,6 +1,6 @@
 __precompile__()
 
-module Tesi
+module PointClouds
 	using LinearAlgebraicRepresentation
 	using LasIO
 	Lar = LinearAlgebraicRepresentation

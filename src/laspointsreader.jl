@@ -9,8 +9,8 @@ function loadlas(fname::String...)::Tuple{Lar.Points,Array{Array{Int64,1},1},Arr
 	Vtot = Array{Float64,2}(undef, 3, 0)
 	rgbtot = Array{LasIO.N0f16,2}(undef, 3, 0)
 	for name in fname
-		V,VV = Tesi.las2lar(name)
-		rgb = Tesi.lascolor(name)
+		V,VV = PointClouds.las2lar(name)
+		rgb = PointClouds.lascolor(name)
 		Vtot = hcat(Vtot,V)
 		rgbtot = hcat(rgbtot,rgb)
 	end

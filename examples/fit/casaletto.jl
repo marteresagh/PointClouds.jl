@@ -1,13 +1,13 @@
 using LinearAlgebraicRepresentation, AlphaStructures, ViewerGL
 Lar = LinearAlgebraicRepresentation
 GL = ViewerGL
-using Tesi
+using PointClouds
 
 include("./viewfunction.jl")
 
 fname = "examples/fit/CASALETTO/muri.las"
-Vtot,VV,rgb = Tesi.loadlas(fname)
-centroid,V = Tesi.subtractaverage(Vtot)
+Vtot,VV,rgb = PointClouds.loadlas(fname)
+centroid,V = PointClouds.subtractaverage(Vtot)
 V,a = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,[1]])
 
 GL.VIEW(
@@ -35,16 +35,16 @@ GL.VIEW(
 	]
 );
 
-pointsonplane,axis,centroid = Tesi.planeshape(V,FV,0.02;index=2742,NOTPLANE=20)
+pointsonplane,axis,centroid = PointClouds.planeshape(V,FV,0.02;index=2742,NOTPLANE=20)
 
 
-Vplane, FVplane = Tesi.larmodelplane(pointsonplane, axis,centroid)
+Vplane, FVplane = PointClouds.larmodelplane(pointsonplane, axis,centroid)
 GL.VIEW([
     colorview(V,VV,rgb)
 	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
 ]);
 
-P,FP,Prgb = Tesi.extractionmodel(V,FV,rgb,pointsonplane)
+P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsonplane)
 GL.VIEW(
 	[
 		colorview(P,FP,Prgb);
@@ -52,13 +52,13 @@ GL.VIEW(
 	]
 );
 
-Tesi.pointsproj(P,axis,centroid)
+PointClouds.pointsproj(P,axis,centroid)
 
 function chplane(P,axis,centroid,α)
 	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
 	W = Lar.inv(mrot)*(P)
 	W1 = W[[1,2],:]
-	DT = Tesi.mat2DT(W1)
+	DT = PointClouds.mat2DT(W1)
 	filtration = AlphaStructures.alphaFilter(W1, DT);
 	VV, EV, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
 	return W1,FV

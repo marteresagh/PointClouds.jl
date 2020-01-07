@@ -1,6 +1,6 @@
 using LinearAlgebraicRepresentation, AlphaStructures
 Lar = LinearAlgebraicRepresentation
-using Tesi
+using PointClouds
 include("./viewfunction.jl")
 
 #fname = "examples/PointCloud/pointCloud/Cupolatotale/r.las"
@@ -10,7 +10,7 @@ fname2 = "examples/PointCloud/pointCloud/Cupolatotale/r2.las"
 fname3 = "examples/PointCloud/pointCloud/Cupolatotale/r3.las"
 fname4 = "examples/PointCloud/pointCloud/Cupolatotale/r4.las"
 
-Vtot,VV,rgb = Tesi.loadlas(fname0,fname1,fname2,fname3,fname4)
+Vtot,VV,rgb = PointClouds.loadlas(fname0,fname1,fname2,fname3,fname4)
 #Vtot,VV,rgb = ReadLas.loadlas(fname)
 V,VV = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,VV])
 

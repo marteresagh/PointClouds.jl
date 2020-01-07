@@ -36,7 +36,7 @@ end
 
 function voxel(V,p,N)
 	m,n = size(V)
-	dict = Tesi.voxeldict(V,p)
+	dict = PointClouds.voxeldict(V,p)
 	newV = zeros(m)
 	CV = Array{Int64,1}[]
 	i = 1
@@ -52,7 +52,7 @@ function voxel(V,p,N)
 	end
 	W,CW = Lar.simplifyCells(newV[:,2:end],CV)
 
-	W,FW = Tesi.extracttriangles(W,CW)
+	W,FW = PointClouds.extracttriangles(W,CW)
 
 
 	return W, (FW, CW)

@@ -1,7 +1,7 @@
 using LasIO
 using LinearAlgebraicRepresentation
 Lar=LinearAlgebraicRepresentation
-using Tesi
+using PointClouds
 include("laspointsreader.jl")
 include("navigatedirectory.jl")
 include("fit.jl")
