@@ -46,67 +46,6 @@ function planefit(points::Lar.Points)
     return N, centroid
 end
 
-"""
-	planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
-
-Returns all the points `pointsonshape` liyng on the `plane` found.
-
-"""
-function planeshape(V::Lar.Points,FV::Lar.Cells,par::Float64;index=0,NOTPLANE=3::Int64)
-
-	# 1. list of adjacency verteces
-	EV = Lar.simplexFacets(FV)
-   	adj = Lar.verts2verts(EV)
-
-	# # 2. first three points
-    # i = rand(1:length(FV))
-	# index = copy(FV[i])
-    # pointsonplane = V[:,index]
-	# plane = PointClouds.planefit(pointsonplane)
-	#
-	# # 3. find neighbors of points on plane
-	# visitedverts = copy(index)
-	# idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
-
-	# 2. first samples
-	if index==0
-		index = rand(1:size(V,2))
-	end
-	@show index
-	visitedverts = [index]
-	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
-	index = union(index,idxneighbors)
-	pointsonplane = V[:,index]
-	axis,centroid = PointClouds.planefit(pointsonplane)
-	visitedverts = copy(index)
-	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
-
-	# 4. check if this neighbors are other points of plane
-    while !isempty(idxneighbors)
-
-	    for i in idxneighbors
-            p = V[:,i]
-
-            if PointClouds.isinplane(p,axis,centroid,par)
-				push!(index,i)
-            end
-
-			push!(visitedverts,i)
-
-        end
-
-		pointsonplane = V[:,index]
-		axis,centroid = PointClouds.planefit(pointsonplane)
-        idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
-    end
-
-	if size(pointsonplane,2) <= NOTPLANE
-		println("planeshape: not a valid plane")
-		return nothing, nothing
-	end
-    return  pointsonplane,axis,centroid
-end
-
 
 """
 	resplane(point, params)

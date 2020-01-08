@@ -35,9 +35,9 @@ GL.VIEW(
 	]
 );
 
-pointsonplane,axis,centroid = PointClouds.planeshape(V,FV,0.02;index=2742,NOTPLANE=20)
+pointsonplane,params = PointClouds.findshape(V,FV,0.02,"plane";index=2742)
 
-
+axis,centroid = params
 Vplane, FVplane = PointClouds.larmodelplane(pointsonplane, axis,centroid)
 GL.VIEW([
     colorview(V,VV,rgb)
@@ -45,11 +45,8 @@ GL.VIEW([
 ]);
 
 P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsonplane)
-PointClouds.pointsproj(P,axis,centroid)
 
-
-
-W,EW =  PointClouds.extractshape(P,axis,centroid,0.2)
+W,EW =  PointClouds.extractplaneshape(P,params,0.2)
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,P'))
 	GL.GLGrid(W,EW)

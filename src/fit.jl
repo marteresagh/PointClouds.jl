@@ -50,7 +50,6 @@ end
 	projection(e,v)
 e è la normale della superficie e v è il punto da proiettare
 """
-#TODO ad esempio sul cilindro come faccio a proiettare v sulla superficie?? quale normale uso??
 function projection(e,v)
 	p = v-Lar.dot(e,v)*e
 	return p
@@ -70,7 +69,8 @@ end
 """
 	proiezione di tutti i punti sul cilindro
 """
-function pointsprojcyl(V,axis,C,r)
+function pointsprojcyl(V,params)
+	axis,C,r,height = params
 	npoints = size(V,2)
 	for i in 1:npoints
 		p = V[:,i]-C
@@ -151,9 +151,11 @@ end
 """
 	extractshape(P,axis,centroid,α)
 
-
+Dal piano
 """
-function extractshape(P,axis,centroid,α)
+function extractplaneshape(P,params,α)
+	axis,centroid = params
+	PointClouds.pointsproj(P,axis,centroid)
 	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
 	W = Lar.inv(mrot)*(P)
 	W1 = W[[1,2],:]
@@ -176,4 +178,82 @@ function extractshape(P,axis,centroid,α)
 
 
 	return P,EV
+end
+
+"""
+	extractshape(P,params,α)
+"""
+function extractshape(P,params,α)
+	PointClouds.pointsprojcyl(P,params)
+	DT = PointClouds.mat3DT(P)
+	filtration = AlphaStructures.alphaFilter(P, DT);
+	_, _, FP, TP = AlphaStructures.alphaSimplex(P, filtration, α)
+	return P,FP
+end
+
+"""
+	findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
+
+Returns all the points `pointsonshape` liyng on the `plane` found.
+
+"""
+function findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;index=0,NOTSHAPE=3::Int64)
+
+	# 1. list of adjacency verteces
+	EV = Lar.simplexFacets(FV)
+   	adj = Lar.verts2verts(EV)
+
+	# 2. first samples
+	if index==0
+		index = rand(1:size(V,2))
+	end
+	@show index
+	visitedverts = [index]
+	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
+	index = union(index,idxneighbors)
+	pointsonshape = V[:,index]
+	if shape == "plane"
+		params = PointClouds.planefit(pointsonshape)
+	elseif shape == "cylinder"
+		params = PointClouds.cylinderfit(pointsonshape)
+	end
+	visitedverts = copy(index)
+	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
+
+	# 4. check if this neighbors are other points of plane
+    while !isempty(idxneighbors)
+
+	    for i in idxneighbors
+            p = V[:,i]
+
+			if shape == "plane"
+				axis,centroid = params
+				if PointClouds.isinplane(p,axis,centroid,par)
+					push!(index,i)
+	            end
+			elseif shape == "cylinder"
+				if PointClouds.ispointincyl(p,params,par)
+					push!(index,i)
+	            end
+			end
+
+            push!(visitedverts,i)
+
+        end
+
+		pointsonshape = V[:,index]
+		if shape == "plane"
+			params = PointClouds.planefit(pointsonshape)
+		elseif shape == "cylinder"
+			params = PointClouds.cylinderfit(pointsonshape)
+		end
+
+        idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
+    end
+
+	if size(pointsonshape,2) <= NOTSHAPE
+		println("findshape: not valid")
+		return nothing, nothing
+	end
+    return  pointsonshape,params
 end
