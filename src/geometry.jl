@@ -4,15 +4,15 @@
 centroid(points::Lar.Points) = sum(points,dims=2)/size(points,2)
 
 """
-	distpointsphere
+	isinsphere(p,params,par)::Bool
 """
-function ispointinsphere(p,params,par)::Bool
+function isinsphere(p,params,par)::Bool
 	center,radius = params
 	return PointClouds.ressphere(p,params) <= radius
 end
 
 """
-	distpointcyl
+	isincyl(p,params,par)::Bool
 """
 function ispointincyl(p,params,par)::Bool
 	return PointClouds.rescyl(p,params) <= par
@@ -26,6 +26,60 @@ Checks if a point `p` in near enough to the `plane`.
 """
 function isinplane(p::Array{Float64,1},axis,centroid,par::Float64)::Bool
     return resplane(p,axis,centroid)<=par
+end
+
+
+################################################################################ Residual
+"""
+	resplane(point, params)
+"""
+
+function resplane(point, axis, centroid)
+	return Lar.abs(Lar.dot(point,axis)-Lar.dot(axis,centroid))
+end
+
+"""
+	rescyl
+"""
+function rescyl(point,params)
+	direction,center,radius, height = params
+	r2 = radius^2
+	y = point-center
+	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(direction,direction'))*y
+	return Lar.abs(rp[1]-r2)
+end
+
+
+"""
+	ressphere
+"""
+function ressphere(point,center,radius)
+	r2 = radius^2
+	y = point-center
+	rp = Lar.norm(y)^2
+	return Lar.abs(rp[1]-r2)
+end
+
+"""
+	rescone
+"""
+function rescone(point,coneVertex, coneaxis, radius, height)
+	cosalpha = height/(sqrt(height^2+radius^2))
+	y = point-coneVertex
+	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(coneaxis/cosalpha,(coneaxis/cosalpha)'))*y
+	return Lar.abs(rp[1])
+end
+
+"""
+	restorus
+"""
+function restorus(point,C, N, rM, rm)
+	D =  point - C
+	DdotD = Lar.dot(D,D)
+	NdotD = Lar.dot(N,D)
+	sum = DdotD + rM^2-rm^2
+	res=sum^2 - 4*rM^2*(DdotD-NdotD^2)
+	return Lar.abs(res)
 end
 
 """

@@ -48,14 +48,6 @@ end
 
 
 """
-	resplane(point, params)
-"""
-
-function resplane(point, axis, centroid)
-	return Lar.dot(point,axis)-Lar.dot(axis,centroid)
-end
-
-"""
 	larmodelplane(pointsonplane::Lar.Points, plane::NTuple{4,Float64}, u=0.01)
 
 Returns the intersection polygon between the `plane` and the AABB of `pointsonplane`.

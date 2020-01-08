@@ -194,7 +194,7 @@ end
 Returns all the points `pointsonshape` liyng on the `plane` found.
 
 """
-function findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;index=0,NOTSHAPE=3::Int64)
+function findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;index=0,NOTSHAPE=10::Int64)
 
 	# 1. list of adjacency verteces
 	EV = Lar.simplexFacets(FV)
@@ -229,7 +229,7 @@ function findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;index=
 					push!(index,i)
 	            end
 			elseif shape == "cylinder"
-				if PointClouds.ispointincyl(p,params,par)
+				if PointClouds.isincyl(p,params,par)
 					push!(index,i)
 	            end
 			end

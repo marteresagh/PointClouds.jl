@@ -29,7 +29,7 @@ GL.VIEW([
 	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
 ]);
 
-PointClouds.pointsproj(V,N,C) #TODO?? così sto modificando i punti originali della nuvola
+PointClouds.pointsproj(V,N,C)
 GL.VIEW([
     GL.GLPoints(convert(Lar.Points,V'))
 	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
@@ -39,4 +39,3 @@ GL.VIEW([
 
 # PointClouds.resplane(V[:,1],N,C)
 # resplane = max(Lar.abs.([PointClouds.resplane(V[:,i],N,C) for i in 1:size(V,2)])...)
- 
