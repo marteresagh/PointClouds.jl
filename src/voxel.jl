@@ -15,45 +15,102 @@ function voxeldict(V,p)
 end
 
 
-
-function extracttriangles(W,CW)
-	points = convert(Array{Float64,2},W') # points by rows
-	vertices=Vector{Float32}()
-	FV = Array{Int64,1}[]
-	for cell in CW
-		ch = QHull.chull(points[cell,:])
-		verts = ch.vertices
-		trias = ch.simplices
-		vdict = Dict(zip(verts, 1:length(verts)))
-		fdict = Dict(zip(1:length(cell), cell))
-		faces = [[vdict[u],vdict[v],vdict[w]] for (u,v,w) in trias]
-		triangles = [[fdict[v1],fdict[v2],fdict[v3]] for (v1,v2,v3) in faces]
-		append!(FV,triangles)
-	end
-
-	return W,unique(FV)
-end
-
-function voxel(V,p,N)
+function voxel0(V,p,N)
 	m,n = size(V)
 	dict = PointClouds.voxeldict(V,p)
 	newV = zeros(m)
+	FV = Array{Int64,1}[]
 	CV = Array{Int64,1}[]
-	i = 1
+	i = 0
 	quad = vcat(Lar.filterByOrder(size(V,1))...)
+	f0=sort.([[1,2,5,3],[1,3,7,4],[2,5,8,6],[4,6,8,7],[3,5,8,7],[1,2,6,4]])
 	for (k,v) in dict
 		if v > N
 			for j in quad
 				newV = hcat(newV,k.+j)
 			end
-			push!(CV,[i:(i+2^m-1)...])
+			#@show newV
+			fv=copy(f0)
+			for j in 1:length(f0)
+				fv[j]=f0[j].+i
+			end
+			push!(FV,fv...)
+			push!(CV,[i+1:(i+2^m)...])
+			#@show CV
 			i=i+2^m
 		end
 	end
-	W,CW = Lar.simplifyCells(newV[:,2:end],CV)
 
-	W,FW = PointClouds.extracttriangles(W,CW)
+	return newV[:,2:end],sort.(FV),sort.(CV)
+
+end
+
+function voxel(V,p,N)
+	T,FT,CT = PointClouds.voxel0(V,p,N)
+	#aggiornare LAR
+	 u_boundary_3(CV, FV) = (Lar.u_coboundary_2(CV, FV))'
+	 W,FW,CW = PointClouds.simplcell(T,FT,CT)
+
+	 FW=sort.(FW)
+	 CW=sort.(CW)
 	#estrai bordo
+	 Mbound = u_boundary_3(CW,FW)
+	 fv=(Mbound*ones(length(CW))).%2
+	 FVb=FW[Bool.(fv)]
+	#
+	return W, FVb, CW
+end
 
-	return W, (FW, CW)
+function simplcell(V,FV,CV)
+	PRECISION = 5
+	vertDict = DefaultDict{Array{Float64,1}, Int64}(0)
+	index = 0
+	W = Array{Float64,1}[]
+	FW = Array{Int64,1}[]
+	CW = Array{Int64,1}[]
+
+	for incell in FV
+		#@show incell
+		outcell = Int64[]
+		for v in incell
+			vert = V[:,v]
+			key = map(Lar.approxVal(PRECISION), vert)
+			if vertDict[key]==0
+				index += 1
+				vertDict[key] = index
+				push!(outcell, index)
+				push!(W,key)
+			else
+
+				push!(outcell, vertDict[key])
+
+			end
+		end
+		#@show W
+		#@show outcell
+		append!(FW, [[Set(outcell)...]])
+	end
+
+	for incell in CV
+		#@show incell
+		outcell = Int64[]
+		for v in incell
+			vert = V[:,v]
+			key = map(Lar.approxVal(PRECISION), vert)
+			if vertDict[key]==0
+				index += 1
+				vertDict[key] = index
+				push!(outcell, index)
+				push!(W,key)
+			else
+
+				push!(outcell, vertDict[key])
+
+			end
+		end
+		#@show W
+		#@show outcell
+		append!(CW, [[Set(outcell)...]])
+	end
+	return hcat(W...),FW,CW
 end

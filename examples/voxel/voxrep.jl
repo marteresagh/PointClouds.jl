@@ -3,7 +3,7 @@ Lar = LinearAlgebraicRepresentation
 using ViewerGL
 GL= ViewerGL
 using PointClouds
-using DataStructures
+
 include("./viewfunction.jl")
 fname = "examples/PointCloud/pointCloud/CUPOLA/r.las"
 fname = "examples/fit/CASALETTO/r.las"
@@ -16,13 +16,12 @@ GL.VIEW(
 );
 
 
-p = 1
-W,(FW,CW) = PointClouds.voxel(V,p,1)
-
-
+p = 1.2  #spacing cupola 0.4
+W,FW,CW = PointClouds.voxel(V,p,2)
 
 GL.VIEW(
 	[
-		 GL.GLLar2gl(W,CW)
+		# GL.GLGrid(W,FW,GL.COLORS[1],0.8)
+		GL.GLLar2gl(W,CW)
 	]
-);
+)
