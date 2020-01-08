@@ -1,4 +1,5 @@
 ################################################################################ Torus fit
+#TODO: stima dei parametri iniziali ancora da migliorare
 """
 	computenormals(V,FV)
 
