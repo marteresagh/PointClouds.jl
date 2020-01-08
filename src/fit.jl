@@ -98,8 +98,6 @@ function pointsprojsphere(V,C,r)
 	return convert(Lar.Points,V)
 end
 
-
-#TODO
 """
 	proiezione di tutti i punti sul cono
 """
@@ -149,9 +147,8 @@ function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points
 end
 
 """
-	extractshape(P,axis,centroid,α)
+	extractplaneshape(P,axis,centroid,α)
 
-Dal piano
 """
 function extractplaneshape(P,params,α)
 	axis,centroid = params
@@ -169,7 +166,7 @@ function extractplaneshape(P,params,α)
 	# EV = ch.simplices
 
 
-	#o boundary??
+	#o boundary
 	EV = Lar.simplexFacets(FV)
 	Mbound = Lar.u_boundary_2(FV,EV)
 	ev=(Mbound'*ones(length(FV))).%2

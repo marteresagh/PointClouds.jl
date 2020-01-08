@@ -24,11 +24,12 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-PointClouds.pointsprojsphere(V,center,radius)
+#PointClouds.pointsprojsphere(V,center,radius)
+
 # studio distanza e residuo di un punto
 p = V[:,3]
 params = (center,radius)
-par = 0.02
+
 distance = PointClouds.distpointsphere(p,params)
 res = PointClouds.ressphere(p,center,radius)
 
@@ -40,7 +41,7 @@ ressphere = max(Lar.abs.([PointClouds.ressphere(V[:,i],center,radius) for i in 1
 V,FV = Lar.apply(Lar.r(-pi/3,0,0),Lar.apply(Lar.t(0,0,-10),Lar.cylinder(10.7,20)([100,10])))
 V,FV = Lar.cylinder(1.,2)([10,10])
 
-V = AlphaStructures.matrixPerturbation(V,atol=0.5)
+V = AlphaStructures.matrixPerturbation(V,atol=0.1)
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,V'))
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
@@ -58,11 +59,7 @@ GL.VIEW([
 PointClouds.pointsprojcyl(V,direction,center,radius)
 # studio distanza e residuo di un punto
 p = V[:,546]
-params = (direction,center,radius,height)
-par = 0.02
-distance = PointClouds.distpointcyl(p,params)
-res = PointClouds.rescyl(p,direction,center,radius)
-
+res = PointClouds.rescyl(p,params)
 rescyl = max(Lar.abs.([PointClouds.rescyl(V[:,i],direction,center,radius) for i in 1:size(V,2)])...)
 
 ################################################################################ Cone fit

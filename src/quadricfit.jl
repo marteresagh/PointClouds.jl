@@ -1,7 +1,6 @@
 #TODO
 # sistemare codice,
 # rendere incrementale
-# creare una struct per ogni forma con i parametri?
 #
 ################################################################################ Cylinder fit
 """
@@ -429,7 +428,8 @@ end
 """
 	rescyl
 """
-function rescyl(point,direction,center,radius)
+function rescyl(point,params)
+	direction,center,radius, height = params
 	r2 = radius^2
 	y = point-center
 	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(direction,direction'))*y

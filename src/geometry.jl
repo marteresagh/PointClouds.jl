@@ -6,48 +6,18 @@ centroid(points::Lar.Points) = sum(points,dims=2)/size(points,2)
 """
 	distpointsphere
 """
-function distpointsphere(p,params)::Float64
-	center,radius = params
-	return Lar.abs(Lar.norm(p-center) - radius)
-end
-
 function ispointinsphere(p,params,par)::Bool
 	center,radius = params
-	return PointClouds.distpointsphere(p,params) <= radius
+	return PointClouds.ressphere(p,params) <= radius
 end
 
 """
 	distpointcyl
 """
 function ispointincyl(p,params,par)::Bool
-	return PointClouds.distpointcyl(p,params) <= par
+	return PointClouds.rescyl(p,params) <= par
 end
 
-function distpointcyl(p,params)::Float64
-	W,C,r,height = params
-	return Lar.abs(PointClouds.distpointline(p,W,C)-r)
-end
-
-
-"""
-	distpointline
-"""
-function distpointline(p,W,C)
-	x0 = copy(p)
-	x1 = copy(C[:,1])
-	x2 = C[:,1]+W
-	d = Lar.norm(Lar.cross(x0-x1,x0-x2))/Lar.norm(x2-x1)
-	return d
-end
-
-"""
-	distpointplane(p::Array{Float64,1},plane::NTuple{4,Float64})::Float64
-
-Computes distance from a point `p` to a `plane`.
-"""
-function distpointplane(p,axis,centroid)::Float64
-    return Lar.abs(Lar.dot(axis,p)-Lar.dot(axis,centroid))/Lar.norm(axis)
-end
 
 """
 	isinplane(p::Array{Float64,1},plane::NTuple{4,Float64},par::Float64)::Bool
@@ -55,7 +25,7 @@ end
 Checks if a point `p` in near enough to the `plane`.
 """
 function isinplane(p::Array{Float64,1},axis,centroid,par::Float64)::Bool
-    return distpointplane(p,axis,centroid)<=par
+    return resplane(p,axis,centroid)<=par
 end
 
 """
