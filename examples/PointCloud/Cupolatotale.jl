@@ -1,7 +1,7 @@
 using LinearAlgebraicRepresentation, AlphaStructures
 Lar = LinearAlgebraicRepresentation
 using PointClouds
-include("./viewfunction.jl")
+include("../viewfunction.jl")
 
 #fname = "examples/PointCloud/pointCloud/Cupolatotale/r.las"
 fname0 = "examples/PointCloud/pointCloud/Cupolatotale/r0.las"
@@ -12,8 +12,7 @@ fname4 = "examples/PointCloud/pointCloud/Cupolatotale/r4.las"
 
 Vtot,VV,rgb = PointClouds.loadlas(fname0,fname1,fname2,fname3,fname4)
 #Vtot,VV,rgb = ReadLas.loadlas(fname)
-V,VV = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,VV])
-
+_,V = PointClouds.subtractaverage(Vtot)
 
 GL.VIEW(
 	[

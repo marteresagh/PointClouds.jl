@@ -3,7 +3,7 @@ Lar = LinearAlgebraicRepresentation
 using PointClouds
 using MATLAB
 
-include("./viewfunction.jl")
+include("../viewfunction.jl")
 #
 # fname = "examples/PointCloud/pointCloud/CUPConvegno/r.las"
 # fname1 = "examples/PointCloud/pointCloud/CUPConvegno/r1.las"

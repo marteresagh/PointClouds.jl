@@ -29,13 +29,13 @@ end
 	 @testset "distpointplane and isinplane" begin
 		plane = (1., 0., 0., 0.)
 		p = [-3.;0.;0.]
-	 	@test PointClouds.distpointplane(p,plane) == 3.
+	 	@test PointClouds.resplane(p,plane) == 3.
 		p = [0.001; 0.; 0.]
 		@test PointClouds.isinplane(p,plane,0.1)
 
 		plane = (1., 1., 1., 0.)
 		p = [1.;1.;1.]
-	 	@test isapprox(PointClouds.distpointplane(p,plane), sqrt(3.))
+	 	@test isapprox(PointClouds.resplane(p,plane), sqrt(3.))
 		p = [0.5; 0.5; 0.5]
 		@test !(PointClouds.isinplane(p,plane,0.1))
 	 end

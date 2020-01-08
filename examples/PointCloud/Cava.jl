@@ -2,7 +2,7 @@ using LinearAlgebraicRepresentation, AlphaStructures
 Lar = LinearAlgebraicRepresentation
 using PointClouds
 
-include("./viewfunction.jl")
+include("../viewfunction.jl")
 
 #
 # using Distributed
@@ -20,7 +20,7 @@ include("./viewfunction.jl")
 
 fname = "examples/PointCloud/pointCloud/CAVA/r.las"
 Vtot,VV,rgb = PointClouds.loadlas(fname)
-V,VV = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,VV])
+_,V = PointClouds.subtractaverage(Vtot)
 
 GL.VIEW(
 	[

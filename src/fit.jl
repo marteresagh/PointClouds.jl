@@ -158,7 +158,7 @@ function extractplaneshape(P,params,α)
 	W1 = W[[1,2],:]
 	DT = PointClouds.mat2DT(W1)
 	filtration = AlphaStructures.alphaFilter(W1, DT);
-	VV, _, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
+	_, _, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
 
 	#convex hull
 	# ch = QHull.chull(convert(Lar.Points,W1'))
@@ -169,8 +169,8 @@ function extractplaneshape(P,params,α)
 	#o boundary
 	EV = Lar.simplexFacets(FV)
 	Mbound = Lar.u_boundary_2(FV,EV)
-	ev=(Mbound'*ones(length(FV))).%2
-	EV=EV[Bool.(ev)]
+	ev = (Mbound'*ones(length(FV))).%2
+	EV = EV[Bool.(ev)]
 
 
 

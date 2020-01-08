@@ -3,11 +3,11 @@ Lar = LinearAlgebraicRepresentation
 GL = ViewerGL
 using PointClouds
 
-include("./viewfunction.jl")
+include("../viewfunction.jl")
 
 fname = "examples/fit/TUBE/r.las"
 Vtot,VV,rgb = PointClouds.loadlas(fname)
-V,a = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,[1]])
+_,V = PointClouds.subtractaverage(Vtot)
 
 GL.VIEW(
 	[

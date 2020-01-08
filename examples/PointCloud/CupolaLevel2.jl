@@ -2,7 +2,7 @@ using LinearAlgebraicRepresentation, AlphaStructures
 Lar = LinearAlgebraicRepresentation
 using PointClouds
 
-include("./viewfunction.jl")
+include("../viewfunction.jl")
 
 fname0 = "examples/PointCloud/pointCloud/CUPOLALevel2/r0.las"
 fname1 = "examples/PointCloud/pointCloud/CUPOLALevel2/r1.las"
@@ -11,7 +11,7 @@ fname3 = "examples/PointCloud/pointCloud/CUPOLALevel2/r3.las"
 fname4 = "examples/PointCloud/pointCloud/CUPOLALevel2/r4.las"
 
 Vtot,VV,rgb = PointClouds.loadlas(fname0,fname1,fname2,fname3,fname4)
-V,VV = Lar.apply(Lar.t(-min(Vtot[1,:]...),-min(Vtot[2,:]...),-min(Vtot[3,:]...)),[Vtot,VV])
+_,V = PointClouds.subtractaverage(Vtot)
 
 
 GL.VIEW(
