@@ -25,7 +25,7 @@ end
 Checks if a point `p` in near enough to the `plane`.
 """
 function isinplane(p::Array{Float64,1},axis,centroid,par::Float64)::Bool
-    return resplane(p,axis,centroid)<=par
+    return PointClouds.resplane(p,axis,centroid)<=par
 end
 
 

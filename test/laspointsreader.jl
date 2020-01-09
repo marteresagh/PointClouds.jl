@@ -7,14 +7,14 @@ end
 @testset "Load file .las" begin
 
 	@testset "lasPoint without color" begin
-		fname = "srs.las"
+		fname = "test/lasfile/srs.las"
 		V,VV,rgb = PointClouds.loadlas(fname)
 		@test size(V) == (3,10)
 		@test isempty(rgb)
 	end
 
 	@testset "lasPoint with color" begin
-		fname = "cava.las"
+		fname = "test/lasfile/cava.las"
 		V,VV,rgb = PointClouds.loadlas(fname)
 		@test size(V) == size(rgb)
 		@test typeof(V) == Lar.Points{Float64}
@@ -24,7 +24,7 @@ end
 	end
 
 	@testset "more file .las" begin
-		fname = "srs.las"
+		fname = "test/lasfile/srs.las"
 		V,VV,rgb =  PointClouds.loadlas(fname,fname)
 		@test size(V) == (3,20)
 		V,VV,rgb = PointClouds.loadlas(fname,fname,fname)
