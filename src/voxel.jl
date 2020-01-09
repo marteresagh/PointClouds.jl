@@ -47,17 +47,16 @@ end
 
 function voxel(V,p,N)
 	T,FT,CT = PointClouds.voxel0(V,p,N)
-	#aggiornare LAR
-	 u_boundary_3(CV, FV) = (Lar.u_coboundary_2(CV, FV))'
+
 	 W,FW,CW = PointClouds.simplcell(T,FT,CT)
 
 	 FW=sort.(FW)
 	 CW=sort.(CW)
 	#estrai bordo
-	 Mbound = u_boundary_3(CW,FW)
+	 Mbound = Lar.u_boundary_3(CW,FW)
 	 fv=(Mbound*ones(length(CW))).%2
 	 FVb=FW[Bool.(fv)]
-	#
+
 	return W, FVb, CW
 end
 

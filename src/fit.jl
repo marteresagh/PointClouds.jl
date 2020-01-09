@@ -42,7 +42,7 @@
 Returns all the points `pointsonshape` liyng on the `plane` found.
 
 """
-function findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;index=0,NOTSHAPE=10::Int64)
+function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,par::Float64,shape::String;index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
 	# 1. list of adjacency verteces
 	EV = Lar.simplexFacets(FV)
@@ -73,7 +73,8 @@ function findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;index=
 
 			if shape == "plane"
 				axis,centroid = params
-				if PointClouds.isinplane(p,axis,centroid,par)
+				color = Vrgb[:,i]
+				if PointClouds.isinplane(p,axis,centroid,par) && PointClouds.testcolor(color,min,max)
 					push!(index,i)
 	            end
 			elseif shape == "cylinder"
@@ -186,4 +187,28 @@ function extractshape(P,params,α)
 	filtration = AlphaStructures.alphaFilter(P, DT);
 	_, _, FP, TP = AlphaStructures.alphaSimplex(P, filtration, α)
 	return P,FP
+end
+
+
+"""
+	filterbycolor(P,Prgb,min,max)
+
+
+"""
+function filterbycolor(P,Prgb,min,max)
+    tokeep=[]
+    for i in 1:size(Prgb,2)
+        color = Prgb[:,i]
+		if PointClouds.testcolor(color,min,max)
+            push!(tokeep,i)
+        end
+    end
+    return P[:,tokeep], Prgb[:,tokeep]
+end
+
+
+function testcolor(color,min,max)
+	testmin = (color[1]>min[1] && color[2]>min[2] && color[3]>min[3])
+	testmax = (color[1]<max[1] && color[2]<max[2] && color[3]<max[3])
+	return testmin && testmax
 end
