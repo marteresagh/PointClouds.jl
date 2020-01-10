@@ -34,7 +34,7 @@ GL.VIEW(
 	]
 );
 
-pointsonplane,params = PointClouds.findshape(V,FV,0.02,"plane";index=2742)
+pointsonplane,params = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=2742)
 
 axis,centroid = params
 Vplane, FVplane = PointClouds.larmodelplane(pointsonplane, axis,centroid)

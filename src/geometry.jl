@@ -14,7 +14,7 @@ end
 """
 	isincyl(p,params,par)::Bool
 """
-function ispointincyl(p,params,par)::Bool
+function isincyl(p,params,par)::Bool
 	return PointClouds.rescyl(p,params) <= par
 end
 

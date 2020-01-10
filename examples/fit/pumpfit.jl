@@ -34,13 +34,14 @@ GL.VIEW(
 );
 
 
-pointsoncyl,params = PointClouds.findshape(V,FV,0.005,"cylinder",index=946)
+pointsoncyl,params = PointClouds.findshape(V,FV,rgb,0.005,"cylinder",index=946)
 Vcyl, FVcyl = PointClouds.larmodelcyl(params...)([36,36])
 
 
 P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsoncyl)
 
 P,FP = PointClouds.extractshape(P,params,α)
+
 myV,myFV,myrgb = PointClouds.modelremained(V,FV,rgb,pointsoncyl)
 
 GL.VIEW([
