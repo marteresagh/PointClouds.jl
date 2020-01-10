@@ -6,7 +6,10 @@ end
 
 
 @testset "centroid" begin
-	#TODO
+	V,CV = Lar.cuboid([1,1])
+	@test PointClouds.centroid(V)==hcat([0.5;0.5])
+	V,CV = Lar.cuboid([1,1,1])
+	@test PointClouds.centroid(V)==hcat([0.5;0.5;0.5])
 end
 
 @testset "residuals" begin

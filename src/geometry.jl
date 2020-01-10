@@ -3,8 +3,68 @@
 """
 centroid(points::Lar.Points) = sum(points,dims=2)/size(points,2)
 
+
+################################################################################ Residual
+#TODO da modificare tutto in params
+"""
+	resplane(point, params)
+"""
+
+function resplane(point, axis, centroid)
+	return Lar.abs(Lar.dot(point,axis)-Lar.dot(axis,centroid))
+end
+
+"""
+	rescyl
+"""
+function rescyl(point, params)
+	direction,center,radius, height = params
+	r2 = radius^2
+	y = point-center
+	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(direction,direction'))*y
+	return Lar.abs(rp[1]-r2)
+end
+
+"""
+	ressphere
+"""
+function ressphere(point, params)
+	center, radius = params
+	r2 = radius^2
+	y = point-center
+	rp = Lar.norm(y)^2
+	return Lar.abs(rp[1]-r2)
+end
+
+"""
+	rescone
+"""
+function rescone(point, params)
+	coneVertex, coneaxis, radius, height = params
+	cosalpha = height/(sqrt(height^2+radius^2))
+	y = point-coneVertex
+	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(coneaxis/cosalpha,(coneaxis/cosalpha)'))*y
+	return Lar.abs(rp[1])
+end
+
+"""
+	restorus
+"""
+function restorus(point, params)
+	C, N, rM, rm = params
+	D =  point - C
+	DdotD = Lar.dot(D,D)
+	NdotD = Lar.dot(N,D)
+	sum = DdotD + rM^2-rm^2
+	res=sum^2 - 4*rM^2*(DdotD-NdotD^2)
+	return Lar.abs(res)
+end
+
+################################################################################ distance point shape
 """
 	isinsphere(p,params,par)::Bool
+
+Checks if a point `p` in near enough to the `sphere`.
 """
 function isinsphere(p,params,par)::Bool
 	center,radius = params
@@ -13,6 +73,8 @@ end
 
 """
 	isincyl(p,params,par)::Bool
+
+Checks if a point `p` in near enough to the `cylinder`.
 """
 function isincyl(p,params,par)::Bool
 	return PointClouds.rescyl(p,params) <= par
@@ -28,59 +90,7 @@ function isinplane(p::Array{Float64,1},axis,centroid,par::Float64)::Bool
     return PointClouds.resplane(p,axis,centroid)<=par
 end
 
-
-################################################################################ Residual
-"""
-	resplane(point, params)
-"""
-
-function resplane(point, axis, centroid)
-	return Lar.abs(Lar.dot(point,axis)-Lar.dot(axis,centroid))
-end
-
-"""
-	rescyl
-"""
-function rescyl(point,params)
-	direction,center,radius, height = params
-	r2 = radius^2
-	y = point-center
-	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(direction,direction'))*y
-	return Lar.abs(rp[1]-r2)
-end
-
-"""
-	ressphere
-"""
-function ressphere(point,center,radius)
-	r2 = radius^2
-	y = point-center
-	rp = Lar.norm(y)^2
-	return Lar.abs(rp[1]-r2)
-end
-
-"""
-	rescone
-"""
-function rescone(point,coneVertex, coneaxis, radius, height)
-	cosalpha = height/(sqrt(height^2+radius^2))
-	y = point-coneVertex
-	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(coneaxis/cosalpha,(coneaxis/cosalpha)'))*y
-	return Lar.abs(rp[1])
-end
-
-"""
-	restorus
-"""
-function restorus(point,C, N, rM, rm)
-	D =  point - C
-	DdotD = Lar.dot(D,D)
-	NdotD = Lar.dot(N,D)
-	sum = DdotD + rM^2-rm^2
-	res=sum^2 - 4*rM^2*(DdotD-NdotD^2)
-	return Lar.abs(res)
-end
-
+################################################################################ utilities
 """
 	subtractaverage(points::Lar.Points)
 
@@ -158,7 +168,7 @@ function heightquadric(W, Y)
 	return hmax-hmin
 end
 
-
+################################################################################ projection
 """
 	projection(e,v)
 e è la normale della superficie e v è il punto da proiettare
@@ -169,7 +179,9 @@ function projection(e,v)
 end
 
 """
-	proiezione di tutti i punti sul piano ortogonale a N
+	pointsproj(V,N,C)
+
+proiezione di tutti i punti sul piano ortogonale a N
 """
 function pointsproj(V,N,C)
 	npoints = size(V,2)
@@ -180,7 +192,9 @@ function pointsproj(V,N,C)
 end
 
 """
-	proiezione di tutti i punti sul cilindro
+	pointsprojcyl(V,params)
+
+proiezione di tutti i punti sul cilindro
 """
 function pointsprojcyl(V,params)
 	axis,C,r,height = params
@@ -197,7 +211,9 @@ end
 
 
 """
-	proiezione di tutti i punti sulla sfera
+	pointsprojsphere(V,C,r)
+
+proiezione di tutti i punti sulla sfera
 """
 function pointsprojsphere(V,C,r)
 	npoints = size(V,2)
@@ -211,7 +227,7 @@ function pointsprojsphere(V,C,r)
 end
 
 """
-	proiezione di tutti i punti sul cono
+	pointsprojcone(V,axis,apex,angle)
 """
 function pointsprojcone(V,axis,apex,angle)
 	npoints = size(V,2)
