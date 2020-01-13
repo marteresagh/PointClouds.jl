@@ -1,30 +1,33 @@
 # ```
 
-
 """
-	 AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
-
-Compute collision detection of two AABB.
-
 """
-function AABBdetection(aabb,AABB)::Bool
-	A=hcat(aabb...)
-	B=hcat(AABB...)
-	@assert size(A,1) == size(B,1) "AABBdetection: not same dimension"
-	dim = size(A,1)
-	m=1
-	M=2
-	# 1. - axis x AleftB = A[1,max]<B[1,min]  ArightB = A[1,min]>B[1,max]
-	# 2. - axis y AfrontB = A[2,max]<B[2,min]  AbehindB = A[2,min]>B[2,max]
-	if dim == 3
-		# 3. - axis z AbottomB = A[3,max]<B[3,min]  AtopB = A[3,min]>B[3,max]
-		return !( A[1,M]<=B[1,m] || A[1,m]>=B[1,M] ||
-				 A[2,M]<=B[2,m] ||A[2,m]>=B[2,M] ||
-				  A[3,M]<=B[3,m] || A[3,m]>=B[3,M] )
+function filelevel(path,lev)
+	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = readJSON(path) # useful parameters
+	pathr = path*"\\"*octreeDir*"\\r" # path to directory "r"
 
+	println("search in $pathr ")
+
+	# 2.- check all file
+	allfile=[]
+	for (root, dirs, files) in walkdir(pathr)
+		for file in files
+			@show file
+			if endswith(file, ".las")
+				name = rsplit(file,".")[1]
+				level = []
+				for i in name
+					if isnumeric(i)
+						push!(level,i)
+					end
+				end
+				if length(level)==lev
+					push!(allfile,joinpath(root, file))
+				end
+			end
+		end
 	end
-	return !( A[1,M]<=B[1,m] || A[1,m]>=B[1,M] ||
-			 A[2,M]<=B[2,m] || A[2,m]>=B[2,M] )
+	return allfile
 end
 
 """

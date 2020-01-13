@@ -1,4 +1,4 @@
-using LinearAlgebraicRepresentation, ViewerGL
+using LinearAlgebraicRepresentation, ViewerGL,AlphaStructures
 Lar = LinearAlgebraicRepresentation
 GL = ViewerGL
 
@@ -57,4 +57,106 @@ GL.VIEW([
 	GL.GLGrid(model[1],FV,GL.COLORS[3],0.5)
 	GL.GLGrid(V1finale,FV1,GL.COLORS[2],0.5)
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+]);
+
+
+"""
+ Y è la reference cloud
+ X la source cloud
+"""
+function ICP(X,Y)
+	x=X[1,:]
+	y=X[2,:]
+	u=Y[1,:]
+	v=Y[2,:]
+	sx2=Lar.norm(x)^2
+	sxy=Lar.dot(x,y)
+	sx=sum(x)
+	sy2=Lar.norm(y)^2
+	sy=sum(y)
+	n=size(X,2)
+	sux=Lar.dot(u,x)
+	suy=Lar.dot(u,y)
+	su=sum(u)
+	svx=Lar.dot(v,x)
+	svy=Lar.dot(v,y)
+	sv=sum(v)
+	A=[ sx2 sxy sx 0 0 0;
+		sxy sy2 sy 0 0 0;
+		sx  sy  n  0 0 0;
+		0 0 0  sx2 sxy sx;
+		0 0 0  sxy sy2 sy;
+		0 0 0  sx  sy  n]
+	b=[sux, suy, su, svx, svy, sv]
+	params=A\b
+
+	R=[ params[1] params[2];
+		params[4] params[5]]
+
+	t=[params[3], params[6]]
+	return R,t
+end
+
+
+
+function iterativeICP(X,Y,itermax)
+	x=copy(X)
+	iter=1
+	R=Matrix(Lar.I,2,2)
+	T=[0,0]
+	error=diff=Inf
+	while diff>1.e-8 && iter<itermax
+		r,t = ICP(x,Y)
+		R=r*R
+		T=r*T+t
+		diff=Lar.abs(error-residuo(R,T,X,Y))
+		error=residuo(R,T,X,Y)
+		@show diff
+		x=r*x.+t
+		iter+=1
+	end
+	return R,T,iter,error
+end
+
+
+function residuo(R,T,X,Y)
+	error = Lar.abs(Lar.norm(R*X.+T.-Y)^2)
+	return error
+end
+
+X=rand(2,1000)
+
+# R = [0.5 0 0.866025; 0.866025 0 -0.5; 0 1 0]
+# t = [1,1,1]
+
+r = [0.5 -sqrt(3)/2; sqrt(3)/2 0.5]
+t = [1,2]
+s=[1.4 0;0 0.5]
+
+Y = r*s*X.+t
+Y = AlphaStructures.matrixPerturbation(Y,atol=0.01)
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,X'))
+	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
+	GL.GLFrame2
+]);
+
+
+R,T=ICP(X,Y)
+X2 = R*X.+T
+residuo(R,T,X,Y)
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,X2'))
+	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
+	GL.GLFrame2
+]);
+
+
+R,T,iter,er=iterativeICP(X,Y,1000)
+residuo(R,T,X,Y)
+X2 = R*X.+T
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,X2'))
+	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
+	GL.GLFrame2
 ]);

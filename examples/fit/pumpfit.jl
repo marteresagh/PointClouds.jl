@@ -5,7 +5,7 @@ using PointClouds
 
 include("../viewfunction.jl")
 
-fname = "examples/fit/TUBE/r.las"
+fname = "examples/fit/PUMP/r.las"
 Vtot,VV,rgb = PointClouds.loadlas(fname)
 _,V = PointClouds.subtractaverage(Vtot)
 
@@ -23,7 +23,7 @@ DT = PointClouds.mat3DT(V)
 
 filtration = AlphaStructures.alphaFilter(V, DT);
 
-α = 0.03316948190331459
+α = 0.03 #0.03316948190331459
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
 GL.VIEW(

@@ -19,7 +19,7 @@ include("./pointCloud/CUPOLA/DT.jl")
 #DT = AlphaStructures.delaunayTriangulation(V);
 filtration = AlphaStructures.alphaFilter(V, DT);
 
-α = 1.5 #0.7
+α = 0.5 #0.7
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α);
 
 GL.VIEW(

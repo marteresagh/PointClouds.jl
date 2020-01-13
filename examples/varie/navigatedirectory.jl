@@ -13,3 +13,8 @@ V=[458168.08305569435 458168.08305569435 458168.08305569435 458168.08305569435 4
 V1,(VV,EV,FV,CV)=Lar.cuboid([1,1,1],true)
 model = V,EV,FV
 PointClouds.segmentcloud(filename,from,to,model)
+
+
+
+from="C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
+allfile=PointClouds.filelevel(from,4)

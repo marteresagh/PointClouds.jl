@@ -19,97 +19,35 @@ function voxel0(V,p,N)
 	m,n = size(V)
 	dict = PointClouds.voxeldict(V,p)
 	newV = zeros(m)
-	FV = Array{Int64,1}[]
 	CV = Array{Int64,1}[]
 	i = 0
 	quad = vcat(Lar.filterByOrder(size(V,1))...)
-	f0=sort.([[1,2,5,3],[1,3,7,4],[2,5,8,6],[4,6,8,7],[3,5,8,7],[1,2,6,4]])
+
 	for (k,v) in dict
 		if v > N
 			for j in quad
 				newV = hcat(newV,k.+j)
 			end
-			#@show newV
-			fv=copy(f0)
-			for j in 1:length(f0)
-				fv[j]=f0[j].+i
-			end
-			push!(FV,fv...)
 			push!(CV,[i+1:(i+2^m)...])
-			#@show CV
 			i=i+2^m
 		end
 	end
 
-	return newV[:,2:end],sort.(FV),sort.(CV)
+	return newV[:,2:end],sort.(CV)
 
 end
 
 function voxel(V,p,N)
-	T,FT,CT = PointClouds.voxel0(V,p,N)
+	T,CT = PointClouds.voxel0(V,p,N)
+	W,CW = Lar.simplifyCells(T,CT)
 
-	 W,FW,CW = PointClouds.simplcell(T,FT,CT)
+	#estrai bordo come estraggo le facce?
+	# ch=QHull.chull(convert(Lar.Points,W'))
+	# FW=ch.simplices
+	#
+	# Mbound = Lar.u_boundary_3(CW,FW)
+	# fv=(Mbound'*ones(length(CW))).%2
+	# FVb=FW[Bool.(fv)]
 
-	 FW=sort.(FW)
-	 CW=sort.(CW)
-	#estrai bordo
-	 Mbound = Lar.u_boundary_3(CW,FW)
-	 fv=(Mbound*ones(length(CW))).%2
-	 FVb=FW[Bool.(fv)]
-
-	return W, FVb, CW
-end
-
-function simplcell(V,FV,CV)
-	PRECISION = 5
-	vertDict = DefaultDict{Array{Float64,1}, Int64}(0)
-	index = 0
-	W = Array{Float64,1}[]
-	FW = Array{Int64,1}[]
-	CW = Array{Int64,1}[]
-
-	for incell in FV
-		#@show incell
-		outcell = Int64[]
-		for v in incell
-			vert = V[:,v]
-			key = map(Lar.approxVal(PRECISION), vert)
-			if vertDict[key]==0
-				index += 1
-				vertDict[key] = index
-				push!(outcell, index)
-				push!(W,key)
-			else
-
-				push!(outcell, vertDict[key])
-
-			end
-		end
-		#@show W
-		#@show outcell
-		append!(FW, [[Set(outcell)...]])
-	end
-
-	for incell in CV
-		#@show incell
-		outcell = Int64[]
-		for v in incell
-			vert = V[:,v]
-			key = map(Lar.approxVal(PRECISION), vert)
-			if vertDict[key]==0
-				index += 1
-				vertDict[key] = index
-				push!(outcell, index)
-				push!(W,key)
-			else
-
-				push!(outcell, vertDict[key])
-
-			end
-		end
-		#@show W
-		#@show outcell
-		append!(CW, [[Set(outcell)...]])
-	end
-	return hcat(W...),FW,CW
+	return W,CW
 end
