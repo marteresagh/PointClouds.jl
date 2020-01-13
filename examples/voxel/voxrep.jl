@@ -5,9 +5,11 @@ GL= ViewerGL
 using PointClouds
 
 include("../viewfunction.jl")
-#fname = "examples/PointCloud/pointCloud/CUPOLA/r.las"
-fname = "examples/fit/CASALETTO/r.las"
-Vtot,VV,rgb = PointClouds.loadlas(fname)
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
+allfile = PointClouds.filelevel(fname,0)
+
+#fname = "examples/fit/CASALETTO/r.las"
+Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
 GL.VIEW(
 	[
@@ -16,19 +18,22 @@ GL.VIEW(
 );
 
 p = 0.4 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
+
 W,(WW,EW,FW,CW) = PointClouds.pointclouds2cubegrid(V,p,0)
 model = W,(WW,EW,FW,CW)
 W, ∂FW = PointClouds.extractsurfaceboundary(model)
+
 GL.VIEW(
 	[
-		GL.GLGrid(W,∂FW,GL.COLORS[2],1)
+		#GL.GLGrid(W,∂FW,GL.COLORS[2],1)
+		GL.GLLar2gl(W,CW)
 	]
 )
 
 
 #=
 
-open("V.jl", "w") do f
+open("V0.jl", "w") do f
 	n=size(W,2)
 	write(f, "[ ")
 	for i in 1:n
@@ -50,7 +55,7 @@ end
 
 
 
-open("CV.jl", "w") do f
+open("CV0.jl", "w") do f
 	write(f, "[")
 	for simplex in CW
 		write(f, "[")

@@ -1,6 +1,9 @@
 # ```
 
 """
+	filelevel(path,lev)
+
+
 """
 function filelevel(path,lev)
 	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = readJSON(path) # useful parameters
@@ -12,7 +15,6 @@ function filelevel(path,lev)
 	allfile=[]
 	for (root, dirs, files) in walkdir(pathr)
 		for file in files
-			@show file
 			if endswith(file, ".las")
 				name = rsplit(file,".")[1]
 				level = []
