@@ -15,14 +15,13 @@ GL.VIEW(
 	]
 );
 
-#0.1 0.4 2.
 p = 0.4 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
-W,CW = PointClouds.voxel(V,p,0)
-
+W,(WW,EW,FW,CW) = PointClouds.pointclouds2cubegrid(V,p,0)
+model = W,(WW,EW,FW,CW)
+W, ∂FW = PointClouds.extractsurfaceboundary(model)
 GL.VIEW(
 	[
-		#GL.GLGrid(W,FW,GL.COLORS[2],1)
-		GL.GLLar2gl(W,CW)
+		GL.GLGrid(W,∂FW,GL.COLORS[2],1)
 	]
 )
 
@@ -63,22 +62,3 @@ open("CV.jl", "w") do f
 	write(f, "]")
 end
 =#
-#
-# include("../../V.jl")
-# include("../../CV.jl")
-#
-# using QHull
-# V,(VV,EV,FV)=Lar.cuboidGrid([1,2],true)
-#
-# ch=QHull.chull(convert(Lar.Points,V'))
-# FV=ch.simplices
-#
-# mCV=Lar.lar2cop(CV)
-# bound = mCV*mCV'
-#
-# GL.VIEW(
-# 	[
-# 		#GL.GLGrid(W,FW,GL.COLORS[2],1)
-# 		GL.GLLar2gl(V,CV)
-# 	]
-# )

@@ -12,6 +12,7 @@ module PointClouds
 	using LsqFit
 	using QHull
 	using AlphaStructures
+	using SparseArrays
 
 	include("fit.jl")
 	include("quadricfit.jl")
