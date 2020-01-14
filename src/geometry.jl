@@ -268,3 +268,11 @@ function AABBdetection(aabb,AABB)::Bool
 	return !( A[1,M]<=B[1,m] || A[1,m]>=B[1,M] ||
 			 A[2,M]<=B[2,m] || A[2,m]>=B[2,M] )
 end
+
+
+function flat(allpoints,allplane)
+	for i in 1:length(allpoints)
+		N,C = allplane[i]
+		allpoints[i]=PointClouds.pointsproj(allpoints[i],N,C)
+	end
+end

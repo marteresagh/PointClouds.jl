@@ -81,6 +81,26 @@ function pointclouds2cubegrid(V,p,N)
 end
 
 
+function voxeloriented(allpoints,allplane,p,N)
+	n = length(allpoints)
+	out = Array{Lar.Struct,1}()
+	for i in 1:n
+		model = (allpoints[i], [[i] for i in 1:size(allpoints[i],2)])
+		axis,centroid = allplane[i]
+		rot = hcat(Lar.nullspace(Matrix(axis')),axis)
+		matrixaffine = vcat(hcat(rot,[0.,0.,0.]),[0.,0.,0.,1.]')
+		shape = Lar.Struct([Lar.inv(matrixaffine),Lar.t(-centroid...),model])
+		model=Lar.struct2lar(shape)
+		W,CW = PointClouds.pointclouds2cubegrid(model[1],p,N)
+		shape = Lar.Struct([Lar.t(centroid...),matrixaffine,(W,CW)])# viene rimpicciolito per il passo devi mantenere le stesse dimensioni
+		push!(out,shape)
+	end
+	out=Lar.Struct(out)
+	V,CV = Lar.struct2lar(out)
+	return V,CV
+end
+
+
 function extractsurfaceboundary(V,CV)
 	VV = [[v] for v=1:size(V,2)]
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2EV,CV)))))

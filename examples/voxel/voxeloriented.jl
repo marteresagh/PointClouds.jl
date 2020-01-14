@@ -156,34 +156,18 @@ allpoints=[pointsonplane1,pointsonplane2,pointsonplane3,pointsonplane4,pointsonp
 allplane=[params1,params2,params3,params4,params5,params6,params7,params8,params9,params10]
 
 
-function voxeloriented(allpoints,allplane,p,N)
-	n = length(allpoints)
-	out = Array{Lar.Struct,1}()
-	for i in 1:n
-		model = (allpoints[i], [[i] for i in 1:size(allpoints[i],2)])
-		axis,centroid = allplane[i]
-		rot = hcat(Lar.nullspace(Matrix(axis')),axis)
-		matrixaffine = vcat(hcat(rot,[0.,0.,0.]),[0.,0.,0.,1.]')
-		shape = Lar.Struct([Lar.inv(matrixaffine),Lar.t(-centroid...),model])
-		model=Lar.struct2lar(shape)
-		W,CW = PointClouds.pointclouds2cubegrid(model[1],p,N)
-		shape = Lar.Struct([Lar.t(centroid...),matrixaffine,(W,CW)])# viene rimpicciolito per il passo devi mantenere le stesse dimensioni
-		push!(out,shape)
-	end
-	out=Lar.Struct(out)
-	V,CV = Lar.struct2lar(out)
-	return V,CV
-end
-
+flat(allpoints,allplane)
 p = 0.5 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
 
-W,CW = voxeloriented(allpoints,allplane,p,0)
+W,CW = PointClouds.voxeloriented(allpoints,allplane,p,0)
+T,CT = PointClouds.pointclouds2cubegrid(V,p,0)
 W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(
 	[
-		#GL.GLPoints(convert(Lar.Points,pointcloud'))
+		#colorview(V,[[i] for i in 1:size(V,2)],rgb)
 		GL.GLLar2gl(W,CW)
+		#GL.GLLar2gl(T,CT)
 	]
 )
 

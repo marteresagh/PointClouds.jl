@@ -19,32 +19,36 @@ include("../viewfunction.jl")
 #
 
 fname = "examples/PointCloud/pointCloud/CAVA/r.las"
-Vtot,VV,rgb = PointClouds.loadlas(fname)
-_,V = PointClouds.subtractaverage(Vtot)
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
+allfile = PointClouds.filelevel(fname,3)
+_,_,_,_,_,spacing = PointClouds.readJSON(fname)
 
+Vtot,VV,rgb = PointClouds.loadlas(allfile...)
+_,V = PointClouds.subtractaverage(Vtot)
 GL.VIEW(
 	[
 		colorview(V,VV,rgb)
 	]
 );
 
-include("./pointCloud/CAVA/VS.jl")
-include("./pointCloud/CAVA/DT.jl")
+# include("./pointCloud/CAVA/VS.jl")
+# include("./pointCloud/CAVA/DT.jl")
 #DT = AlphaStructures.delaunayTriangulation(V);
 #=
 #Equivalent to =>
 V = AlphaStructures.matrixPerturbation(V);
 DT = AlphaStructures.delaunayTriangulation(V);
 =#
+DT = PointClouds.mat3DT(V)
 
 filtration = AlphaStructures.alphaFilter(V, DT);
 
-α = 4.
+α = 0.8
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
 GL.VIEW(
 	[
-		colorview(V,FV,rgb);
+		colorview(V,EV,rgb);
 		#AlphaStructures.colorview(V,TV,rgb)
 	]
 );

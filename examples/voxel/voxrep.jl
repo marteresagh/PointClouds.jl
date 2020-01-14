@@ -5,7 +5,7 @@ GL= ViewerGL
 using PointClouds
 
 include("../viewfunction.jl")
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
 allfile = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 #fname = "examples/fit/CASALETTO/r.las"
@@ -18,7 +18,7 @@ GL.VIEW(
 );
 
 
-p = 0.4 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
+p = 6.
 W,CW = PointClouds.pointclouds2cubegrid(V,p,0.)
 W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
