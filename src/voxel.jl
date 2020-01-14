@@ -51,7 +51,7 @@ function voxelgrid(V,p)
 	dict = DataStructures.SortedDict{Array{Int64,1},Int64}()
 	for i in 1:npoints
 		point = V[:,i]
-		coord =  floor.(Int,point/p)
+		coord =  floor.(Int,point/p) # poi moltiplica tutto per il passo
 		if haskey(dict,coord)
 			dict[coord]+=1
 		else
@@ -71,23 +71,20 @@ function pointclouds2cubegrid(V,p,N)
 			 0.0  0.0  0.0  0.0  1.0  1.0  1.0  1.0;
 			 0.0  0.0  1.0  1.0  0.0  0.0  1.0  1.0;
 			 0.0  1.0  0.0  1.0  0.0  1.0  0.0  1.0]
-			cell = (V,[[1,2,3,4,5,6,7,8]])
+			cell = (V.*p,[[1,2,3,4,5,6,7,8]])
 			push!(out, Lar.Struct([cell]))
 		end
 	end
-
 	out = Lar.Struct( out )
 	V,CV = Lar.struct2lar(out)
-	VV = [[v] for v=1:size(V,2)]
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2FV,CV)))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2EV,CV)))))
-
-	return V,(VV,EV,FV,CV)
+	return V,CV
 end
 
 
-function extractsurfaceboundary(model)
-	V,(VV,EV,FV,CV) = model
+function extractsurfaceboundary(V,CV)
+	VV = [[v] for v=1:size(V,2)]
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2EV,CV)))))
+	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2FV,CV)))))
 
 	M_0 = K(VV)
 	M_1 = K(EV)

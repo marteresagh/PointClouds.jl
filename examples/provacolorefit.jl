@@ -38,12 +38,13 @@ GL.VIEW([
     colorview(P,[[i] for i in 1:size(P,2)],Prgb)
 	colorview(myV,[[i] for i in 1:size(myV,2)],myrgb,0.3)
 ]);
-rgb=ones(3,6678)*0.1
+#rgb=ones(3,6678)*0.1
 
 W,EW =  PointClouds.extractplaneshape(P,params,α)
 
+
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,P'))
-	GL.GLGrid(W,EW)
+	GL.GLGrid(W,EW,GL.COLORS[1],1.)
 	colorview(myV,[[i] for i in 1:size(myV,2)],myrgb,0.3)
 ]);

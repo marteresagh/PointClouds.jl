@@ -7,7 +7,7 @@ using PointClouds
 include("../viewfunction.jl")
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
 allfile = PointClouds.filelevel(fname,0)
-
+_,_,_,_,_,spacing = PointClouds.readJSON(fname)
 #fname = "examples/fit/CASALETTO/r.las"
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
@@ -17,15 +17,15 @@ GL.VIEW(
 	]
 );
 
-p = 0.4 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
 
-W,(WW,EW,FW,CW) = PointClouds.pointclouds2cubegrid(V,p,0)
-model = W,(WW,EW,FW,CW)
-W, ∂FW = PointClouds.extractsurfaceboundary(model)
+p = 0.4 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
+W,CW = PointClouds.pointclouds2cubegrid(V,p,0.)
+W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(
 	[
-		#GL.GLGrid(W,∂FW,GL.COLORS[2],1)
+		#colorview(V,VV,rgb)
+		#GL.GLGrid(W,∂FW,GL.COLORS[2],0.8)
 		GL.GLLar2gl(W,CW)
 	]
 )
