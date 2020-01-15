@@ -81,12 +81,12 @@ function pointclouds2cubegrid(V,p,N)
 end
 
 
-function voxeloriented(allpoints,allplane,p,N)
-	n = length(allpoints)
+function voxeloriented(allplanes,p,N)
+	n = length(allplanes)
 	out = Array{Lar.Struct,1}()
 	for i in 1:n
-		model = (allpoints[i], [[i] for i in 1:size(allpoints[i],2)])
-		axis,centroid = allplane[i]
+		model = (allplanes[i][1], [[i] for i in 1:size(allplanes[i][1],2)])
+		axis,centroid = allplanes[i][2]
 		rot = hcat(Lar.nullspace(Matrix(axis')),axis)
 		matrixaffine = vcat(hcat(rot,[0.,0.,0.]),[0.,0.,0.,1.]')
 		shape = Lar.Struct([Lar.inv(matrixaffine),Lar.t(-centroid...),model])

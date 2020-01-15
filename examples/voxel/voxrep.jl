@@ -6,9 +6,11 @@ using PointClouds
 
 include("../viewfunction.jl")
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
-allfile = PointClouds.filelevel(fname,0)
+allfile0 = PointClouds.filelevel(fname,0)
+allfile1 = PointClouds.filelevel(fname,1)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 #fname = "examples/fit/CASALETTO/r.las"
+allfile=union(allfile0,allfile1)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
 GL.VIEW(
@@ -18,14 +20,15 @@ GL.VIEW(
 );
 
 
-p = 6.
-W,CW = PointClouds.pointclouds2cubegrid(V,p,0.)
-W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
+p = 3.
+W,CW = PointClouds.pointclouds2cubegrid(V,p,0)
+#W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(
 	[
 		#colorview(V,VV,rgb)
 		#GL.GLGrid(W,∂FW,GL.COLORS[2],0.8)
+		#GL.GLGrid(W,∂FW,GL.COLORS[1],0.8)
 		GL.GLLar2gl(W,CW)
 	]
 )

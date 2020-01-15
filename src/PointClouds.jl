@@ -16,7 +16,7 @@ module PointClouds
 
 	include("fit.jl")
 	include("quadricfit.jl")
-	include("planefit.jl")
+	include("linearfit.jl")
 	include("navigatedirectory.jl")
 	include("laspointsreader.jl")
 	include("matlab.jl")

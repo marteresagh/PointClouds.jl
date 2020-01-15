@@ -4,9 +4,9 @@ GL = ViewerGL
 using PointClouds
 
 npoints = 20
-xslope = 1
-yslope = 0
-off = 5
+xslope = 1.
+yslope = 0.
+off = 5.
 
 # create random data
 xs = rand(npoints)
@@ -32,10 +32,12 @@ GL.VIEW([
 PointClouds.pointsproj(V,N,C)
 GL.VIEW([
     GL.GLPoints(convert(Lar.Points,V'))
-	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)
+	GL.GLGrid(Vplane,FVplane,GL.COLORS[12],1.)
 ]);
 
 
 
 # PointClouds.resplane(V[:,1],N,C)
 # resplane = max(Lar.abs.([PointClouds.resplane(V[:,i],N,C) for i in 1:size(V,2)])...)
+
+P=[0. 1. 2. 3. 4.; 0 0 0 0 0 ; 0 0 0 0 0]

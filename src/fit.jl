@@ -1,39 +1,44 @@
 # ```
 # finalizzare la procedura
 #
-# """
-# 	findallplane(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64,N=1::Int64)
-#
-# Finds `N` planes with more than `NOTPLANE` points in LAR model `(V,FV)`.
-# """
-# function findallplane(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64,N=1::Int64)
-# 	# 1. - initialization
-# 	Vremained = copy(V)
-# 	FVremained = copy(FV)
-# 	allplanes = [[],[]]
-#
-# 	i = 0 # number of plane found
-#
-# 	while i < N
-# 		pointsonplane = nothing
-# 		plane = nothing
-# 		println("number of points remained: $(size(Vremained,2))")
-#
-# 		while isnothing(pointsonplane)
-# 			pointsonplane,plane = PointClouds.planeshape(Vremained,FVremained,par,NOTPLANE)
-# 		end
-#
-# 		i = i+1
-# 		println("$i planes found")
-# 		Vplane, FVplane = PointClouds.larmodelplane(pointsonplane,plane)
-# 		push!(allplanes[1],Vplane)
-# 		push!(allplanes[2],FVplane)
-# 		Vremained,FVremained = PointClouds.modelremained(Vremained,FVremained,pointsonplane)
-#
-# 	end
-#
-# 	return allplanes,Vremained,FVremained
-# end
+"""
+	findall(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64,N=1::Int64)
+
+
+"""
+function findall(V::Lar.Points,FV::Lar.Cells,Vrgb,N::Int,par::Float64,shape::String;index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
+
+	println("-----------------")
+	println("find $N shapes")
+	println("-----------------")
+
+
+	# 1. - initialization
+	Vcurrent = copy(V)
+	FVcurrent = copy(FV)
+	RGBcurrent = copy(Vrgb)
+	allshapes = []
+
+	i = 0 # number of plane found
+
+	while i < N
+		pointsonshape = nothing
+		params = nothing
+		println("number of points remained: $(size(Vcurrent,2))")
+
+		while isnothing(pointsonshape)
+			pointsonshape,params = PointClouds.findshape(Vcurrent,FVcurrent,RGBcurrent,par,shape;index=index,NOTSHAPE=NOTSHAPE::Int64,min=min,max=max)
+		end
+
+		i = i+1
+		println("$i shapes found")
+		push!(allshapes,[pointsonshape,params])
+		Vcurrent,FVcurrent,RGBcurrent = PointClouds.modelremained(Vcurrent,FVcurrent,RGBcurrent,pointsonshape)
+
+	end
+
+	return Vcurrent, FVcurrent,RGBcurrent,allshapes
+end
 
 
 """
@@ -53,10 +58,12 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,par::Float64,shape::String;i
 		index = rand(1:size(V,2))
 	end
 	@show index
+	
 	visitedverts = [index]
 	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
 	index = union(index,idxneighbors)
 	pointsonshape = V[:,index]
+	# if punti allineati ??
 	if shape == "plane"
 		params = PointClouds.planefit(pointsonshape)
 	elseif shape == "cylinder"
@@ -98,9 +105,10 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,par::Float64,shape::String;i
     end
 
 	if size(pointsonshape,2) <= NOTSHAPE
-		println("findshape: not valid")
+		#println("findshape: not valid")
 		return nothing, nothing
 	end
+
     return  pointsonshape,params
 end
 
@@ -137,16 +145,37 @@ end
 Returns LAR model remained after removing points on plane.
 """
 function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+	npoints=size(V,2)
 	cscFV = Lar.characteristicMatrix(FV)
 	todel = [PointClouds.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to delete
-	tokeep = setdiff(collect(1:cscFV.n), todel) # index of point to keep
-    face = cscFV[:,tokeep]
-	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
-	Vremained = V[:,tokeep] #points remained
+	tokeep = setdiff(collect(1:cscFV.n), todel)
+    cscFV0 = cscFV[:,tokeep]
+
+	faceind = 1:cscFV0.m
+	vertinds = 1:npoints
+    keepface = Array{Int64, 1}()
+	for i in faceind
+    	if length(cscFV0[i, :].nzind) == 3
+           push!(keepface, i)
+       end
+    end
+   	cscFV=cscFV[keepface,:]
+	isolatedpoints=Array{Int64, 1}()
+	for i in vertinds
+    	if length(cscFV[:, i].nzind) == 0
+           push!(isolatedpoints, i)
+       end
+    end
+
+   	union!(todel,isolatedpoints)
+	tokeep = setdiff(vertinds, todel)
+
+    FVremained = Lar.cop2lar(cscFV[:, tokeep])
+    Vremained = V[:, tokeep]
 	rgbremained = rgb[:,tokeep]
+
 	return Vremained,FVremained,rgbremained
 end
-
 """
 	extractplaneshape(P,axis,centroid,α)
 

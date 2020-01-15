@@ -270,9 +270,9 @@ function AABBdetection(aabb,AABB)::Bool
 end
 
 
-function flat(allpoints,allplane)
-	for i in 1:length(allpoints)
-		N,C = allplane[i]
-		allpoints[i]=PointClouds.pointsproj(allpoints[i],N,C)
+function flat(allplanes)
+	for i in 1:length(allplanes)
+		N,C = allplanes[i][2]
+		allplanes[i][1]=PointClouds.pointsproj(allplanes[i][1],N,C)
 	end
 end
