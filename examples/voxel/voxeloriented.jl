@@ -54,7 +54,7 @@ GL.VIEW(
 # # P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsonplane)
 #
 # #2. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane1)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane1)
 #
 # pointsonplane2, params2 = PointClouds.findshape(V,FV,rgb,0.02,"plane"; index=1338)
 # axis,centroid = params2
@@ -66,7 +66,7 @@ GL.VIEW(
 # ]);
 #
 # #3. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane2)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane2)
 #
 # pointsonplane3, params3 = PointClouds.findshape(V,FV,rgb,0.02,"plane"; index=2669)
 # axis,centroid = params3
@@ -78,7 +78,7 @@ GL.VIEW(
 # ]);
 #
 # #4. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane3)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane3)
 #
 # pointsonplane4, params4 = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=4597)
 # axis,centroid = params4
@@ -90,7 +90,7 @@ GL.VIEW(
 # ]);
 #
 # #4. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane4)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane4)
 #
 # pointsonplane5, params5 = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=2636)
 # axis,centroid = params5
@@ -102,7 +102,7 @@ GL.VIEW(
 # ]);
 #
 # #5. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane5)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane5)
 #
 # pointsonplane6, params6 = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=4210)
 # axis,centroid = params6
@@ -115,7 +115,7 @@ GL.VIEW(
 #
 #
 # #6. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane6)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane6)
 #
 # pointsonplane7, params7 = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=3696)
 # axis,centroid = params7
@@ -128,7 +128,7 @@ GL.VIEW(
 #
 #
 # #7. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane7)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane7)
 #
 # pointsonplane8, params8 = PointClouds.findshape(V,FV,rgb,0.03,"plane";index=1079)
 # axis,centroid = params8
@@ -141,7 +141,7 @@ GL.VIEW(
 #
 #
 # #8. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane8)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane8)
 #
 # pointsonplane9, params9 = PointClouds.findshape(V,FV,rgb,0.03,"plane";index=1726)
 # axis,centroid = params9
@@ -153,7 +153,7 @@ GL.VIEW(
 # ]);
 #
 # #9. other plane
-# V,FV,rgb = PointClouds.modelremained(V,FV,rgb,pointsonplane9)
+# V,FV,rgb = PointClouds.deletepoints(V,FV,rgb,pointsonplane9)
 #
 # pointsonplane10, params10 = PointClouds.findshape(V,FV,rgb,0.05,"plane";index=611)
 # axis,centroid = params10

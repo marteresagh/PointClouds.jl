@@ -10,7 +10,8 @@ centroid(points::Lar.Points) = sum(points,dims=2)/size(points,2)
 	resplane(point, params)
 """
 
-function resplane(point, axis, centroid)
+function resplane(point,params)
+	axis,centroid = params
 	return Lar.abs(Lar.dot(point,axis)-Lar.dot(axis,centroid))
 end
 
@@ -86,8 +87,8 @@ end
 
 Checks if a point `p` in near enough to the `plane`.
 """
-function isinplane(p::Array{Float64,1},axis,centroid,par::Float64)::Bool
-    return PointClouds.resplane(p,axis,centroid)<=par
+function isinplane(p::Array{Float64,1},params,par::Float64)::Bool
+    return PointClouds.resplane(p,params)<=par
 end
 
 ################################################################################ utilities
@@ -179,11 +180,12 @@ function projection(e,v)
 end
 
 """
-	pointsproj(V,N,C)
+	pointsproj(V,parmas)
 
 proiezione di tutti i punti sul piano ortogonale a N
 """
-function pointsproj(V,N,C)
+function pointsproj(V,params)
+	N,C = params
 	npoints = size(V,2)
 	for i in 1:npoints
 		V[:,i] = PointClouds.projection(N,V[:,i]-C) + C
@@ -215,7 +217,8 @@ end
 
 proiezione di tutti i punti sulla sfera
 """
-function pointsprojsphere(V,C,r)
+function pointsprojsphere(V,params)
+	C,r=params
 	npoints = size(V,2)
 	for i in 1:npoints
 		p = V[:,i]-C
@@ -229,7 +232,8 @@ end
 """
 	pointsprojcone(V,axis,apex,angle)
 """
-function pointsprojcone(V,axis,apex,angle)
+function pointsprojcone(V,params)
+	axis,apex,angle = params
 	npoints = size(V,2)
 	for i in 1:npoints
 		p = V[:,i]-apex
@@ -269,10 +273,15 @@ function AABBdetection(aabb,AABB)::Bool
 			 A[2,M]<=B[2,m] || A[2,m]>=B[2,M] )
 end
 
+"""
+	 AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
 
+Compute collision detection of two AABB.
+
+"""
 function flat(allplanes)
 	for i in 1:length(allplanes)
-		N,C = allplanes[i][2]
-		allplanes[i][1]=PointClouds.pointsproj(allplanes[i][1],N,C)
+		params = allplanes[i][2]
+		allplanes[i][1]=PointClouds.pointsproj(allplanes[i][1],params)
 	end
 end

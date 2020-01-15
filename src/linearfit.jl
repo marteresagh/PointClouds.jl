@@ -53,7 +53,8 @@ end
 Returns the intersection polygon between the `plane` and the AABB of `pointsonplane`.
 `u` enlarges the shape of AABB.
 """
-function larmodelplane(pointsonplane::Lar.Points, axis,centroid, u=0.01)
+function larmodelplane(pointsonplane::Lar.Points, params, u=0.01)
+	axis,centroid = params
 	AABB = Lar.boundingbox(pointsonplane).+([-u,-u,-u],[u,u,u])
     V = PointClouds.intersectAABBplane(AABB,axis,centroid)
 	#triangulate vertex projected in plane XY

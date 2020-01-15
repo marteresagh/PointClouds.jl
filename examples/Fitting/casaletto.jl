@@ -29,10 +29,9 @@ GL.VIEW(
 	]
 );
 
-pointsonplane,params = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=2800)
+pointsonplane,params = PointClouds.findshape(V,FV,rgb,0.02,"plane";index=2742)
 
-axis,centroid = params
-Vplane, FVplane = PointClouds.larmodelplane(pointsonplane, axis,centroid)
+Vplane, FVplane = PointClouds.larmodelplane(pointsonplane, params)
 GL.VIEW([
     colorview(V,VV,rgb)
 	GL.GLGrid(Vplane,FVplane,GL.COLORS[1],0.5)

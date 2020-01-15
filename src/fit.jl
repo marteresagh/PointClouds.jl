@@ -33,7 +33,7 @@ function findall(V::Lar.Points,FV::Lar.Cells,Vrgb,N::Int,par::Float64,shape::Str
 		i = i+1
 		println("$i shapes found")
 		push!(allshapes,[pointsonshape,params])
-		Vcurrent,FVcurrent,RGBcurrent = PointClouds.modelremained(Vcurrent,FVcurrent,RGBcurrent,pointsonshape)
+		Vcurrent,FVcurrent,RGBcurrent = PointClouds.deletepoints(Vcurrent,FVcurrent,RGBcurrent,pointsonshape)
 
 	end
 
@@ -58,7 +58,7 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,par::Float64,shape::String;i
 		index = rand(1:size(V,2))
 	end
 	@show index
-	
+
 	visitedverts = [index]
 	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
 	index = union(index,idxneighbors)
@@ -79,9 +79,8 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,par::Float64,shape::String;i
             p = V[:,i]
 
 			if shape == "plane"
-				axis,centroid = params
 				color = Vrgb[:,i]
-				if PointClouds.isinplane(p,axis,centroid,par) && PointClouds.testcolor(color,min,max)
+				if PointClouds.isinplane(p,params,par) && PointClouds.testcolor(color,min,max)
 					push!(index,i)
 	            end
 			elseif shape == "cylinder"
@@ -140,11 +139,11 @@ function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Poin
 end
 
 """
-	modelremained(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
+	deletepoints(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
 
 Returns LAR model remained after removing points on plane.
 """
-function modelremained(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
 	npoints=size(V,2)
 	cscFV = Lar.characteristicMatrix(FV)
 	todel = [PointClouds.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to delete
@@ -182,7 +181,7 @@ end
 """
 function extractplaneshape(P,params,α)
 	axis,centroid = params
-	PointClouds.pointsproj(P,axis,centroid)
+	PointClouds.pointsproj(P,params)
 	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
 	W = Lar.inv(mrot)*(P)
 	W1 = W[[1,2],:]
@@ -237,7 +236,7 @@ end
 
 
 function testcolor(color,min,max)
-	testmin = (color[1]>min[1] && color[2]>min[2] && color[3]>min[3])
-	testmax = (color[1]<max[1] && color[2]<max[2] && color[3]<max[3])
+	testmin = (color[1]>=min[1] && color[2]>=min[2] && color[3]>=min[3])
+	testmax = (color[1]<=max[1] && color[2]<=max[2] && color[3]<=max[3])
 	return testmin && testmax
 end

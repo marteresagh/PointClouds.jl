@@ -5,7 +5,8 @@ using PointClouds
 
 include("../viewfunction.jl")
 
-fname = "examples/fit/PUMP/r.las"
+# load file
+fname = "examples/Fitting/TUBE/r.las"
 Vtot,VV,rgb = PointClouds.loadlas(fname)
 _,V = PointClouds.subtractaverage(Vtot)
 
@@ -15,12 +16,8 @@ GL.VIEW(
 	]
 );
 
-
-# #Equivalent to =>
-# V = AlphaStructures.matrixPerturbation(V);
-#DT = AlphaStructures.delaunayWall(V);
+# alpha shapes
 DT = PointClouds.mat3DT(V)
-
 filtration = AlphaStructures.alphaFilter(V, DT);
 
 α = 0.03 #0.03316948190331459
@@ -33,21 +30,26 @@ GL.VIEW(
 	]
 );
 
-
+# shape detection
 pointsoncyl,params = PointClouds.findshape(V,FV,rgb,0.005,"cylinder",index=946)
+
+#cylinder model
 Vcyl, FVcyl = PointClouds.larmodelcyl(params...)([36,36])
 
 
+# extraction cylinder cluster
 P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsoncyl)
 
-P,FP = PointClouds.extractshape(P,params,α)
+# elaboration cylinder cluster
+P,FP = PointClouds.extractshape(pointsoncyl,params,α)
 
-myV,myFV,myrgb = PointClouds.modelremained(V,FV,rgb,pointsoncyl)
+# extraction remained model
+Vcurrent,FVcurrent,rgbcurrent = PointClouds.deletepoints(V,FV,rgb,pointsoncyl)
 
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,pointsoncyl'))
-	#GL.GLGrid(Vcyl,FVcyl,GL.COLORS[2],1.)
-	colorview(myV,myFV,myrgb)
+	GL.GLGrid(Vcyl,FVcyl,GL.COLORS[2],1.)
+	colorview(Vcurrent,FVcurrent,rgbcurrent)
 	colorview(P,FP,Prgb)
 ]);
 
