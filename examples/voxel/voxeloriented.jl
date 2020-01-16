@@ -30,8 +30,8 @@ GL.VIEW(
 	]
 );
 
-N=15
-par=0.04
+N=18
+par=0.02
 shape="plane"
 Vcurrent, FVcurrent,RGBcurrent,allshapes=PointClouds.findall(V,FV,rgb,N,par,shape;NOTSHAPE=100)
 GL.VIEW(
@@ -204,7 +204,7 @@ function voxeloriented(allplanes,p,N)
 	return V,CV
 end
 
-W,CW = voxeloriented(allshapes,p,0)
+W,CW = PointClouds.voxeloriented(allshapes,p,0)
 #T,CT = PointClouds.pointclouds2cubegrid(Vcurrent2,p,0)
 W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 

@@ -5,12 +5,13 @@ GL= ViewerGL
 using PointClouds
 
 include("../viewfunction.jl")
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
-allfile0 = PointClouds.filelevel(fname,0)
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CUPOLA"
+allfile2 = PointClouds.filelevel(fname,2)
 allfile1 = PointClouds.filelevel(fname,1)
+allfile0 = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 #fname = "examples/fit/CASALETTO/r.las"
-allfile=union(allfile0,allfile1)
+allfile=union(allfile0,allfile1,allfile2)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
 GL.VIEW(
@@ -20,8 +21,8 @@ GL.VIEW(
 );
 
 
-p = 3.
-W,CW = PointClouds.pointclouds2cubegrid(V,p,0)
+p = 0.3
+W,CW = PointClouds.pointclouds2cubegrid(V,p,1)
 #W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(

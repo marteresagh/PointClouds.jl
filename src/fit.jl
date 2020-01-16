@@ -127,9 +127,9 @@ end
 
 model triangulate of pointonplane
 """
-function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
 	cscFV = Lar.characteristicMatrix(FV)
-	tokeep = [PointClouds.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to keep
+	tokeep = [PointClouds.matchcolumn(points[:,i],V) for i in 1:size(points,2)] # index of points to keep
 	todel = setdiff(collect(1:cscFV.n), tokeep) # index of point to delete
     face = cscFV[:,tokeep]
 	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
@@ -139,14 +139,14 @@ function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Poin
 end
 
 """
-	deletepoints(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
+	deletepoints(V::Lar.Points,FV::Lar.Cells,points::Lar.Points)
 
-Returns LAR model remained after removing points on plane.
+Returns LAR remained model after removing points.
 """
-function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
+function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
 	npoints=size(V,2)
 	cscFV = Lar.characteristicMatrix(FV)
-	todel = [PointClouds.matchcolumn(pointsonplane[:,i],V) for i in 1:size(pointsonplane,2)] # index of points to delete
+	todel = [PointClouds.matchcolumn(points[:,i],V) for i in 1:size(points,2)] # index of points to delete
 	tokeep = setdiff(collect(1:cscFV.n), todel)
     cscFV0 = cscFV[:,tokeep]
 
@@ -169,8 +169,8 @@ function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,pointsonplane::Lar.Points)
    	union!(todel,isolatedpoints)
 	tokeep = setdiff(vertinds, todel)
 
-    FVremained = Lar.cop2lar(cscFV[:, tokeep])
     Vremained = V[:, tokeep]
+	FVremained = Lar.cop2lar(cscFV[:, tokeep])
 	rgbremained = rgb[:,tokeep]
 
 	return Vremained,FVremained,rgbremained
@@ -194,14 +194,11 @@ function extractplaneshape(P,params,α)
 	# verts = ch.vertices
 	# EV = ch.simplices
 
-
 	#o boundary
 	EV = Lar.simplexFacets(FV)
 	Mbound = Lar.u_boundary_2(FV,EV)
 	ev = (Mbound'*ones(length(FV))).%2
 	EV = EV[Bool.(ev)]
-
-
 
 	return P,EV
 end
