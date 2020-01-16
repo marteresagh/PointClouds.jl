@@ -2,11 +2,17 @@
 # finalizzare la procedura
 #
 """
-	findall(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64,N=1::Int64)
+	findall(V::Lar.Points,FV::Lar.Cells,Vrgb,
+			N::Int,par::Float64,shape::String;
+			NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
+Find `N` defined shapes in colored LAR model `(V,FV)`.
+Discard shapes with `NOTSHAPE` number of points.
+min max interval-> filter by color
 
 """
-function findall(V::Lar.Points,FV::Lar.Cells,Vrgb,N::Int,par::Float64,shape::String;index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
+function findall(V::Lar.Points,FV::Lar.Cells,Vrgb,
+	N::Int,par::Float64,shape::String;NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
 	println("-----------------")
 	println("find $N shapes")
@@ -19,20 +25,23 @@ function findall(V::Lar.Points,FV::Lar.Cells,Vrgb,N::Int,par::Float64,shape::Str
 	RGBcurrent = copy(Vrgb)
 	allshapes = []
 
-	i = 0 # number of plane found
+	i = 0
 
+	# 2. find N shapes
 	while i < N
 		pointsonshape = nothing
 		params = nothing
 		println("number of points remained: $(size(Vcurrent,2))")
 
 		while isnothing(pointsonshape)
-			pointsonshape,params = PointClouds.findshape(Vcurrent,FVcurrent,RGBcurrent,par,shape;index=index,NOTSHAPE=NOTSHAPE::Int64,min=min,max=max)
+			pointsonshape,params = PointClouds.findshape(Vcurrent,FVcurrent,RGBcurrent,par,shape;NOTSHAPE=NOTSHAPE::Int64,min=min,max=max)
 		end
 
 		i = i+1
 		println("$i shapes found")
 		push!(allshapes,[pointsonshape,params])
+
+		#3. remained model and repeat
 		Vcurrent,FVcurrent,RGBcurrent = PointClouds.deletepoints(Vcurrent,FVcurrent,RGBcurrent,pointsonshape)
 
 	end
@@ -42,12 +51,21 @@ end
 
 
 """
-	findshape(V::Lar.Points,FV::Lar.Cells,par::Float64,NOTPLANE=3::Int64)
+	findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
+				par::Float64,shape::String;
+				index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
-Returns all the points `pointsonshape` liyng on the `plane` found.
+Return all the points liyng on the shape found.
 
+Option shape: (da finire con le altre forme)
+- plane
+- cylinder
+
+min max interval-> filter by color
 """
-function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,par::Float64,shape::String;index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
+function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
+		par::Float64,shape::String;
+		index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
 	# 1. list of adjacency verteces
 	EV = Lar.simplexFacets(FV)
@@ -115,7 +133,7 @@ end
 """
 	 findnearestof(indeces::Array{Int64,1},visitedvertex::Array{Int64,1},adj::Array{Array{Int64,1},1})
 
-Returns indeces neighbors list of `indverts`, removing verteces already visited.
+Return indeces neighbors list of `indverts`, removing verteces already visited.
 """
 function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
 	return setdiff(union(adj[indverts]...),visitedverts)
@@ -123,9 +141,9 @@ end
 
 
 """
-	extractionmodel(V::Lar.Points,FV::Lar.Cells,pointsonplane::Lar.Points)
+	extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
 
-model triangulate of pointonplane
+Return subset model of (V,FV) filter by `points`.
 """
 function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
 	cscFV = Lar.characteristicMatrix(FV)
@@ -141,7 +159,7 @@ end
 """
 	deletepoints(V::Lar.Points,FV::Lar.Cells,points::Lar.Points)
 
-Returns LAR remained model after removing points.
+Return LAR remained model after removing points.
 """
 function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
 	npoints=size(V,2)
@@ -175,15 +193,24 @@ function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
 
 	return Vremained,FVremained,rgbremained
 end
-"""
-	extractplaneshape(P,axis,centroid,α)
 
+
+"""
+	extractplaneshape(P,params,α)
+
+Return boundary of 2D α-shapes of `P` projected on plane defined by params.
 """
 function extractplaneshape(P,params,α)
 	axis,centroid = params
+
+	# 1. projection points on plane
 	PointClouds.pointsproj(P,params)
+
+	# 2. rotate points on XY plane
 	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
 	W = Lar.inv(mrot)*(P)
+
+	# 3. triangulation
 	W1 = W[[1,2],:]
 	DT = PointClouds.mat2DT(W1)
 	filtration = AlphaStructures.alphaFilter(W1, DT);
@@ -194,7 +221,7 @@ function extractplaneshape(P,params,α)
 	# verts = ch.vertices
 	# EV = ch.simplices
 
-	#o boundary
+	# 4. extract boundary
 	EV = Lar.simplexFacets(FV)
 	Mbound = Lar.u_boundary_2(FV,EV)
 	ev = (Mbound'*ones(length(FV))).%2
@@ -203,8 +230,11 @@ function extractplaneshape(P,params,α)
 	return P,EV
 end
 
+
 """
 	extractshape(P,params,α)
+
+Return α-shapes of `P` projected on shape defined by params.
 """
 function extractshape(P,params,α)
 	PointClouds.pointsprojcyl(P,params)
@@ -218,7 +248,7 @@ end
 """
 	filterbycolor(P,Prgb,min,max)
 
-
+Filter points by color.
 """
 function filterbycolor(P,Prgb,min,max)
     tokeep=[]
