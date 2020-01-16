@@ -14,6 +14,40 @@ function lar2matlab(V::Lar.Points)
 end
 
 """
+	delaunayMATLAB(V::Lar.Points)
+
+Delaunay triangulation algorithm in MATLAB.
+"""
+function delaunayMATLAB(V::Lar.Points)
+
+	dim = size(V,1)
+	@assert dim <=3 "high dimension ?? da verificare "
+
+	if dim == 2
+		x,y = PointClouds.lar2matlab(V)
+		@mput x
+		@mput y
+		mat"DT = delaunay(x,y)"
+		@mget DT
+		DT = convert(Array{Int64,2},DT)
+		DT = [DT[i,:] for i in 1:size(DT,1)]
+
+	elseif dim == 3
+		x,y,z = PointClouds.lar2matlab(V)
+		@mput x
+		@mput y
+		@mput z
+		mat"DT = delaunay(x,y,z)"
+		@mget DT
+		DT = convert(Array{Int64,2},DT)
+		DT = [DT[i,:] for i in 1:size(DT,1)]
+
+	end
+	return DT
+end
+
+# TODO sostituisci ed elimina
+"""
 	mat3DT(V::Lar.Points)
 
 3D Delaunay triangulation algorithm in MATLAB.

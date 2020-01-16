@@ -18,7 +18,7 @@ GL.VIEW(
 	]
 );
 
-DT = PointClouds.mat3DT(V)
+DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 α = 0.3 #0.03316948190331459
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
@@ -34,12 +34,12 @@ N=18
 par=0.02
 shape="plane"
 Vcurrent, FVcurrent,RGBcurrent,allshapes=PointClouds.findall(V,FV,rgb,N,par,shape;NOTSHAPE=100)
-GL.VIEW(
-	[
-		colorview(Vcurrent,FVcurrent,RGBcurrent)
-		GL.GLFrame
-	]
-);
+# GL.VIEW(
+# 	[
+# 		colorview(Vcurrent,FVcurrent,RGBcurrent)
+# 		GL.GLFrame
+# 	]
+# );
 
 PointClouds.flat(allshapes)
 p = 0.5 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,

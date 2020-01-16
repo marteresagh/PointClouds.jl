@@ -72,8 +72,6 @@ end
 		params=PointClouds.planefit(V)
 		res = max([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)]...)
 		#@test isapprox(res, 0, atol=1e-3)
-
-
 	end
 
 	@testset "cylinder" begin
