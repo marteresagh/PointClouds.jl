@@ -13,11 +13,94 @@ end
 end
 
 @testset "residuals" begin
-	#TODO
+	@testset "plane" begin
+		params=([0.,0.,1.],[0.,0.,0.])
+		V=[0. 1. 2.; 0. 3. 4.; 5. 3. 6.]
+		@test PointClouds.resplane(V[:,1],params)==5.
+		@test PointClouds.resplane(V[:,2],params)==3.
+		@test PointClouds.resplane(V[:,3],params)==6.
+	end
+
+	@testset "cylinder" begin
+		direction = [0.,0.,1.]
+		center = [0.,0.,0.]
+		radius = 3.
+		height = 2.
+		params = (direction,center,radius, height)
+		V = [5. 3. 2.; 7. 0. 4.; 8. 0. 6.]
+		@test PointClouds.rescyl(V[:,1],params)==65.
+		@test PointClouds.rescyl(V[:,2],params)==0.
+		@test PointClouds.rescyl(V[:,3],params)==11.
+	end
+
+	@testset "sphere" begin
+		params = ([1.,0.,0.],3.)
+		V = [4. 5. 2.; 0. 0. 4.; 0. 0. 6.]
+		@test PointClouds.ressphere(V[:,1],params)==0.
+		@test PointClouds.ressphere(V[:,2],params)==7.
+		@test PointClouds.ressphere(V[:,3],params)==44.
+	end
+
+	@testset "cones" begin
+		#TODO
+	end
+
+	@testset "torus" begin
+		#TODO
+	end
+
 end
 
 @testset "projection" begin
-	#TODO
+	@testset "plane" begin
+		npoints = 200
+		xslope = 1.
+		yslope = 0.
+		off = 5.
+
+		# generation random data
+		xs = rand(npoints)
+		ys = rand(npoints)
+		zs = []
+
+		for i in 1:npoints
+		    push!(zs, xs[i]*xslope + ys[i]*yslope + off)
+		end
+
+		V = convert(Lar.Points, hcat(xs,ys,zs)')
+
+		params=PointClouds.planefit(V)
+		res = max([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)]...)
+		#@test isapprox(res, 0, atol=1e-3)
+
+
+	end
+
+	@testset "cylinder" begin
+		C=[1.,2.,1.]
+		r=5.
+		V,FV = Lar.apply(Lar.t(C...),Lar.sphere(r)([16,16]))
+		params=(C,r)
+		res = max([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)]...)
+		@test isapprox(res, 0, atol=1e-3)
+	end
+
+	@testset "sphere" begin
+		C=[1.,2.,1.]
+		r=5.
+		V,FV = Lar.apply(Lar.t(C...),Lar.sphere(r)([16,16]))
+		params=(C,r)
+		res = max([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)]...)
+		@test isapprox(res, 0, atol=1e-3)
+	end
+
+	@testset "cones" begin
+		#TODO
+	end
+
+	@testset "torus" begin
+		#TODO
+	end
 end
 
 
@@ -40,24 +123,6 @@ end
 		indverts = [7]
 		visitedverts = [7,5,6]
 		@test isempty(PointClouds.findnearestof(indverts,visitedverts,adj))
-	 end
-
-	 @testset "plane residual" begin
-		# plane = (1., 0., 0., 0.)
-		# p = [-3.;0.;0.]
-	 	# @test PointClouds.resplane(p,plane) == 3.
-		# p = [0.001; 0.; 0.]
-		# @test PointClouds.isinplane(p,plane,0.1)
-		#
-		# plane = (1., 1., 1., 0.)
-		# p = [1.;1.;1.]
-	 	# @test isapprox(PointClouds.resplane(p,plane), sqrt(3.))
-		# p = [0.5; 0.5; 0.5]
-		# @test !(PointClouds.isinplane(p,plane,0.1))
-	 end
-
-	 @testset "centroid" begin
-		 #TODO
 	 end
 
 end
