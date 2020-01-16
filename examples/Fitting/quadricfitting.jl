@@ -5,7 +5,7 @@ using PointClouds
 using MATLAB
 
 ################################################################################ Sphere fit
-V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([50,50]))
+V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([8,8]))
 #V,FV = Lar.apply(Lar.r(-pi/4,0,0),Lar.cylinder(1.)([100,20]))
 #V,FV = Lar.cylinder(1.)([10,10])
 
@@ -20,7 +20,7 @@ Vsphere, FVsphere = PointClouds.larmodelsphere(center,radius)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
- 	GL.GLGrid(Vsphere,FVsphere,GL.COLORS[4],0.7)
+ 	GL.GLGrid(Vsphere,FVsphere,GL.COLORS[4],0.2)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
@@ -30,7 +30,6 @@ GL.VIEW([
 p = V[:,3]
 params = (center,radius)
 
-distance = PointClouds.distpointsphere(p,params)
 res = PointClouds.ressphere(p,center,radius)
 
 ressphere = max(Lar.abs.([PointClouds.ressphere(V[:,i],center,radius) for i in 1:size(V,2)])...)
