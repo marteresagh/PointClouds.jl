@@ -19,7 +19,7 @@ GL.VIEW(
 );
 
 # 2. alpha shape
-DT = PointClouds.mat3DT(V)
+DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 α = 0.2
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
@@ -79,5 +79,5 @@ W,EW =  PointClouds.extractplaneshape(P,params,α)
 GL.VIEW([
 	#GL.GLPoints(convert(Lar.Points,P'))
 	GL.GLGrid(W,EW,GL.COLORS[1],1.)
-	colorview(Vcurrent,[[i] for i in 1:size(Vcurrent,2)],RGBcurrent,0.3)
+	#colorview(Vcurrent,[[i] for i in 1:size(Vcurrent,2)],RGBcurrent,0.3)
 ]);

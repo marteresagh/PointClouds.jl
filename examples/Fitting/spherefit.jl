@@ -19,7 +19,7 @@ GL.VIEW(
 	]
 );
 
-DT = PointClouds.mat3DT(V)
+DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 
 α = 0.5 #da variare
@@ -63,7 +63,7 @@ GL.VIEW([
 # V = AlphaStructures.matrixPerturbation(V,atol=0.1)
 #V,FV = Lar.apply(Lar.r(-pi/4,0,0),Lar.cylinder(1.)([100,20]))
 #V,FV = Lar.cylinder(1.)([10,10])
-# DT = PointClouds.mat3DT(V)
+# DT = PointClouds.delaunayMATLAB(V)
 # filtration = AlphaStructures.alphaFilter(V, DT);
 #
 # α = 0.4 #da variare

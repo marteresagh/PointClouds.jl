@@ -246,7 +246,7 @@ Return α-shapes of `P` projected on shape defined by params.
 """
 function extractshape(P,params,α)
 	PointClouds.pointsprojcyl(P,params)
-	DT = PointClouds.mat3DT(P)
+	DT = PointClouds.delaunayMATLAB(P)
 	filtration = AlphaStructures.alphaFilter(P, DT);
 	_, _, FP, TP = AlphaStructures.alphaSimplex(P, filtration, α)
 	return P,FP
