@@ -5,7 +5,7 @@ using PointClouds
 using MATLAB
 
 ################################################################################ Sphere fit
-V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([8,8]))
+V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([64,64]))
 #V,FV = Lar.apply(Lar.r(-pi/4,0,0),Lar.cylinder(1.)([100,20]))
 #V,FV = Lar.cylinder(1.)([10,10])
 

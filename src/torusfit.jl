@@ -1,16 +1,5 @@
 ################################################################################ Torus fit
 #TODO: stima dei parametri iniziali ancora da migliorare
-"""
-	computenormals(V,FV)
-
-stima la normale e curvatura di un punto attraverso i suoi vicini
-"""
-#input anche le normali
-function computenormals(V,FV)
-	#per i vicini uso la triangolazione
-
-	return normals,curvature
-end
 
 
 """

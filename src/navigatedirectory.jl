@@ -1,11 +1,12 @@
 # ```
 
+
 """
 	filelevel(path,lev)
 
 
 """
-function filelevel(path,lev)
+function filelevel(path,lev,allprev=true)
 	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = readJSON(path) # useful parameters
 	pathr = path*"\\"*octreeDir*"\\r" # path to directory "r"
 
@@ -23,8 +24,14 @@ function filelevel(path,lev)
 						push!(level,i)
 					end
 				end
-				if length(level)==lev
-					push!(allfile,joinpath(root, file))
+				if !allprev
+					if length(level)==lev
+						push!(allfile,joinpath(root, file))
+					end
+				else
+					if length(level)<=lev
+						push!(allfile,joinpath(root, file))
+					end
 				end
 			end
 		end

@@ -274,9 +274,7 @@ function AABBdetection(aabb,AABB)::Bool
 end
 
 """
-	 AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
-
-Compute collision detection of two AABB.
+	flat(allplanes)
 
 """
 function flat(allplanes)
@@ -284,4 +282,39 @@ function flat(allplanes)
 		params = allplanes[i][2]
 		allplanes[i][1]=PointClouds.pointsproj(allplanes[i][1],params)
 	end
+end
+
+"""
+	computenormals(V,FV)
+
+stima la normale di un punto attraverso i suoi vicini.
+"""
+
+function computenormals(V,FV)
+	#per i vicini uso la triangolazione FV
+	EV = Lar.simplexFacets(FV)
+   	adj = Lar.verts2verts(EV)
+
+	spanningtree,_ = Lar.depth_first_search(EV)
+
+	normals=similar(V)
+	orderedvertex=unique(vcat(spanningtree...))
+ 	for t in 1:length(orderedvertex)
+		if t%1000==0
+			println(t," visited verteces")
+		end
+		i = orderedvertex[t]
+		# calcolo normale del primo
+		indneigh=adj[i]
+		neigh=V[:,[i,indneigh...]]
+		normals[:,i],_ = PointClouds.planefit(neigh)
+
+		if t!=1
+			if Lar.dot(normals[:,orderedvertex[t-1]],normals[:,i])<0
+				normals[:,i]=-normals[:,i]
+			end
+		end
+	end
+
+	return normals
 end

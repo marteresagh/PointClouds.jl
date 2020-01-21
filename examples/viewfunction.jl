@@ -75,3 +75,22 @@ function colorview(V::Lar.Points,CV::Lar.Cells,rgb::Lar.Points,alpha=1.0)::GL.GL
   	ret.colors  = GL.GLVertexBuffer(colors)
   	return ret
 end
+
+
+
+function viewnormals(V,normals)
+    @assert size(V,2)==size(normals,2) "computenormals: not valid input"
+    n=size(V,2)
+    norm = [[i,i+n] for i in 1:n]
+    totalpoints = hcat(V,normals)
+    #le normali vanno traslate nel punto
+    tnormals=similar(normals)
+    for i in 1:n
+        tnormals[:,i] = V[:,i]+normals[:,i]
+    end
+    totalpoints = hcat(V,tnormals)
+    return [GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[12]),
+            GL.GLPoints(convert(Lar.Points,tnormals'),GL.COLORS[2]),
+            GL.GLGrid(totalpoints,norm,GL.Point4d(1,1,1,1))]
+
+end

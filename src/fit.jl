@@ -86,6 +86,8 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		params = PointClouds.planefit(pointsonshape)
 	elseif shape == "cylinder"
 		params = PointClouds.cylinderfit(pointsonshape)
+	elseif shape == "sphere"
+		params = PointClouds.spherefit(pointsonshape)
 	end
 	visitedverts = copy(index)
 	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
@@ -105,6 +107,10 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 				if PointClouds.isincyl(p,params,par)
 					push!(index,i)
 	            end
+			elseif shape == "sphere"
+				if PointClouds.isinsphere(p,params,par)
+					push!(index,i)
+				end
 			end
 
             push!(visitedverts,i)
@@ -116,6 +122,8 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 			params = PointClouds.planefit(pointsonshape)
 		elseif shape == "cylinder"
 			params = PointClouds.cylinderfit(pointsonshape)
+		elseif shape == "sphere"
+			params = PointClouds.spherefit(pointsonshape)
 		end
 
         idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
@@ -169,7 +177,7 @@ function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
     cscFV0 = cscFV[:,tokeep]
 
 	faceind = 1:cscFV0.m
-	vertinds = 1:npoints
+	vertinds = 1:cscFV.n
     keepface = Array{Int64, 1}()
 	for i in faceind
     	if length(cscFV0[i, :].nzind) == 3

@@ -54,7 +54,7 @@ function K( CV )
 end
 
 # V,CV = Lar.cuboidGrid([3,2,1])
- pointcloud,V,CV = random3cells([40,20,10],4_000)
+ pointcloud,V,CV = random3cells([2,3,1],4_000)
 
 VV = [[v] for v=1:size(V,2)]
 FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2FV,CV)))))
