@@ -53,8 +53,8 @@ function K( CV )
 	return sparse(I,J,Vals)
 end
 
-# V,CV = Lar.cuboidGrid([3,2,1])
- pointcloud,V,CV = random3cells([2,3,1],4_000)
+V,CV = Lar.cuboidGrid([3,2,1])
+pointcloud,V,CV = random3cells([40,20,10],4_000)
 
 VV = [[v] for v=1:size(V,2)]
 FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2FV,CV)))))
@@ -85,3 +85,11 @@ GL.VIEW([ GL.GLGrid(V,FV[inner],GL.Point4d(1,1,1,1))
 
 GL.VIEW([ GL.GLGrid(V,FV[outer],GL.Point4d(1,1,1,1))
           GL.GLAxis(GL.Point3d(-1,-1,-1),GL.Point3d(1,1,1)) ]);
+
+GL.VIEW(
+	[
+		#colorview(V,VV,rgb)
+		#GL.GLGrid(W,∂FW,GL.Point4d(1,1,1,0.5))
+		GL.GLLar2gl(V,CV)
+	]
+)

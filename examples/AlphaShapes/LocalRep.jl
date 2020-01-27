@@ -6,7 +6,7 @@ GL=ViewerGL
 include("../viewfunction.jl")
 
 # from my local repository
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\DIGA"
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CUPOLA"
 allfile = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 

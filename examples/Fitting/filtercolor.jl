@@ -7,7 +7,7 @@ include("../viewfunction.jl")
 
 # 1. input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\MURI"
-allfile = PointClouds.filelevel(fname,0)
+allfile = PointClouds.filelevel(fname,1,false)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
@@ -21,7 +21,7 @@ GL.VIEW(
 # 2. alpha shape
 DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
-α = 0.2
+α = 0.1
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
 GL.VIEW(

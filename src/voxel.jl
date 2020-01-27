@@ -1,31 +1,3 @@
-
-
-function random3cells(shape,npoints)
-	pointcloud = rand(3,npoints).*shape
-	grid = DataStructures.DefaultDict{Array{Int,1},Int}(0)
-
-	for k = 1:size(pointcloud,2)
-		v = map(Int∘trunc,pointcloud[:,k])
-		if grid[v] == 0 # do not exists
-			grid[v] = 1
-		else
-			grid[v] += 1
-		end
-	end
-
-	out = Array{Lar.Struct,1}()
-	for (k,v) in grid
-		V = k .+ [
-		 0.0  0.0  0.0  0.0  1.0  1.0  1.0  1.0;
-		 0.0  0.0  1.0  1.0  0.0  0.0  1.0  1.0;
-		 0.0  1.0  0.0  1.0  0.0  1.0  0.0  1.0]
-		cell = (V,[[1,2,3,4,5,6,7,8]])
-		push!(out, Lar.Struct([cell]))
-	end
-	out = Lar.Struct( out )
-	V,CV = Lar.struct2lar(out)
-end
-
 function CV2FV( v::Array{Int64} )
 	faces = [
 		[v[1], v[2], v[3], v[4]], [v[5], v[6], v[7], v[8]],

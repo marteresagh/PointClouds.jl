@@ -220,7 +220,7 @@ function extractplaneshape(P,params,α)
 
 	# 3. triangulation
 	W1 = W[[1,2],:]
-	DT = PointClouds.mat2DT(W1)
+	DT = PointClouds.delaunayMATLAB(W1)
 	filtration = AlphaStructures.alphaFilter(W1, DT);
 	_, _, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
 

@@ -5,8 +5,8 @@ GL= ViewerGL
 using PointClouds
 
 include("../viewfunction.jl")
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\DIGA"
-allfile = PointClouds.filelevel(fname,1)
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE"
+allfile = PointClouds.filelevel(fname,2)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
@@ -18,15 +18,15 @@ GL.VIEW(
 );
 
 
-p = 0.7
-W,CW = PointClouds.pointclouds2cubegrid(V,p,2)
+p = 0.1
+W,CW = PointClouds.pointclouds2cubegrid(V,p,0)
 W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(
 	[
 		#colorview(V,VV,rgb)
-		GL.GLGrid(W,∂FW,GL.Point4d(1,1,1,1))
-		#GL.GLLar2gl(W,CW)
+		#GL.GLGrid(W,∂FW,GL.Point4d(1,1,1,1))
+		GL.GLLar2gl(W,CW)
 	]
 )
 

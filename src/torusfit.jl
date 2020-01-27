@@ -9,6 +9,9 @@ stime dei valori iniziali.
 """
 #input anche le normali
 function _initialtorus(points,normals)
+	# devo prendere in considerazione solo 4 punti e calcolare i due assi  poi ruotare l'immaggine fittare il cerchio e trovare i valori che mi servono
+	# dopo li passo di nuovo alla funzione di minimizzazione
+	# cloud compare ha il codice implementato, teoria sul pdf inve 
 
 	return N,C,r0,r1
 end
