@@ -90,7 +90,6 @@ function viewnormals(V,normals)
     end
     totalpoints = hcat(V,tnormals)
     return [GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[12]),
-            GL.GLPoints(convert(Lar.Points,tnormals'),GL.COLORS[2]),
             GL.GLGrid(totalpoints,norm,GL.Point4d(1,1,1,1))]
 
 end

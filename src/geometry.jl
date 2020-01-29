@@ -31,10 +31,9 @@ end
 """
 function ressphere(point, params)
 	center, radius = params
-	r2 = radius^2
 	y = point-center
-	rp = Lar.norm(y)^2
-	return Lar.abs(rp[1]-r2)
+	rp = Lar.norm(y)
+	return Lar.abs(rp-radius)
 end
 
 """
@@ -69,7 +68,7 @@ Checks if a point `p` in near enough to the `sphere`.
 """
 function isinsphere(p,params,par)::Bool
 	center,radius = params
-	return PointClouds.ressphere(p,params) <= radius
+	return PointClouds.ressphere(p,params) <= par
 end
 
 """

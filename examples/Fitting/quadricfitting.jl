@@ -19,7 +19,7 @@ center,radius = PointClouds.spherefit(V)
 Vsphere, FVsphere = PointClouds.larmodelsphere(center,radius)()
 
 GL.VIEW([
- 	GL.GLPoints(convert(Lar.Points,V'))
+ 	GL.GLPoints(convert(Lar.Points,V[:,3576]'))
  	GL.GLGrid(Vsphere,FVsphere,GL.COLORS[4],0.2)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
@@ -30,9 +30,9 @@ GL.VIEW([
 p = V[:,3]
 params = (center,radius)
 
-res = PointClouds.ressphere(p,center,radius)
+res = PointClouds.ressphere(p,params)
 
-ressphere = max(Lar.abs.([PointClouds.ressphere(V[:,i],center,radius) for i in 1:size(V,2)])...)
+ressphere = findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
 
 
 
