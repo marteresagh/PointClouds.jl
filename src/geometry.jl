@@ -291,10 +291,12 @@ stima la normale di un punto attraverso i suoi vicini.
 
 function computenormals(V,FV)
 	#per i vicini uso la triangolazione FV
-	EV = Lar.simplexFacets(FV)
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
+
+
    	adj = Lar.verts2verts(EV)
 
-	spanningtree,_ = Lar.depth_first_search(EV)
+	spanningtree,_ = Lar.depth_first_search(EV) #prova a trovare un altra funzione
 
 	normals=similar(V)
 	orderedvertex=unique(vcat(spanningtree...))
@@ -316,4 +318,11 @@ function computenormals(V,FV)
 	end
 
 	return normals
+end
+
+
+function FV2EV(v)
+	edges = [
+		[v[1], v[2]], [v[1], v[3]], [v[2], v[3]]
+		]
 end

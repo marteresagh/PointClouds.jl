@@ -62,13 +62,16 @@ Option shape: (da finire con le altre forme)
 - cylinder
 
 min max interval-> filter by color
+
+#TODO stackoverflowerror quando cicla tante volte. da risolvere 
 """
 function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		par::Float64,shape::String;
 		index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
 	# 1. list of adjacency verteces
-	EV = Lar.simplexFacets(FV)
+	@show "calcolo vicini"
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
    	adj = Lar.verts2verts(EV)
 
 	# 2. first samples
@@ -125,7 +128,7 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		elseif shape == "sphere"
 			params = PointClouds.spherefit(pointsonshape)
 		end
-
+		@show size(pointsonshape,2)
         idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
     end
 
@@ -230,7 +233,7 @@ function extractplaneshape(P,params,α)
 	# EV = ch.simplices
 
 	# 4. extract boundary
-	EV = Lar.simplexFacets(FV)
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
 	Mbound = Lar.u_boundary_2(FV,EV)
 	ev = (Mbound'*ones(length(FV))).%2
 	EV = EV[Bool.(ev)]
