@@ -63,7 +63,7 @@ Option shape: (da finire con le altre forme)
 
 min max interval-> filter by color
 
-#TODO stackoverflowerror quando cicla tante volte. da risolvere 
+#TODO stackoverflowerror quando cicla tante volte. da risolvere
 """
 function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		par::Float64,shape::String;
@@ -128,7 +128,7 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		elseif shape == "sphere"
 			params = PointClouds.spherefit(pointsonshape)
 		end
-		@show size(pointsonshape,2)
+		
         idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
     end
 

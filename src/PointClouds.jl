@@ -13,6 +13,7 @@ module PointClouds
 	using QHull
 	using AlphaStructures
 	using SparseArrays
+	using LightGraphs
 
 	include("fit.jl")
 	include("quadricfit.jl")
@@ -24,4 +25,5 @@ module PointClouds
 	include("mapper.jl")
 	include("torusfit.jl")
 	include("voxel.jl")
+	include("extractionsimplex.jl")
 end
