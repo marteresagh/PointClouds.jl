@@ -23,16 +23,16 @@ _,V = PointClouds.subtractaverage(Vtot)
 # 2. alpha shape
 DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
-α = 0.3
+α = 0.1
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
-# GL.VIEW(
-# 	[
-# 		colorview(V,FV,rgb);
-# 		#colorview(V,TV,rgb)
-# 	]
-# );
-#
+GL.VIEW(
+	[
+		colorview(V,FV,rgb);
+		#colorview(V,TV,rgb)
+	]
+);
+
 
 #compute normals
 normals = PointClouds.computenormals(V,FV)

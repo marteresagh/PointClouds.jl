@@ -296,16 +296,16 @@ function computenormals(V,FV)
    	adj = Lar.verts2verts(EV)
 
 	# TODO da risolvere il movimento sui vertici vicini
-	
+
 	# g5 = SimpleGraph(size(V,2))
 	# for edge in EV
 	# 	add_edge!(g5,edge[1],edge[2])
 	# end
 	# spanningtree,_ = LightGraphs.dfs_parents(g5) #prova a trovare un altra funzione
-	#spanningtree,_ = Lar.depth_first_search(EV) #prova a trovare un altra funzione
+	spanningtree,_ = Lar.depth_first_search(EV) #prova a trovare un altra funzione
 
 	normals=similar(V)
-	#orderedvertex=unique(vcat(spanningtree...))
+	spanningtree=unique(vcat(spanningtree...))
  	for t in 1:length(spanningtree)
 		if t%1000==0
 			println(t," visited verteces")

@@ -4,6 +4,7 @@ GL = ViewerGL
 using PointClouds
 using MATLAB
 
+include("../viewfunction.jl")
 ################################################################################ Sphere fit
 V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([64,64]))
 #V,FV = Lar.apply(Lar.r(-pi/4,0,0),Lar.cylinder(1.)([100,20]))
@@ -98,9 +99,10 @@ PointClouds.pointsprojcone(V,coneaxis,coneVertex,angle)
 
 
 V,CV = Lar.toroidal(2,4,2*pi,2*pi)()
-V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(0,pi/6,0),Lar.toroidal(2,5,2*pi,pi/2)([64,64])))
-V = AlphaStructures.matrixPerturbation(V,atol=0.1)
-
+V,CV = Lar.apply(Lar.t(2,5,4),Lar.apply(Lar.r(0,pi/3,0),Lar.toroidal(2,5,2*pi,pi/2)([64,64])))
+#V = AlphaStructures.matrixPerturbation(V,atol=0.001)
+normals = PointClouds.computenormals(V,CV)
+GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
@@ -108,14 +110,16 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-N,C,r1,r0 = PointClouds.initialtorus(V)
-N,C,r1,r0 = PointClouds.torusfit(V)  # se i dati hanno molto rumore funziona meglio LM
-C,N,r1,r0 = PointClouds.mattorusfit(V) # se i dati non hanno rumore funziona meglio GN
-Vcone, FVcone = PointClouds.larmodeltorus(N,C,r0,r1)()
+
+
+#N,C,rmajor,rminor = PointClouds.initialtorus(V,normals)
+N,C,rmajor,rminor = PointClouds.torusfit(V,normals)
+#N,C,rmajor,rminor = PointClouds.mattorusfit(V,normals)
+Vtorus, FVtorus = PointClouds.larmodeltorus(N,C,rminor,rmajor)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'))
- 	GL.GLGrid(Vcone,FVcone,GL.COLORS[4],0.8)
+ 	GL.GLGrid(Vtorus,FVtorus,GL.COLORS[4],0.8)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 

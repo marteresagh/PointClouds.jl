@@ -39,7 +39,7 @@ params = PointClouds.planefit(V)
 # 	GL.GLGrid(Vplane,FVplane,GL.COLORS[12],1.)
 # ]);
 
-# TODO costruisci una funzione migliore per estrarre spigoli
+
 #prove
 FV=PointClouds.DTprojxy(V)
 
