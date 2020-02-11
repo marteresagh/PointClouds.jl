@@ -288,47 +288,54 @@ end
 
 stima la normale di un punto attraverso i suoi vicini.
 """
+function computenormals(V, FV, start::Int=1)
 
-function computenormals(V,FV)
 	#per i vicini uso la triangolazione FV
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
 
-   	adj = Lar.verts2verts(EV)
-
-	# TODO da risolvere il movimento sui vertici vicini
-
-	# g5 = SimpleGraph(size(V,2))
-	# for edge in EV
-	# 	add_edge!(g5,edge[1],edge[2])
-	# end
-	# spanningtree,_ = LightGraphs.dfs_parents(g5) #prova a trovare un altra funzione
-	spanningtree,_ = Lar.depth_first_search(EV) #prova a trovare un altra funzione
-
+	VV = Lar.verts2verts(EV)
+    #spanningtree = Array{Int,1}[];
+    #fronds = Array{Int,1}[]
+	number = zeros(Int, length(VV))
 	normals=similar(V)
-	spanningtree=unique(vcat(spanningtree...))
- 	for t in 1:length(spanningtree)
-		if t%1000==0
-			println(t," visited verteces")
-		end
-		i = spanningtree[t]
-		# calcolo normale del primo
-		indneigh=adj[i]
-		neigh=V[:,[i,indneigh...]]
-		normals[:,i],_ = PointClouds.planefit(neigh)
 
-		if t!=1
-			if Lar.dot(normals[:,spanningtree[t-1]],normals[:,i])<0
-				normals[:,i]=-normals[:,i]
+	function DFS(v::Int, u::Int)
+	# vertex u is the father of
+	# vertex v in the spanning tree being constructed
+		number[v] = i
+		if i == 1
+
+			indneigh = VV[v]
+			neigh = V[:,[v,indneigh...]]
+			normals[:,v],_ = PointClouds.planefit(neigh)
+		end
+		i += 1
+		for w in VV[v]
+			if number[w] == 0
+				# w is not yet numbered
+				indneigh=VV[w]
+				neigh=V[:,[w,indneigh...]]
+				normals[:,w],_ = PointClouds.planefit(neigh)
+				if Lar.dot(normals[:,v],normals[:,w])<0
+						normals[:,w]=-normals[:,w]
+				end
+				DFS(w, v)
+			elseif (number[w] < number[v]) && (w != u)
+				continue
 			end
 		end
 	end
 
+	# initialization of DFS algorithm
+	i = 1
+	DFS(start, 1)
 	return normals
 end
 
 
-function FV2EV(v)
-	edges = [
-		[v[1], v[2]], [v[1], v[3]], [v[2], v[3]]
-		]
-end
+"""
+	flipnormals(normals)
+
+Flip all normals.
+"""
+flipnormals(normals) = -normals

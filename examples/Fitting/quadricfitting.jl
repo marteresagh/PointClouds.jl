@@ -20,7 +20,7 @@ center,radius = PointClouds.spherefit(V)
 Vsphere, FVsphere = PointClouds.larmodelsphere(center,radius)()
 
 GL.VIEW([
- 	GL.GLPoints(convert(Lar.Points,V[:,3576]'))
+ 	GL.GLPoints(convert(Lar.Points,V'))
  	GL.GLGrid(Vsphere,FVsphere,GL.COLORS[4],0.2)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
