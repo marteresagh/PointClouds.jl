@@ -1,3 +1,7 @@
+#TODO
+# sistemare codice,
+# rendere incrementale
+
 # ```
 # finalizzare la procedura
 #
@@ -70,7 +74,6 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
 
 	# 1. list of adjacency verteces
-	@show "calcolo vicini"
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
    	adj = Lar.verts2verts(EV)
 
@@ -128,7 +131,7 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		elseif shape == "sphere"
 			params = PointClouds.spherefit(pointsonshape)
 		end
-		
+
         idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
     end
 
@@ -148,61 +151,6 @@ Return indeces neighbors list of `indverts`, removing verteces already visited.
 """
 function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
 	return setdiff(union(adj[indverts]...),visitedverts)
-end
-
-
-"""
-	extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
-
-Return subset model of (V,FV) filter by `points`.
-"""
-function extractionmodel(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
-	cscFV = Lar.characteristicMatrix(FV)
-	tokeep = [PointClouds.matchcolumn(points[:,i],V) for i in 1:size(points,2)] # index of points to keep
-	todel = setdiff(collect(1:cscFV.n), tokeep) # index of point to delete
-    face = cscFV[:,tokeep]
-	FVremained = [Lar.findnz(face[k,:])[1] for k=1:size(face,1) if length(Lar.findnz(face[k,:])[1])>=3] #face remained
-	Vremained = V[:,tokeep] #points remained
-	rgbremained = rgb[:,tokeep]
-	return Vremained,FVremained,rgbremained
-end
-
-"""
-	deletepoints(V::Lar.Points,FV::Lar.Cells,points::Lar.Points)
-
-Return LAR remained model after removing points.
-"""
-function deletepoints(V::Lar.Points,FV::Lar.Cells,rgb,points::Lar.Points)
-	npoints=size(V,2)
-	cscFV = Lar.characteristicMatrix(FV)
-	todel = [PointClouds.matchcolumn(points[:,i],V) for i in 1:size(points,2)] # index of points to delete
-	tokeep = setdiff(collect(1:cscFV.n), todel)
-    cscFV0 = cscFV[:,tokeep]
-
-	faceind = 1:cscFV0.m
-	vertinds = 1:cscFV.n
-    keepface = Array{Int64, 1}()
-	for i in faceind
-    	if length(cscFV0[i, :].nzind) == 3
-           push!(keepface, i)
-       end
-    end
-   	cscFV=cscFV[keepface,:]
-	isolatedpoints=Array{Int64, 1}()
-	for i in vertinds
-    	if length(cscFV[:, i].nzind) == 0
-           push!(isolatedpoints, i)
-       end
-    end
-
-   	union!(todel,isolatedpoints)
-	tokeep = setdiff(vertinds, todel)
-
-    Vremained = V[:, tokeep]
-	FVremained = Lar.cop2lar(cscFV[:, tokeep])
-	rgbremained = rgb[:,tokeep]
-
-	return Vremained,FVremained,rgbremained
 end
 
 

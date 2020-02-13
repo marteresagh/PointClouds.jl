@@ -7,7 +7,7 @@ include("../viewfunction.jl")
 
 # 1. input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\MURI"
-allfile = PointClouds.filelevel(fname,0,false)
+allfile = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
@@ -23,7 +23,7 @@ _,V = PointClouds.subtractaverage(Vtot)
 # 2. alpha shape
 DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
-α = 0.1
+α = 0.3
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
 GL.VIEW(
@@ -35,8 +35,8 @@ GL.VIEW(
 
 
 #compute normals
-normals = PointClouds.computenormals(V,FV)
-GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
+#normals = PointClouds.computenormals(V,FV)
+#GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
 
 # 3.1 plane without filter by color
 

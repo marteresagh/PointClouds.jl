@@ -1,6 +1,6 @@
-function modelprint(V,CV)
+function printmodel(filename, V, CV)
 
-	open("model.jl", "w") do f
+	open(filename*".jl", "w") do f
 		n=size(V,2)
 		write(f, "V=[")
 		for i in 1:n

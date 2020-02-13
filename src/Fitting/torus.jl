@@ -6,7 +6,6 @@
 estimation axis rotation
 """
 #this function estimates axis rotation from four sample
-
 function axisrotation(points,normals)
 	@assert size(points,2) >= 4 "axisrotation: too few points"
 	n0xn1 = Lar.cross(normals[:,1],normals[:,2])
@@ -58,6 +57,8 @@ function spinimage(points,posdir)
 	end
 	return hcat(out...)
 end
+
+
 
 function fitcircle(points)
 	dim,npoints = size(points)
@@ -135,6 +136,7 @@ function initialtorus(points,normals)
 
 	return N,center, rmajor, rminor
 end
+
 
 """
 	torusfit(points)
@@ -256,4 +258,18 @@ function torusfit(points,normals)
 
 
 	return N,C,r0,r1
+end
+
+
+"""
+	larmodeltorus(center,radius)(shape = [36,1])
+"""
+function larmodeltorus(direction,center,r0,r1)
+	function larmodeltorus0(shape = [36,36])
+		toro = Lar.toroidal(r0,r1)(shape)
+		matrixaffine = hcat(Lar.nullspace(Matrix(direction')),direction)
+		mrot = vcat(hcat(matrixaffine,[0,0,0]),[0.,0.,0.,1.]')
+		return Lar.apply(Lar.t(center...),Lar.apply(mrot,toro))
+	end
+	return larmodeltorus0
 end

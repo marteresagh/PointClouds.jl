@@ -294,8 +294,6 @@ function computenormals(V, FV, start::Int=1)
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
 
 	VV = Lar.verts2verts(EV)
-    #spanningtree = Array{Int,1}[];
-    #fronds = Array{Int,1}[]
 	number = zeros(Int, length(VV))
 	normals=similar(V)
 
@@ -312,16 +310,14 @@ function computenormals(V, FV, start::Int=1)
 		i += 1
 		for w in VV[v]
 			if number[w] == 0
-				# w is not yet numbered
-				indneigh=VV[w]
-				neigh=V[:,[w,indneigh...]]
+				# w is not visited
+				indneigh = VV[w]
+				neigh = V[:,[w,indneigh...]]
 				normals[:,w],_ = PointClouds.planefit(neigh)
 				if Lar.dot(normals[:,v],normals[:,w])<0
-						normals[:,w]=-normals[:,w]
+						normals[:,w] = -normals[:,w]
 				end
 				DFS(w, v)
-			elseif (number[w] < number[v]) && (w != u)
-				continue
 			end
 		end
 	end

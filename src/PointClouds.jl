@@ -13,17 +13,28 @@ module PointClouds
 	using QHull
 	using AlphaStructures
 	using SparseArrays
-	using LightGraphs
 
-	include("fit.jl")
-	include("quadricfit.jl")
-	include("linearfit.jl")
+
 	include("navigatedirectory.jl")
 	include("laspointsreader.jl")
-	include("matlab.jl")
+
 	include("geometry.jl")
-	include("mapper.jl")
-	include("torusfit.jl")
-	include("voxel.jl")
 	include("extractionsimplex.jl")
+
+	include("mapper.jl")
+
+	include("Fitting/fit.jl")
+	include("Fitting/cone.jl")
+	include("Fitting/sphere.jl")
+	include("Fitting/cylinder.jl")
+	include("Fitting/plane.jl")
+	include("Fitting/torus.jl")
+
+
+	include("voxel.jl")
+
+
+	include("printmodel.jl")
+	include("matlab.jl")
+
 end
