@@ -1,3 +1,4 @@
+#TODO da velocizzare
 """
 	initialcone(points)
 """

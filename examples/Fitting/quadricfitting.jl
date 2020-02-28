@@ -39,7 +39,7 @@ ressphere = findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
 
 ################################################################################ Cylinder fit
 V,FV = Lar.apply(Lar.r(-pi/3,0,0),Lar.apply(Lar.t(0,0,-10),Lar.cylinder(10.7,20)([100,10])))
-V,FV = Lar.cylinder(1.,2)([10,10])
+V,FV = Lar.cylinder(1.,2)([100,100])
 
 V = AlphaStructures.matrixPerturbation(V,atol=0.1)
 GL.VIEW([
@@ -56,25 +56,22 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-PointClouds.pointsprojcyl(V,direction,center,radius)
-# studio distanza e residuo di un punto
-p = V[:,546]
-res = PointClouds.rescyl(p,params)
-rescyl = max(Lar.abs.([PointClouds.rescyl(V[:,i],direction,center,radius) for i in 1:size(V,2)])...)
+params = direction,center,radius,height
+PointClouds.pointsprojcyl(V,params)
 
 ################################################################################ Cone fit
-V,CV = PointClouds.cone(4.,7.)([64,64])
+V,CV = PointClouds.cone(4.,7.)([1000,1000])
 #V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(pi/3,0,0),PointClouds.cone(2.,2.,2*pi)([36,64])))
 #V,CV=Lar.apply(Lar.r(0,-pi/5,0),PointClouds.cone(3.,3.)([36,64]))
 V = AlphaStructures.matrixPerturbation(V,atol=0.1)
-W=[0;0;0]
-for i in 1:size(V,2)
-	global W
-	if V[3,i]>3.
-		W=hcat(W,V[:,i])
-	end
-end
-W=W[:,[2:end...]]
+# W = [0;0;0]
+# for i in 1:size(V,2)
+# 	global W
+# 	if V[3,i]>3.
+# 		W=hcat(W,V[:,i])
+# 	end
+# end
+# W = W[:,[2:end...]]
 
 V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(pi/3,0,0),(W,CV)))
 
@@ -84,7 +81,7 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
-coneVertex, coneaxis, angle, height = PointClouds.conefit(V)  # invece che il raggio mi devo far tornare l'angolo e quindi il raggio lo calcolo in larmodelcone
+coneVertex, coneaxis, angle, height = PointClouds.conefit(V)
 Vcone, FVcone = PointClouds.larmodelcone(coneaxis, coneVertex, angle, height)()
 
 GL.VIEW([

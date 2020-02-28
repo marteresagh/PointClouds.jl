@@ -1,96 +1,10 @@
 """
-	centroid
+	centroid(points::Lar.Points)
+
+Average of points.
 """
 centroid(points::Lar.Points) = sum(points,dims=2)/size(points,2)
 
-
-################################################################################ Residual
-#TODO da modificare tutto in params
-"""
-	resplane(point, params)
-"""
-
-function resplane(point,params)
-	axis,centroid = params
-	return Lar.abs(Lar.dot(point,axis)-Lar.dot(axis,centroid))
-end
-
-"""
-	rescyl
-"""
-function rescyl(point, params)
-	direction,center,radius, height = params
-	r2 = radius^2
-	y = point-center
-	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(direction,direction'))*y
-	return Lar.abs(rp[1]-r2)
-end
-
-"""
-	ressphere
-"""
-function ressphere(point, params)
-	center, radius = params
-	y = point-center
-	rp = Lar.norm(y)
-	return Lar.abs(rp-radius)
-end
-
-"""
-	rescone
-"""
-function rescone(point, params)
-	coneVertex, coneaxis, radius, height = params
-	cosalpha = height/(sqrt(height^2+radius^2))
-	y = point-coneVertex
-	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(coneaxis/cosalpha,(coneaxis/cosalpha)'))*y
-	return Lar.abs(rp[1])
-end
-
-"""
-	restorus
-"""
-function restorus(point, params)
-	C, N, rM, rm = params
-	D =  point - C
-	DdotD = Lar.dot(D,D)
-	NdotD = Lar.dot(N,D)
-	sum = DdotD + rM^2-rm^2
-	res=sum^2 - 4*rM^2*(DdotD-NdotD^2)
-	return Lar.abs(res)
-end
-
-################################################################################ distance point shape
-"""
-	isinsphere(p,params,par)::Bool
-
-Checks if a point `p` in near enough to the `sphere`.
-"""
-function isinsphere(p,params,par)::Bool
-	center,radius = params
-	return PointClouds.ressphere(p,params) <= par
-end
-
-"""
-	isincyl(p,params,par)::Bool
-
-Checks if a point `p` in near enough to the `cylinder`.
-"""
-function isincyl(p,params,par)::Bool
-	return PointClouds.rescyl(p,params) <= par
-end
-
-
-"""
-	isinplane(p::Array{Float64,1},plane::NTuple{4,Float64},par::Float64)::Bool
-
-Checks if a point `p` in near enough to the `plane`.
-"""
-function isinplane(p::Array{Float64,1},params,par::Float64)::Bool
-    return PointClouds.resplane(p,params)<=par
-end
-
-################################################################################ utilities
 """
 	subtractaverage(points::Lar.Points)
 
@@ -102,7 +16,7 @@ function subtractaverage(points::Lar.Points)
 	affineMatrix = Lar.t(-centroid...)
 	V = [points; fill(1.0, (1,npoints))]
 	Y = (affineMatrix * V)[1:m,1:npoints]
-	Y = map(Lar.approxVal(16), Y)
+	#Y = map(Lar.approxVal(16), Y)
 	return centroid,Y
 end
 
@@ -148,16 +62,16 @@ matchcolumn(a,B) = findfirst(j->all(i->a[i] == B[i,j],1:size(B,1)),1:size(B,2))
 
 
 """
- 	heightquadric()
+ 	height()
 
-W direction of axis , Y points translate to center
+
 """
-function heightquadric(W, Y)
+function height(direction:: Array{Float64,1}, V::Lar.Points)
 	hmin = +Inf
 	hmax = -Inf
 
-	for i in 1:size(Y,2)
-		h = Lar.dot(W,Y[:,i])
+	for i in 1:size(V,2)
+		h = Lar.dot(direction,V[:,i])
 		if h > hmax
 			hmax = h
 		elseif h < hmin
@@ -168,83 +82,6 @@ function heightquadric(W, Y)
 	return hmax-hmin
 end
 
-################################################################################ projection
-"""
-	projection(e,v)
-e è la normale della superficie e v è il punto da proiettare
-"""
-function projection(e,v)
-	p = v-Lar.dot(e,v)*e
-	return p
-end
-
-"""
-	pointsproj(V,parmas)
-
-proiezione di tutti i punti sul piano ortogonale a N
-"""
-function pointsproj(V,params)
-	N,C = params
-	npoints = size(V,2)
-	for i in 1:npoints
-		V[:,i] = PointClouds.projection(N,V[:,i]-C) + C
-	end
-	return convert(Lar.Points,V)
-end
-
-"""
-	pointsprojcyl(V,params)
-
-proiezione di tutti i punti sul cilindro
-"""
-function pointsprojcyl(V,params)
-	axis,C,r,height = params
-	npoints = size(V,2)
-	for i in 1:npoints
-		p = V[:,i]-C
-		c0 = Lar.dot(axis,p)*(axis)
-		N = (p-c0)/Lar.norm(p-c0)
-		c=r*N
-		V[:,i] = PointClouds.projection(N,p-c) + c + C
-	end
-	return convert(Lar.Points,V)
-end
-
-
-"""
-	pointsprojsphere(V,C,r)
-
-proiezione di tutti i punti sulla sfera
-"""
-function pointsprojsphere(V,params)
-	C,r=params
-	npoints = size(V,2)
-	for i in 1:npoints
-		p = V[:,i]-C
-		N = p/Lar.norm(p)
-		c = r*N
-		V[:,i] = PointClouds.projection(N,p-c) + c + C
-	end
-	return convert(Lar.Points,V)
-end
-
-"""
-	pointsprojcone(V,axis,apex,angle)
-"""
-function pointsprojcone(V,params)
-	axis,apex,angle = params
-	npoints = size(V,2)
-	for i in 1:npoints
-		p = V[:,i]-apex
-		c0 = Lar.dot(axis,p)*(axis)
-		N = (p-c0)/Lar.norm(p-c0)
-		c=Lar.dot(axis,c0)*tan(angle)*N
-		V[:,i] = PointClouds.projection(N,p-c) + c + apex
-	end
-	return convert(Lar.Points,V)
-end
-
-
 
 """
 	 AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
@@ -252,7 +89,7 @@ end
 Compute collision detection of two AABB.
 
 """
-function AABBdetection(aabb,AABB)::Bool
+function  AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
 	A=hcat(aabb...)
 	B=hcat(AABB...)
 	@assert size(A,1) == size(B,1) "AABBdetection: not same dimension"
@@ -282,56 +119,3 @@ function flat(allplanes)
 		allplanes[i][1]=PointClouds.pointsproj(allplanes[i][1],params)
 	end
 end
-
-"""
-	computenormals(V,FV)
-
-stima la normale di un punto attraverso i suoi vicini.
-"""
-function computenormals(V, FV, start::Int=1)
-
-	#per i vicini uso la triangolazione FV
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
-
-	VV = Lar.verts2verts(EV)
-	number = zeros(Int, length(VV))
-	normals=similar(V)
-
-	function DFS(v::Int, u::Int)
-	# vertex u is the father of
-	# vertex v in the spanning tree being constructed
-		number[v] = i
-		if i == 1
-
-			indneigh = VV[v]
-			neigh = V[:,[v,indneigh...]]
-			normals[:,v],_ = PointClouds.planefit(neigh)
-		end
-		i += 1
-		for w in VV[v]
-			if number[w] == 0
-				# w is not visited
-				indneigh = VV[w]
-				neigh = V[:,[w,indneigh...]]
-				normals[:,w],_ = PointClouds.planefit(neigh)
-				if Lar.dot(normals[:,v],normals[:,w])<0
-						normals[:,w] = -normals[:,w]
-				end
-				DFS(w, v)
-			end
-		end
-	end
-
-	# initialization of DFS algorithm
-	i = 1
-	DFS(start, 1)
-	return normals
-end
-
-
-"""
-	flipnormals(normals)
-
-Flip all normals.
-"""
-flipnormals(normals) = -normals

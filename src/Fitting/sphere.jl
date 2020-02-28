@@ -6,11 +6,11 @@ function spherefit(points::Lar.Points)
 	center = nothing
 	radius = nothing
 
-	#1. - translation centroid
+	# 1. - translation centroid
 	npoints = size(points,2)
 	centroid, Y = PointClouds.subtractaverage(points)
 
-	#2. - costruction matrix W upper triangle
+	# 2. - costruction matrix W upper triangle
 	W = zeros(5,5)
 	for i in 1:npoints
 		r = Y[:,i]
@@ -40,7 +40,7 @@ function spherefit(points::Lar.Points)
 	W/=npoints
 	W[1,1] = 1.
 
-	#3. - lower triangle
+	# 3. - lower triangle
 	W[5,1] = W[1,5]
 	W[3,2] = W[2,3]
 	W[4,2] = W[2,4]
@@ -53,7 +53,7 @@ function spherefit(points::Lar.Points)
 	eigvals = Lar.eigvals(W)
 	eigvecs = Lar.eigvecs(W)
 
-	#4. - compute params
+	# 4. - compute params
 	f0 = eigvecs[1,1]
 	f1 = [eigvecs[2,1],eigvecs[3,1],eigvecs[4,1]]
 	f2 = eigvecs[5,1]
@@ -74,7 +74,6 @@ function spherefit(points::Lar.Points)
 
 	return center,radius
 end
-
 
 
 """

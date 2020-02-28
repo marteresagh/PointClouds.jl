@@ -20,9 +20,12 @@ module PointClouds
 
 	include("geometry.jl")
 	include("extractionsimplex.jl")
+	include("normals.jl")
 
 	include("mapper.jl")
 
+	include("Fitting/residual.jl")
+	include("Fitting/projection.jl")
 	include("Fitting/fit.jl")
 	include("Fitting/cone.jl")
 	include("Fitting/sphere.jl")

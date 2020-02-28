@@ -93,7 +93,7 @@ function cylinderfit(V::Lar.Points)
 	C += centroid
 
 	#4. - find height
-	height = heightquadric(W, Y)
+	height = height(W, Y)
 
 	return W,C,r,height
 end

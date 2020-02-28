@@ -35,7 +35,7 @@ GL.VIEW(
 
 
 #compute normals
-#normals = PointClouds.computenormals(V,FV)
+normals = PointClouds.computenormals(V,FV)
 #GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
 
 # 3.1 plane without filter by color
