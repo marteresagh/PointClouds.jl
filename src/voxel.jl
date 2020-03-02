@@ -65,13 +65,13 @@ function extractsurfaceboundary(V,CV)
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2EV,CV)))))
 	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2FV,CV)))))
 
-	M_0 = K(VV)
-	M_1 = K(EV)
+	# M_0 = K(VV)
+	# M_1 = K(EV)
 	M_2 = K(FV)
 	M_3 = K(CV)
 
-	∂_1 = M_0 * M_1'
-	∂_2 = (M_1 * M_2') .÷ 2 #	.÷ sum(M_1,dims=2)
+	# ∂_1 = M_0 * M_1'
+	# ∂_2 = (M_1 * M_2') .÷ 2 #	.÷ sum(M_1,dims=2)
 	s = sum(M_2,dims=2)
 	∂_3 = (M_2 * M_3')
 	∂_3 = ∂_3 ./	s

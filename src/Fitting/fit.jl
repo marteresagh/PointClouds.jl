@@ -77,7 +77,7 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
    	adj = Lar.verts2verts(EV)
 
-	# 2. first samples
+	# 2. first samples #TODO implementare la nuova versione per la ricerca del primo seed point
 	if index==0
 		index = rand(1:size(V,2))
 	end

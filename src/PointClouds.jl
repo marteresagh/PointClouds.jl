@@ -1,18 +1,13 @@
-__precompile__()
+#__precompile__()
 
 module PointClouds
+
 	using LinearAlgebraicRepresentation
-	using LasIO
 	Lar = LinearAlgebraicRepresentation
-	using Combinatorics
-	using JSON
-	using DataStructures
+	using LasIO, JSON
+	using Combinatorics, DataStructures, SparseArrays
 	using MATLAB
-	using Polynomials
-	using LsqFit
-	using QHull
-	using AlphaStructures
-	using SparseArrays
+	using Polynomials, LsqFit
 
 
 	include("navigatedirectory.jl")
