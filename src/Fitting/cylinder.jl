@@ -93,7 +93,7 @@ function cylinderfit(V::Lar.Points)
 	C += centroid
 
 	#4. - find height
-	height = height(W, Y)
+	height = PointClouds.height(W, Y)
 
 	return W,C,r,height
 end

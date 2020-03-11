@@ -143,6 +143,13 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
     return  pointsonshape,params
 end
 
+"""
+	 seedpoint()
+"""
+function seedpoint()
+	return point,params
+end
+
 
 """
 	 findnearestof(indeces::Array{Int64,1},visitedvertex::Array{Int64,1},adj::Array{Array{Int64,1},1})

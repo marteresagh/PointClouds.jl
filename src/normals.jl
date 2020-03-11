@@ -19,7 +19,7 @@ function computenormals(V::Lar.Points, FV::Lar.Cells, start::Int=1)::Lar.Points
 			normals[:,v],_ = PointClouds.planefit(neigh)
 		end
 		i += 1
-		@show i
+		#@show i
 		for w in VV[v]
 			if number[w] == 0  # w is not visited
 				indneigh = VV[w]

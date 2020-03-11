@@ -61,7 +61,7 @@ end
 	pointsprojcone(V,axis,apex,angle)
 """
 function pointsprojcone(V::Lar.Points,params)
-	axis,apex,angle = params
+	apex, axis, angle, angle = params
 	npoints = size(V,2)
 	for i in 1:npoints
 		p = V[:,i]-apex
