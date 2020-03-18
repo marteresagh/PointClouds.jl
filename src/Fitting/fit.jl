@@ -1,5 +1,5 @@
 #TODO
-# sistemare codice,
+# sistemare codice, ottimizza scrittura codice .. cose ridondanti e pensa a come migliorare la storia degli rgb
 # rendere incrementale
 
 # ```
@@ -65,7 +65,7 @@ Option shape: (da finire con le altre forme)
 - plane
 - cylinder
 
-min max interval-> filter by color
+min max interval-> filter by color da modificare
 
 #TODO stackoverflowerror quando cicla tante volte. da risolvere
 """
@@ -94,6 +94,8 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 		params = PointClouds.cylinderfit(pointsonshape)
 	elseif shape == "sphere"
 		params = PointClouds.spherefit(pointsonshape)
+	elseif shape == "cone"
+		params = PointClouds.conefit(pointsonshape)
 	end
 	visitedverts = copy(index)
 	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
@@ -117,6 +119,10 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 				if PointClouds.isinsphere(p,params,par)
 					push!(index,i)
 				end
+			elseif shape == "cone"
+				if PointClouds.isincone(p,params,par)
+					push!(index,i)
+				end
 			end
 
             push!(visitedverts,i)
@@ -130,6 +136,8 @@ function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
 			params = PointClouds.cylinderfit(pointsonshape)
 		elseif shape == "sphere"
 			params = PointClouds.spherefit(pointsonshape)
+		elseif shape == "cone"
+			params = PointClouds.conefit(pointsonshape)
 		end
 
         idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
@@ -146,8 +154,25 @@ end
 """
 	 seedpoint()
 """
-function seedpoint()
-	return point,params
+function seedpoint(V::Lar.Points,adj,shape::String)
+	randindex = rand(1:size(V,2))
+	idxneighbors = PointClouds.findnearestof([randindex],[randindex],adj)
+	idxseeds = union(randindex,idxneighbors)
+	seeds = V[:,idxseeds]
+	if shape == "plane"
+		params = PointClouds.planefit(seeds)
+		seed = findmin([PointClouds.resplane(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	elseif shape == "cylinder"
+		params = PointClouds.cylinderfit(seeds)
+		seed = findmin([PointClouds.rescyl(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	elseif shape == "sphere"
+		params = PointClouds.spherefit(seeds)
+		seed = findmin([PointClouds.ressphere(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	elseif shape == "cone"
+		params = PointClouds.conefit(seeds)
+		seed = findmin([PointClouds.rescone(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	end
+	return seed,params
 end
 
 
@@ -211,9 +236,11 @@ function extractshape(P,params,α)
 end
 
 
+
+#TODO riscrivere questa come distanza dai punti
 """
 	filterbycolor(P,Prgb,min,max)
-
+#TODO da modificare
 Filter points by color.
 """
 function filterbycolor(P,Prgb,min,max)
