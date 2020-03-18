@@ -1,9 +1,9 @@
-################################################################################ Torus fit
+# Torus fit
 
 """
 	axisrotation(points,normals)
 
-estimation axis rotation
+estimate axis rotation
 """
 #this function estimates axis rotation from four sample
 function axisrotation(points,normals)
@@ -57,8 +57,6 @@ function spinimage(points,posdir)
 	end
 	return hcat(out...)
 end
-
-
 
 function fitcircle(points)
 	dim,npoints = size(points)

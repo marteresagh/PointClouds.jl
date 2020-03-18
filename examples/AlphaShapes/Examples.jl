@@ -20,7 +20,7 @@ GL.VIEW(
 	]
 );
 
-DT = PointClouds.mat3DT(V)
+DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 
 α = 0.0467882

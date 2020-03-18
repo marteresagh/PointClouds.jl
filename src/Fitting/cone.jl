@@ -162,7 +162,7 @@ function conefit(points)
 
 	initial = vcat(coneVertex,coneaxis.*1/coneCosAngle)[:,1]
 	R1 = LsqFit.OnceDifferentiable(fc(points), jc(points),zeros(6),zeros(npoints); inplace = false)
-	results = LsqFit.levenberg_marquardt(R1, initial; show_trace=true)
+	results = LsqFit.levenberg_marquardt(R1, initial)#; show_trace=true)
 	@show LsqFit.OptimBase.converged(results)
 	coneVertex = LsqFit.OptimBase.minimizer(results)[1:3]
 
@@ -198,7 +198,7 @@ end
 """
 	larmodelcone(center,radius)(shape = [36,1])
 """
-function larmodelcone(direction,apex,angle,height)
+function larmodelcone(apex,direction,angle,height)
 	radius = height*tan(angle)
 	function larmodelcone0(shape = [36,1])
 		cone = PointClouds.cone(radius,height)(shape)

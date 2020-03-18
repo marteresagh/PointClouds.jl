@@ -5,7 +5,7 @@ function K( CV )
 	return sparse(I,J,Vals)
 end
 
-function voxelgrid(V,p)
+function voxelgrid(V::Lar.Points,p::Float64)
 	npoints = size(V,2)
 	dict = DataStructures.SortedDict{Array{Int64,1},Int64}()
 	for i in 1:npoints
@@ -20,7 +20,7 @@ function voxelgrid(V,p)
 	return dict
 end
 
-function pointclouds2cubegrid(V,p,N)
+function pointclouds2cubegrid(V::Lar.Points,p::Float64,N::Int64)#RINOMINA COME voxelization
 	grid = PointClouds.voxelgrid(V,p)
 	out = Array{Lar.Struct,1}()
 
@@ -60,7 +60,7 @@ function voxeloriented(allplanes,p,N)
 end
 
 
-function extractsurfaceboundary(V,CV)
+function extractsurfaceboundary(V::Lar.Points,CV::Lar.Cells)
 	VV = [[v] for v=1:size(V,2)]
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2EV,CV)))))
 	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(CV2FV,CV)))))

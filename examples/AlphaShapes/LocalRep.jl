@@ -7,7 +7,8 @@ include("../viewfunction.jl")
 
 # from my local repository
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CUPOLA"
-allfile = PointClouds.filelevel(fname,0)
+level = 1
+allfile = PointClouds.filelevel(fname,level)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 
 Voriginal,VV,rgb = PointClouds.loadlas(allfile...)
@@ -19,10 +20,10 @@ GL.VIEW(
 	]
 );
 
-DT = PointClouds.mat3DT(V)
+DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 
-α = 0.23 #da variare
+α = 1. #da variare
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α);
 
 GL.VIEW(

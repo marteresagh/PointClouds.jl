@@ -80,3 +80,13 @@ Checks if a point `p` in near enough to the `plane`.
 function isinplane(p::Array{Float64,1},params,par::Float64)::Bool
     return PointClouds.resplane(p,params) <= par
 end
+
+
+"""
+	isincone(p::Array{Float64,1},plane::NTuple{4,Float64},par::Float64)::Bool
+
+Checks if a point `p` in near enough to the `cone`.
+"""
+function isincone(p::Array{Float64,1},params,par::Float64)::Bool
+    return PointClouds.rescone(p,params) <= par
+end

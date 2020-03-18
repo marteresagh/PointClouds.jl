@@ -5,7 +5,8 @@ using PointClouds
 using MATLAB
 
 include("../viewfunction.jl")
-################################################################################ Sphere fit
+## Sphere fit
+
 #V,FV = Lar.apply(Lar.t(3.,3.,3.),Lar.sphere(4.)([50,50]))
 V,FV = Lar.apply(Lar.t(3.,3.,3.),Lar.sphere(4.,pi/2,pi/2)([40,40]))
 #V,FV = Lar.cylinder(1.)([10,10])
@@ -37,7 +38,8 @@ ressphere = findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
 
 
 
-################################################################################ Cylinder fit
+## Cylinder fit
+
 V,FV = Lar.apply(Lar.t(1,2,2),Lar.apply(Lar.r(0,pi/6,0),Lar.cylinder(2.,6,pi/2)([50,50])))
 #V,FV = Lar.cylinder(1.,2)([100,100])
 
@@ -59,7 +61,8 @@ GL.VIEW([
 params = direction,center,radius,height
 PointClouds.pointsprojcyl(V,params)
 
-################################################################################ Cone fit
+## Cone fit
+
 V,CV = PointClouds.cone(4.,7.,pi/2)([40,40])
 #V,CV = Lar.apply(Lar.t(2,3,4),Lar.apply(Lar.r(pi/3,0,0),PointClouds.cone(2.,2.,2*pi)([36,64])))
 #V,CV=Lar.apply(Lar.r(0,-pi/5,0),PointClouds.cone(3.,3.)([36,64]))
@@ -92,7 +95,8 @@ GL.VIEW([
 params=coneVertex, coneaxis, angle, height
 PointClouds.pointsprojcone(V,params)
 
-################################################################################ Toro fit
+## Toro fit
+
 V,CV = Lar.toroidal(2,4,2*pi,pi/2)([50,40])
 #V,CV = Lar.apply(Lar.t(2,5,4),Lar.apply(Lar.r(0,pi/3,0),Lar.toroidal(2,5,2*pi,pi/2)([30,30])))
 #V = AlphaStructures.matrixPerturbation(V,atol=0.1)
