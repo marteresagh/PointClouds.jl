@@ -6,6 +6,7 @@ Returns fitting plane of `points`.
 function planefit(points::Lar.Points)
 
 	npoints = size(points,2)
+	@assert npoints>=3 "planefit: at least 3 points needed"
 	centroid,V = PointClouds.subtractaverage(points)
 
     # Matrix

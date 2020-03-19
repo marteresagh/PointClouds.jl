@@ -68,7 +68,7 @@ function colorview(V::Lar.Points,CV::Lar.Cells,rgb::Lar.Points,alpha=1.0)::GL.GL
 			append!(colors,c1);   append!(colors,c2);   append!(colors,c3);
 		end
 	elseif len == 4
-		return viewtetra(V,CV,rgb)
+		return viewtetra(V,CV,rgb,alpha)
 	end
  	ret.vertices = GL.GLVertexBuffer(vertices)
   	ret.normals  = GL.GLVertexBuffer(normals)

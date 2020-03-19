@@ -1,4 +1,4 @@
-function K( CV )
+function K(CV::Lar.Cells)
 	I = vcat( [ [k for h in CV[k]] for k=1:length(CV) ]...)
 	J = vcat(CV...)
 	Vals = [1 for k=1:length(I)]
