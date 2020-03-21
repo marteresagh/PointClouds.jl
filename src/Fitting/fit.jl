@@ -53,96 +53,147 @@ function findall(V::Lar.Points,FV::Lar.Cells,Vrgb,
 	return Vcurrent, FVcurrent,RGBcurrent,allshapes
 end
 
+#
+# """
+# 	findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
+# 				par::Float64,shape::String;
+# 				index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
+#
+# Return all the points liyng on the shape found.
+#
+# Option shape: (da finire con le altre forme)
+# - plane
+# - cylinder
+#
+# min max interval-> filter by color da modificare
+#
+# #TODO stackoverflowerror quando cicla tante volte. da risolvere
+# """
+# function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
+# 		par::Float64,shape::String;
+# 		index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
+#
+# 	# 1. list of adjacency verteces
+# 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
+#    	adj = Lar.verts2verts(EV)
+#
+# 	# 2. first samples
+# 	if index==0
+# 		index = PointClouds.seedpoint(V,adj,shape)
+# 	end
+# 	@show index
+#
+# 	visitedverts = [index]
+# 	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
+# 	index = union(index,idxneighbors)
+# 	pointsonshape = V[:,index]
+# 	# if punti allineati ??
+# 	if shape == "plane"
+# 		params = PointClouds.planefit(pointsonshape)
+# 	elseif shape == "cylinder"
+# 		params = PointClouds.cylinderfit(pointsonshape)
+# 	elseif shape == "sphere"
+# 		params = PointClouds.spherefit(pointsonshape)
+# 	elseif shape == "cone"
+# 		params = PointClouds.conefit(pointsonshape)
+# 	end
+# 	visitedverts = copy(index)
+# 	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
+#
+# 	# 4. check if this neighbors are other points of plane
+#     while !isempty(idxneighbors)
+#
+# 	    for i in idxneighbors
+#             p = V[:,i]
+#
+# 			if shape == "plane"
+# 				color = Vrgb[:,i]
+# 				if PointClouds.isinplane(p,params,par) && PointClouds.testcolor(color,min,max)
+# 					push!(index,i)
+# 	            end
+# 			elseif shape == "cylinder"
+# 				if PointClouds.isincyl(p,params,par)
+# 					push!(index,i)
+# 	            end
+# 			elseif shape == "sphere"
+# 				if PointClouds.isinsphere(p,params,par)
+# 					push!(index,i)
+# 				end
+# 			elseif shape == "cone"
+# 				if PointClouds.isincone(p,params,par)
+# 					push!(index,i)
+# 				end
+# 			end
+#
+#             push!(visitedverts,i)
+#
+#         end
+#
+# 		pointsonshape = V[:,index]
+# 		if shape == "plane"
+# 			params = PointClouds.planefit(pointsonshape)
+# 		elseif shape == "cylinder"
+# 			params = PointClouds.cylinderfit(pointsonshape)
+# 		elseif shape == "sphere"
+# 			params = PointClouds.spherefit(pointsonshape)
+# 		elseif shape == "cone"
+# 			params = PointClouds.conefit(pointsonshape)
+# 		end
+#
+#         idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
+#     end
+#
+# 	if size(pointsonshape,2) <= NOTSHAPE
+# 		#println("findshape: not valid")
+# 		return nothing, nothing
+# 	end
+#
+#     return  pointsonshape,params
+# end
+#
+#
+#
 
 """
-	findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
-				par::Float64,shape::String;
-				index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
-
-Return all the points liyng on the shape found.
-
-Option shape: (da finire con le altre forme)
-- plane
-- cylinder
-
-min max interval-> filter by color da modificare
-
-#TODO stackoverflowerror quando cicla tante volte. da risolvere
+shape detection senza colore
 """
-function findshape(V::Lar.Points,FV::Lar.Cells,Vrgb,
-		par::Float64,shape::String;
-		index=0,NOTSHAPE=10::Int64,min=[0.,0.,0.],max=[1.,1.,1.])
+function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;NOTSHAPE=10::Int64)
 
 	# 1. list of adjacency verteces
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
    	adj = Lar.verts2verts(EV)
+	R = Int64[]
 
-	# 2. first samples #TODO implementare la nuova versione per la ricerca del primo seed point
-	if index==0
-		index = rand(1:size(V,2))
-	end
+	# 2. first sample
+	index,params = PointClouds.seedpoint(V,adj,shape)
+	@show "inizio"
+	@show params
+	push!(R,index)
 	@show index
-
-	visitedverts = [index]
-	idxneighbors = PointClouds.findnearestof([index],visitedverts,adj)
-	index = union(index,idxneighbors)
-	pointsonshape = V[:,index]
-	# if punti allineati ??
-	if shape == "plane"
-		params = PointClouds.planefit(pointsonshape)
-	elseif shape == "cylinder"
-		params = PointClouds.cylinderfit(pointsonshape)
-	elseif shape == "sphere"
-		params = PointClouds.spherefit(pointsonshape)
-	elseif shape == "cone"
-		params = PointClouds.conefit(pointsonshape)
-	end
-	visitedverts = copy(index)
-	idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
-
-	# 4. check if this neighbors are other points of plane
-    while !isempty(idxneighbors)
-
-	    for i in idxneighbors
-            p = V[:,i]
-
-			if shape == "plane"
-				color = Vrgb[:,i]
-				if PointClouds.isinplane(p,params,par) && PointClouds.testcolor(color,min,max)
-					push!(index,i)
-	            end
-			elseif shape == "cylinder"
-				if PointClouds.isincyl(p,params,par)
-					push!(index,i)
-	            end
-			elseif shape == "sphere"
-				if PointClouds.isinsphere(p,params,par)
-					push!(index,i)
+	@show length(R)
+	seeds = [index]
+	visitedverts = copy(seeds)
+	while !isempty(seeds)
+		for seed in seeds
+			N = PointClouds.findnearestof([seed],visitedverts,adj)
+			@show seed
+			@show N
+			for i in N
+	            p = V[:,i]
+				if PointClouds.isclosetomodel(p,params,par,shape)
+					push!(seeds,i)
+					push!(R,i)
 				end
-			elseif shape == "cone"
-				if PointClouds.isincone(p,params,par)
-					push!(index,i)
-				end
-			end
-
-            push!(visitedverts,i)
-
-        end
-
-		pointsonshape = V[:,index]
-		if shape == "plane"
-			params = PointClouds.planefit(pointsonshape)
-		elseif shape == "cylinder"
-			params = PointClouds.cylinderfit(pointsonshape)
-		elseif shape == "sphere"
-			params = PointClouds.spherefit(pointsonshape)
-		elseif shape == "cone"
-			params = PointClouds.conefit(pointsonshape)
+	            push!(visitedverts,i)
+	        end
+			setdiff!(seeds,seed)
 		end
+		@show length(R)
+		pointsonshape = V[:,R]
+		params = PointClouds.surfacefitparams(pointsonshape,shape)
+	end
 
-        idxneighbors = PointClouds.findnearestof(index,visitedverts,adj)
-    end
-
+	pointsonshape = V[:,R]
 	if size(pointsonshape,2) <= NOTSHAPE
 		#println("findshape: not valid")
 		return nothing, nothing
@@ -154,24 +205,59 @@ end
 """
 	 seedpoint()
 """
-function seedpoint(V::Lar.Points,adj,shape::String)
-	randindex = rand(1:size(V,2))
-	idxneighbors = PointClouds.findnearestof([randindex],[randindex],adj)
-	idxseeds = union(randindex,idxneighbors)
-	seeds = V[:,idxseeds]
+function isclosetomodel(p::Array{Float64,1},params,par::Float64,shape::String)
 	if shape == "plane"
-		params = PointClouds.planefit(seeds)
-		seed = findmin([PointClouds.resplane(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+		return PointClouds.isinplane(p,params,par)
 	elseif shape == "cylinder"
-		params = PointClouds.cylinderfit(seeds)
-		seed = findmin([PointClouds.rescyl(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+		return PointClouds.isincyl(p,params,par)
 	elseif shape == "sphere"
-		params = PointClouds.spherefit(seeds)
-		seed = findmin([PointClouds.ressphere(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+		return PointClouds.isinsphere(p,params,par)
 	elseif shape == "cone"
-		params = PointClouds.conefit(seeds)
-		seed = findmin([PointClouds.rescone(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+		return PointClouds.isincone(p,params,par)
 	end
+end
+
+"""
+	 seedpoint()
+"""
+function surfacefitparams(V::Lar.Points,shape::String)
+	if shape == "plane"
+		params = PointClouds.planefit(V)
+	elseif shape == "cylinder"
+		params = PointClouds.cylinderfit(V)
+	elseif shape == "sphere"
+		params = PointClouds.spherefit(V)
+	elseif shape == "cone"
+		params = PointClouds.conefit(V)
+	end
+	return params
+end
+
+"""
+	 seedpoint()
+"""
+function seedpoint(V::Lar.Points,adj::Array{Array{Int64,1},1},shape::String)
+	randindex = rand(1:size(V,2))
+	@show "seedpoint"
+	@show randindex
+	idxneighbors = PointClouds.findnearestof([randindex],[randindex],adj)
+	@show idxneighbors
+	idxseeds = union(randindex,idxneighbors)
+	@show idxseeds
+	seeds = V[:,idxseeds]
+
+	params = PointClouds.surfacefitparams(seeds,shape)
+	if shape == "plane"
+		minresidual = findmin([PointClouds.resplane(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	elseif shape == "cylinder"
+		minresidual = findmin([PointClouds.resplane(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	elseif shape == "sphere"
+		minresidual = findmin([PointClouds.resplane(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	elseif shape == "cone"
+		minresidual = findmin([PointClouds.resplane(seeds[:,i],params) for i in 1:size(seeds,2)])[2]
+	end
+
+	seed = idxseeds[minresidual]
 	return seed,params
 end
 

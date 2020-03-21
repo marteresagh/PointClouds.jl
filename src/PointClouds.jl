@@ -27,6 +27,7 @@ module PointClouds
 	include("Fitting/cylinder.jl")
 	include("Fitting/plane.jl")
 	include("Fitting/torus.jl")
+	include("Fitting/newfit.jl")
 
 
 	include("voxel.jl")
