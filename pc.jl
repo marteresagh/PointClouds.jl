@@ -11,8 +11,8 @@ model1 = Lar.apply(Lar.t(5,6,7),Lar.apply(Lar.r(0,-pi/6,0),(V1,FV1)))
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,model[1]'))
 	GL.GLPoints(convert(Lar.Points,model1[1]'))
-	GL.GLGrid(model...)
-	GL.GLGrid(model1...)
+	GL.GLGrid(model...,GL.COLORS[2])
+	GL.GLGrid(model1...,)
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);
 

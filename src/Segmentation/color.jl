@@ -1,3 +1,6 @@
+"""
+Generate  cluster  of  points  with  the  same  color.
+"""
 function colorsegmentation(V::Lar.Points, FV::Lar.Cells, Vrgb::Lar.Points, par::Float64; index=0)
 
 	# 1. list of adjacency verteces
@@ -34,6 +37,9 @@ function colorsegmentation(V::Lar.Points, FV::Lar.Cells, Vrgb::Lar.Points, par::
     return  V[:,seeds],Vrgb[:,seeds]
 end
 
+"""
+Centroid RGB https://sighack.com/post/averaging-rgb-colors-the-right-way  DA STUDIARE
+"""
 function centroidrgb(rgb)
 	n=size(rgb,2)
 	r2=map(x->x^2,rgb[1,:])

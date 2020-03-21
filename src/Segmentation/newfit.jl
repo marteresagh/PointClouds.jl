@@ -1,4 +1,3 @@
-
 """
 Detect points on shape.
 """
@@ -45,7 +44,7 @@ function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;N
 end
 
 """
-Check if point is close enough to model
+Check if point is close enough to model.
 """
 function isclosetomodel(p::Array{Float64,1},params,par::Float64,shape::String)
 	if shape == "plane"
@@ -79,6 +78,23 @@ end
 Find seed point randomly.
 """
 function seedpoint(V::Lar.Points,adj::Array{Array{Int64,1},1},shape::String)
+
+	"""
+	Return index of point in V with minor residual.
+	"""
+	function minresidual(V::Lar.Points,params,shape::String)
+		if shape == "plane"
+			return findmin([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)])[2]
+		elseif shape == "cylinder"
+			return findmin([PointClouds.rescyl(V[:,i],params) for i in 1:size(V,2)])[2]
+		elseif shape == "sphere"
+			return findmin([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])[2]
+		elseif shape == "cone"
+			return findmin([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])[2]
+		end
+	end
+
+
 	randindex = rand(1:size(V,2))
 
 	idxneighbors = PointClouds.findnearestof([randindex],[randindex],adj)
@@ -92,26 +108,27 @@ function seedpoint(V::Lar.Points,adj::Array{Array{Int64,1},1},shape::String)
 	return seed,params
 end
 
-"""
-Return index of point in V with minor residual.
-"""
-function minresidual(V::Lar.Points,params,shape::String)
-	if shape == "plane"
-		return findmin([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)])[2]
-	elseif shape == "cylinder"
-		return findmin([PointClouds.rescyl(V[:,i],params) for i in 1:size(V,2)])[2]
-	elseif shape == "sphere"
-		return findmin([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])[2]
-	elseif shape == "cone"
-		return findmin([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])[2]
-	end
-end
 
 """
 Return indeces neighbors list of `indverts`, removing verteces already visited.
 """
 function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
 	return setdiff(union(adj[indverts]...),visitedverts)
+end
+
+"""
+Return residual.
+"""
+function residual(V::Lar.Points,params,shape::String)
+	if shape == "plane"
+		return findmax([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "cylinder"
+		return findmax([PointClouds.rescyl(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "sphere"
+		return findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "cone"
+		return findmax([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])
+	end
 end
 
 """
