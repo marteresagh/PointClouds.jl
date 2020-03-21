@@ -57,6 +57,8 @@ function isclosetomodel(p::Array{Float64,1},params,par::Float64,shape::String)
 		return PointClouds.isinsphere(p,params,par)
 	elseif shape == "cone"
 		return PointClouds.isincone(p,params,par)
+	elseif shape == "torus"
+		return PointClouds.isintorus(p,params,par)
 	end
 end
 
@@ -93,6 +95,8 @@ function seedpoint(V::Lar.Points,adj::Array{Array{Int64,1},1},shape::String)
 			return findmin([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])[2]
 		elseif shape == "cone"
 			return findmin([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])[2]
+		elseif shape == "torus"
+			return findmin([PointClouds.restorus(V[:,i],params) for i in 1:size(V,2)])[2]
 		end
 	end
 

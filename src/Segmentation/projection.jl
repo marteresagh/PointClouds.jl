@@ -72,3 +72,35 @@ function pointsprojcone(V::Lar.Points,params)
 	end
 	return convert(Lar.Points,V)
 end
+
+"""
+
+"""
+function pointsprojtorus(V,params)
+	direction,center,r0,r1 = params
+	npoints = size(V,2)
+	for i in 1:npoints
+		p = V[:,i]-center
+		c0 = Lar.dot(direction,p)*(direction)
+		N = (p-c0)/Lar.norm(p-c0)
+		c1 = r0*N
+		axis = (p-c1)/Lar.norm(p-c1)
+		c=c1+r1*axis
+		V[:,i] = PointClouds.projection(axis,p-c) + c + center
+	end
+	return convert(Lar.Points,V)
+end
+
+function projectpointson(V::Lar.Points,params,shape::String)
+	if shape == "plane"
+		return PointClouds.pointsproj(V,params)
+	elseif shape == "cylinder"
+		return PointClouds.pointsprojcyl(V,params)
+	elseif shape == "sphere"
+		return PointClouds.pointsprojsphere(V,params)
+	elseif shape == "cone"
+		return PointClouds.pointsprojcone(V,params)
+	elseif shape == "torus"
+		return PointClouds.pointsprojtorus(V,params)
+	end
+end

@@ -34,21 +34,21 @@ function rescone(point::Array{Float64,1}, params)
 	p = point-apex
 	c0 = Lar.dot(axis,p)*(axis)
 	l=Lar.abs(Lar.norm(p-c0)-Lar.dot(axis,c0)*tan(angle))
-	dist=l*cos(angle)
-	return dist
+	return l*cos(angle)
 end
 
 """
 	restorus
 """
 function restorus(point::Array{Float64,1}, params)
-	C, N, rM, rm = params
-	D =  point - C
-	DdotD = Lar.dot(D,D)
-	NdotD = Lar.dot(N,D)
-	sum = DdotD + rM^2-rm^2
-	res = sum^2 - 4*rM^2*(DdotD-NdotD^2)
-	return Lar.abs(res)
+	direction,center,r0,r1 = params
+	p = point-center
+	c0 = Lar.dot(direction,p)*(direction)
+	N = (p-c0)/Lar.norm(p-c0)
+	c1 = r0*N
+	axis = (p-c1)/Lar.norm(p-c1)
+	c=c1+r1*axis
+	return Lar.norm(p-c)
 end
 
 ################################################################################ distance point shape
@@ -91,6 +91,14 @@ function isincone(p::Array{Float64,1},params,par::Float64)::Bool
     return PointClouds.rescone(p,params) <= par
 end
 
+"""
+	isintorus(p::Array{Float64,1},plane::NTuple{4,Float64},par::Float64)::Bool
+
+Checks if a point `p` in near enough to the `cone`.
+"""
+function isintorus(p::Array{Float64,1},params,par::Float64)::Bool
+    return PointClouds.restorus(p,params) <= par
+end
 
 """
 Return residual.
@@ -104,5 +112,7 @@ function residual(V::Lar.Points,params,shape::String)
 		return findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
 	elseif shape == "cone"
 		return findmax([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "torus"
+		return findmax([PointClouds.restorus(V[:,i],params) for i in 1:size(V,2)])
 	end
 end
