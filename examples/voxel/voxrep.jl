@@ -6,9 +6,10 @@ using PointClouds
 
 include("../viewfunction.jl")
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE"
-allfile = PointClouds.filelevel(fname,2)
+LOD = 0
+allfile = PointClouds.filelevel(fname,LOD)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
-
+spacing=spacing/2^LOD
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)
 GL.VIEW(
@@ -18,8 +19,8 @@ GL.VIEW(
 );
 
 
-p = 0.1
-W,CW = PointClouds.pointclouds2cubegrid(V,p,0)
+p = 2*spacing
+W, CW = PointClouds.pointclouds2cubegrid(V,p,1)
 W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(

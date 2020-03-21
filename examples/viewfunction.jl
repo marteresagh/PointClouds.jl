@@ -76,8 +76,9 @@ function colorview(V::Lar.Points,CV::Lar.Cells,rgb::Lar.Points,alpha=1.0)::GL.GL
   	return ret
 end
 
-
-
+"""
+All normals are displayed.
+"""
 function viewnormals(V,normals)
     @assert size(V,2)==size(normals,2) "computenormals: not valid input"
     n=size(V,2)

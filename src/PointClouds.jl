@@ -19,15 +19,16 @@ module PointClouds
 
 	include("mapper.jl")
 
-	include("Fitting/residual.jl")
-	include("Fitting/projection.jl")
-	include("Fitting/fit.jl")
-	include("Fitting/cone.jl")
-	include("Fitting/sphere.jl")
-	include("Fitting/cylinder.jl")
-	include("Fitting/plane.jl")
-	include("Fitting/torus.jl")
-	include("Fitting/newfit.jl")
+	include("Segmentation/residual.jl")
+	include("Segmentation/projection.jl")
+	include("Segmentation/fit.jl")
+	include("Segmentation/cone.jl")
+	include("Segmentation/sphere.jl")
+	include("Segmentation/cylinder.jl")
+	include("Segmentation/plane.jl")
+	include("Segmentation/torus.jl")
+	include("Segmentation/newfit.jl")
+	include("Segmentation/color.jl")
 
 
 	include("voxel.jl")
