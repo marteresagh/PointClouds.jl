@@ -25,7 +25,7 @@ function pointclouds2cubegrid(V::Lar.Points,p::Float64,N::Int64)#RINOMINA COME v
 	out = Array{Lar.Struct,1}()
 
 	for (k,v) in grid
-		if v > N
+		if v >= N
 			V = k .+ [
 			 0.0  0.0  0.0  0.0  1.0  1.0  1.0  1.0;
 			 0.0  0.0  1.0  1.0  0.0  0.0  1.0  1.0;

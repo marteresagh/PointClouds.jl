@@ -24,10 +24,9 @@ end
 Delaunay triangulation projected on xy plane with MATLAB algorithm.
 """
 function DTprojxy(V::Lar.Points)
-	x,y,z = PointClouds.lar2matlab(V)
-	@mput x
-	@mput y
-	mat"DT = delaunay(x,y)"
+	W = convert(Lar.Points,V')[:,[1,2]]
+	@mput W
+	mat"DT = delaunay(W)"
 	@mget DT
 	DT = convert(Array{Int64,2},DT)
 	DT = [DT[i,:] for i in 1:size(DT,1)]
