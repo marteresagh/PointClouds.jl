@@ -5,7 +5,7 @@ using PointClouds
 
 include("../viewfunction.jl")
 
-# 1. Example on plane - generation random points on plane
+## generation random points on plane
 npoints = 20000
 xslope = 0.3
 yslope = 0.5
@@ -27,33 +27,21 @@ normals = PointClouds.computenormals(V,FV)
 GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
 
 
-# 2. Cylinder
+## Cylinder
 V,FV = Lar.cylinder(1.,2)([100,10])
 
 normals = PointClouds.computenormals(V,FV)
 # normals = PointClouds.flipnormals(normals)
 GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
 
-# 3. Sphere
+## Sphere
 V,FV = Lar.apply(Lar.t(1.,2.,1.),Lar.sphere(5.)([64,64]))
 normals = PointClouds.computenormals(V,FV)
 normals = PointClouds.flipnormals(normals)
 GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
 
-# 4. Torus
-V,FV = Lar.toroidal(2,4,2*pi,pi/4)([64,64])
+## Torus
+V,FV = Lar.toroidal(2,4)([64,64])
 normals = PointClouds.computenormals(V,FV)
 # normals = PointClouds.flipnormals(normals)
 GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
-
-
-
-# prova
-
-lista = [1,2,3,4,5,6,7,8,9]
-for w in lista
-    println(w)
-    if w==3
-        setdiff(lista,w)
-    end
-end

@@ -5,7 +5,7 @@ using PointClouds
 
 include("../viewfunction.jl")
 
-# input data
+## input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\MURI"
 allfile = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
@@ -19,7 +19,7 @@ GL.VIEW(
 );
 
 
-# 2. alpha shape
+## alpha shape
 DT = PointClouds.delaunayMATLAB(V)
 filtration = AlphaStructures.alphaFilter(V, DT);
 α = 0.3
@@ -32,47 +32,37 @@ GL.VIEW(
 	]
 );
 
-pointsonplane, params = PointClouds.shapedetection(V,FV,0.02,"plane";NOTSHAPE=100)
+## plane detection
+pointsonplane = nothing
+while isnothing(pointsonplane)
+	global pointsonplane
+	global params
+	#TODO assartion error 3 punti richiesti
+	pointsonplane, params = PointClouds.shapedetection(V,FV,0.02,"plane";NOTSHAPE=100)
+end
+
 Vplane, FVplane = PointClouds.larmodelplane(pointsonplane,params)
-
+# extract model on plane and remained model
 P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsonplane)
-P1,Prgb1 = PointClouds.colorsegmentation(P,FP,Prgb,.25)
+# color segmentation
+P,Prgb = PointClouds.colorsegmentation(P,FP,Prgb,.25)
+Vcurrent,FVcurrent,rgbcurrent = PointClouds.deletepoints(V,FV,rgb,P)
 
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,P'),GL.Point4d(0,0,0,1))
+	colorview(Vcurrent,FVcurrent,rgbcurrent)
+	GL.GLGrid(Vplane,FVplane,GL.Point4d(1,1,1,1),0.4)
+	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+]);
+
+## extract boundary of flat shape
 W,EW =  PointClouds.extractplaneshape(P,params,0.2)
 GL.VIEW([
-	colorview(P,[[i] for i in 1:size(P,2)],Prgb)
+	#colorview(P,[[i] for i in 1:size(P,2)],Prgb)
 	GL.GLGrid(W,EW)
 ]);
 
 
-GL.VIEW([
-	colorview(P1,[[i] for i in 1:size(P1,2)],Prgb1)
-    #colorview(P,[[i] for i in 1:size(P,2)],Prgb)
-	# colorview(Vcurrent,[[i] for i in 1:size(Vcurrent,2)],RGBcurrent,0.3)
-]);
-
-#compute normals
+## compute normals
 #normals = PointClouds.computenormals(V,FV)
 #GL.VIEW([viewnormals(V,normals)...,GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))])
-
-
-# 3.3 remained model
-Vcurrent,FVcurrent,RGBcurrent = PointClouds.deletepoints(V,FV,rgb,pointsonplane)
-
-
-# 4. views
-GL.VIEW([
-    GL.GLGrid(Vplane,FVplane)
-    colorview(P,[[i] for i in 1:size(P,2)],Prgb)
-	colorview(Vcurrent,[[i] for i in 1:size(Vcurrent,2)],RGBcurrent,0.3)
-]);
-
-W,EW =  PointClouds.extractplaneshape(P,params,α)
-
-
-
-GL.VIEW([
-	#GL.GLPoints(convert(Lar.Points,P'))
-	GL.GLGrid(W,EW,GL.COLORS[1],1.)
-	colorview(Vcurrent,[[i] for i in 1:size(Vcurrent,2)],RGBcurrent,0.3)
-]);

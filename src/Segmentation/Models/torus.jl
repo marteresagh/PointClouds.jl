@@ -262,9 +262,10 @@ end
 """
 	larmodeltorus(center,radius)(shape = [36,1])
 """
-function larmodeltorus(direction,center,r0,r1)
+function larmodeltorus(params)
+	direction,center,r0,r1 = params
 	function larmodeltorus0(shape = [36,36])
-		toro = Lar.toroidal(r0,r1)(shape)
+		toro = Lar.toroidal(r1,r0)(shape)
 		matrixaffine = hcat(Lar.nullspace(Matrix(direction')),direction)
 		mrot = vcat(hcat(matrixaffine,[0,0,0]),[0.,0.,0.,1.]')
 		return Lar.apply(Lar.t(center...),Lar.apply(mrot,toro))

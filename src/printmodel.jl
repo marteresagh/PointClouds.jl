@@ -32,3 +32,16 @@ function printmodel(filename, V, CV)
 		write(f, "]")
 	end
 end
+
+
+
+#=
+open("toro4.ply", "w") do f
+	for i=1:size(V,2)
+		x=V[1,i]
+		y=V[2,i]
+		z=V[3,i]
+		write(f, "$x $y $z \n")
+	end
+end
+=#

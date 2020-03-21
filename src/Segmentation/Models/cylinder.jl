@@ -102,7 +102,8 @@ end
 """
 	larmodelcyl(center,radius)(shape = [36,1])
 """
-function larmodelcyl(direction,center,radius,height)
+function larmodelcyl(params)
+	direction,center,radius,height = params
 	function larmodelcyl0(shape = [36,1])
 		cyl0 = Lar.cylinder(radius,height)(shape)
 		centroid = PointClouds.centroid(cyl0[1])

@@ -79,7 +79,8 @@ end
 """
 	larmodelsphere(center,radius)(shape = [64,64])
 """
-function larmodelsphere(center,radius)
+function larmodelsphere(params)
+	center,radius = params
 	function larmodelsphere0(shape = [64,64])
 		return Lar.apply(Lar.t(center...),Lar.sphere(radius)(shape))
 	end

@@ -3,17 +3,20 @@ Detect points on shape.
 """
 function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;NOTSHAPE=10::Int64)
 
-	# 1. list of adjacency verteces
+	# adjacency list
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
    	adj = Lar.verts2verts(EV)
 	R = Int64[]
+	pointsonshape=Array{Float64,2}[]
 
-	# 2. first sample
+	# firt sample
 	index,params = PointClouds.seedpoint(V,adj,shape)
+
+	push!(R,index)
+
 	println("============================================")
 	println(" Detection of $shape starting from $index ")
 	println("============================================")
-	push!(R,index)
 
 	seeds = [index]
 	visitedverts = copy(seeds)
@@ -34,7 +37,6 @@ function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;N
 		params = PointClouds.surfacefitparams(pointsonshape,shape)
 	end
 
-	pointsonshape = V[:,R]
 	if size(pointsonshape,2) <= NOTSHAPE
 		#println("findshape: not valid")
 		return nothing, nothing
@@ -102,7 +104,7 @@ function seedpoint(V::Lar.Points,adj::Array{Array{Int64,1},1},shape::String)
 	seeds = V[:,idxseeds]
 
 	params = PointClouds.surfacefitparams(seeds,shape)
-	minresidual = PointClouds.minresidual(seeds,params,shape)
+	minresidual = minresidual(seeds,params,shape)
 	seed = idxseeds[minresidual]
 
 	return seed,params
@@ -110,25 +112,10 @@ end
 
 
 """
-Return indeces neighbors list of `indverts`, removing verteces already visited.
+Return indices neighbors list of `indverts`, removing verteces already visited.
 """
 function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
 	return setdiff(union(adj[indverts]...),visitedverts)
-end
-
-"""
-Return residual.
-"""
-function residual(V::Lar.Points,params,shape::String)
-	if shape == "plane"
-		return findmax([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)])
-	elseif shape == "cylinder"
-		return findmax([PointClouds.rescyl(V[:,i],params) for i in 1:size(V,2)])
-	elseif shape == "sphere"
-		return findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
-	elseif shape == "cone"
-		return findmax([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])
-	end
 end
 
 """

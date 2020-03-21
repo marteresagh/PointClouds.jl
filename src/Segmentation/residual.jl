@@ -11,10 +11,9 @@ end
 """
 function rescyl(point::Array{Float64,1}, params)
 	direction,center,radius, height = params
-	r2 = radius^2
-	y = point-center
-	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(direction,direction'))*y
-	return Lar.abs(rp[1]-r2)
+	p = point-center
+	c0 = Lar.dot(direction,p)*(direction)
+	return Lar.abs(Lar.norm(p-c0)-radius)
 end
 
 """
@@ -31,11 +30,12 @@ end
 	rescone
 """
 function rescone(point::Array{Float64,1}, params)
-	coneVertex, coneaxis, radius, height = params
-	cosalpha = height/(sqrt(height^2+radius^2))
-	y = point-coneVertex
-	rp = y'*(Matrix{Float64}(Lar.I, 3, 3)-Lar.kron(coneaxis/cosalpha,(coneaxis/cosalpha)'))*y
-	return Lar.abs(rp[1])
+	apex, axis, angle, height = params
+	p = point-apex
+	c0 = Lar.dot(axis,p)*(axis)
+	l=Lar.abs(Lar.norm(p-c0)-Lar.dot(axis,c0)*tan(angle))
+	dist=l*cos(angle)
+	return dist
 end
 
 """
@@ -89,4 +89,20 @@ Checks if a point `p` in near enough to the `cone`.
 """
 function isincone(p::Array{Float64,1},params,par::Float64)::Bool
     return PointClouds.rescone(p,params) <= par
+end
+
+
+"""
+Return residual.
+"""
+function residual(V::Lar.Points,params,shape::String)
+	if shape == "plane"
+		return findmax([PointClouds.resplane(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "cylinder"
+		return findmax([PointClouds.rescyl(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "sphere"
+		return findmax([PointClouds.ressphere(V[:,i],params) for i in 1:size(V,2)])
+	elseif shape == "cone"
+		return findmax([PointClouds.rescone(V[:,i],params) for i in 1:size(V,2)])
+	end
 end
