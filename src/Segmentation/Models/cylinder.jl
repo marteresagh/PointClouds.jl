@@ -61,6 +61,10 @@ end
 
 """
 function cylinderfit(V::Lar.Points)
+
+	npoints = size(V,2)
+	@assert npoints>=5 "cylinderfit: at least 5 points needed"
+	@assert Lar.rank(V')==3 "cylinderfit: aligned points"
 	#1. - preprocess of data
 	centroid, Y, mu, F0, F1, F2 = PointClouds.preprocess(V)
 

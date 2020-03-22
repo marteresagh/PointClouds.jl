@@ -4,7 +4,7 @@ using Random
 	@testset "Parameters of fitting sphere" begin
 		Random.seed!()
 		## random points on sphere
-		npoints = rand(3:20)
+		npoints = rand(4:20)
 		r = rand(1:20)
 		V = Array{Float64,1}[]
 		for i in 1:npoints
