@@ -21,8 +21,7 @@ end
 """
 function ressphere(point::Array{Float64,1}, params)
 	center, radius = params
-	y = point-center
-	rp = Lar.norm(y)
+	rp = Lar.norm(point-center)
 	return Lar.abs(rp-radius)
 end
 

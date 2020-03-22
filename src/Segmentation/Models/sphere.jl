@@ -8,6 +8,7 @@ function spherefit(points::Lar.Points)
 
 	# 1. - translation centroid
 	npoints = size(points,2)
+	@assert npoints>=4 "spherefit: at least 4 points needed"
 	centroid, Y = PointClouds.subtractaverage(points)
 
 	# 2. - costruction matrix W upper triangle
@@ -62,14 +63,11 @@ function spherefit(points::Lar.Points)
 	b1 = f1 - 2*f2*centroid
 	b2 = f2
 
-	if b2!=0
-		discr = Lar.dot(b1,b1)-4*b0*b2
-		if discr>=0
-			center = -b1/(2*b2)
-			center = map(Lar.approxVal(16), center)
-			radius = sqrt(discr/(4*b2^2))
-			radius = map(Lar.approxVal(16), radius)
-		end
+	@assert b2!=0 "spherefit: not a sphere"
+	discr = Lar.dot(b1,b1)-4*b0*b2
+	if discr>=0
+		center = -b1/(2*b2)
+		radius = sqrt(discr/(4*b2^2))
 	end
 
 	return center,radius

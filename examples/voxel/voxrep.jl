@@ -5,8 +5,8 @@ GL= ViewerGL
 using PointClouds
 
 include("../viewfunction.jl")
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE"
-LOD = 0
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
+LOD = 3
 allfile = PointClouds.filelevel(fname,LOD)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 spacing=spacing/2^LOD

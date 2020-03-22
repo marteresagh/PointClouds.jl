@@ -23,7 +23,8 @@ Vsphere, FVsphere = PointClouds.larmodelsphere(params)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[6])
- 	GL.GLGrid(Vsphere,FVsphere,GL.COLORS[2],0.7)
+		GL.GLPoints(convert(Lar.Points,V2'),GL.COLORS[1])
+ 	# GL.GLGrid(Vsphere,FVsphere,GL.COLORS[2],0.7)
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
