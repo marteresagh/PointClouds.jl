@@ -4,7 +4,7 @@ Detect points on shape.
 function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;NOTSHAPE=10::Int64)
 
 	# adjacency list
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)...;dims=1))))
    	adj = Lar.verts2verts(EV)
 	R = Int64[]
 	pointsonshape=Array{Float64,2}[]

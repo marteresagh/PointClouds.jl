@@ -1,9 +1,4 @@
-if VERSION < VersionNumber("1.0.0")
-	using Base.Test
-else
-	using Test
-end
-
+using DataStructures
 
 function random3cells(shape,npoints)
 	pointcloud = rand(3,npoints).*shape
@@ -35,16 +30,16 @@ end
 
 @testset "extraction model" begin
 	V,CV = Lar.cuboidGrid([2,1,1])
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)))))
+	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
 	@test length(FV)==11
 	@test length(EV)==20
 	V,FVouter = PointClouds.extractsurfaceboundary(V,CV)
 	@test length(FVouter)==10
 
 	V,CV = Lar.cuboidGrid([5,3,2])
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)))))
+	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
 	@test length(FV)==121
 	@test length(EV)==162
 	V,FVouter = PointClouds.extractsurfaceboundary(V,CV)
@@ -55,8 +50,8 @@ end
 @testset "sparse matrix" begin
 	pointcloud,V,CV = random3cells([40,12,5],400)
 	VV = [[v] for v=1:size(V,2)]
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)))))
+	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
 	nV = size(V,2)
 	nEV = length(EV)
 	nFV = length(FV)

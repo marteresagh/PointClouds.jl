@@ -6,7 +6,7 @@ Estimation of normals.
 function computenormals(V::Lar.Points, FV::Lar.Cells, start::Int=1)::Lar.Points
 
 	# 1. find list of neighbor
-	EV = unique(sort.(convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))))
+	EV = unique(sort.(convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)...;dims=1))))))
 	VV = Lar.verts2verts(EV)
 	@show "adiacenti calcolati"
 	# DFS definition

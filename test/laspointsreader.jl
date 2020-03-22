@@ -1,8 +1,4 @@
-if VERSION < VersionNumber("1.0.0")
-	using Base.Test
-else
-	using Test
-end
+using LasIO
 
 @testset "Load file .las" begin
 

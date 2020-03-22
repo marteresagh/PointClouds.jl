@@ -4,7 +4,7 @@ Generate  cluster  of  points  with  the  same  color.
 function colorsegmentation(V::Lar.Points, FV::Lar.Cells, Vrgb::Lar.Points, par::Float64; index=0)
 
 	# 1. list of adjacency verteces
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)...;dims=1))))
    	adj = Lar.verts2verts(EV)
 
 	# 2. first samples #TODO implementare la nuova versione per la ricerca del primo seed point

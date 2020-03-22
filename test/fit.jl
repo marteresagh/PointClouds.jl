@@ -1,15 +1,10 @@
-if VERSION < VersionNumber("1.0.0")
-	using Base.Test
-else
-	using Test
-end
 
- #TODO da rivedere e concludere
+#  #TODO da rivedere e concludere
 # @testset "plane fit" begin
 #
 # 	@testset "plane through not aligned three points " begin
-# 		pointsonplane = [2. 0. 0.; 0. 2. 0.; 0. 0. 2.]
-# 		plane = PointClouds.planefit(pointsonplane)
+# 		pointsonplane = [0. 1. 0.; 0. 0. 1.; 0. 0. 0.]
+# 		params = PointClouds.planefit(pointsonplane)
 # 		@test plane == (1.,1.,1.,2.)
 #
 # 		pointsonplane = [2. 0. 0. 2.; 0. 2. 0. -2.; 0. 0. 2. 2.]

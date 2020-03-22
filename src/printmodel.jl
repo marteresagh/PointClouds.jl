@@ -1,3 +1,4 @@
+# TODO dovrei stampare i modelli nei VARI FORMATI ply obj e LAS
 function printmodel(filename, V, CV)
 
 	open(filename*".jl", "w") do f

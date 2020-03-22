@@ -1,8 +1,3 @@
-if VERSION < VersionNumber("1.0.0")
-	using Base.Test
-else
-	using Test
-end
 
 @testset "AABB detection" begin
 	A = ([0.,0.,0.],[1.,1.,1.])

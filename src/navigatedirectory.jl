@@ -1,10 +1,6 @@
 # ```
-
-
 """
 	filelevel(path,lev)
-
-
 """
 function filelevel(path,lev,allprev=true)
 	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = readJSON(path) # useful parameters
