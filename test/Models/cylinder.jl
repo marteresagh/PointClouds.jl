@@ -103,9 +103,12 @@ using Random
 
 		# random aligned points
 		V=Array{Float64,1}[]
+		a=rand(1:4)
+		b=rand(1:4)
+		c=rand(1:4)
 		for i in 1:30
 			t=rand()
-			p=t.+(1-t)*[rand(1:4),rand(1:4),rand(1:4)]
+			p=t.+(1-t)*[a,b,c]
 			push!(V,p)
 	 	end
 		P=hcat(V...)

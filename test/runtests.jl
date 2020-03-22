@@ -9,12 +9,14 @@ else
 end
 
 include("voxel.jl")
-# include("laspointsreader.jl")
+include("laspointsreader.jl")
 # include("navigatedirectory.jl")
 # include("fit.jl")
 # include("geometry.jl")
 include("mapper.jl")
 include("matlab.jl")
+
+# FITTING MODEL
 include("Models/plane.jl")
 include("Models/cylinder.jl")
 include("Models/sphere.jl")
