@@ -52,7 +52,6 @@ GL.VIEW([
 
 
 ## segment original pointcloud
-
 # riporta i parametri nella loro posizione originale
 region=[shape,pointsonplane.+centroid,(params[1],params[2]+centroid)]
 filename="facciatalaterale"
