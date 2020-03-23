@@ -141,7 +141,7 @@ end
 
 torus fit with LM algorithm to minimizer.
 """
-function torusfit(points,normals)
+function torusfit(points::Lar.Points,normals::Lar.Points)
 
 	# [f1,f2,f3,..]
 	# p = (C0,C1,C2,theta,phi,u,v)
@@ -220,6 +220,9 @@ function torusfit(points,normals)
 
 
 	npoints = size(points,2)
+	@assert npoints>=6 "conefit: at least 5 points needed"
+	@assert Lar.rank(points')==3 "conefit: aligned points"
+
 	N0,C0,r00,r10 = PointClouds.initialtorus(points,normals)
 
 	initial = ones(7)

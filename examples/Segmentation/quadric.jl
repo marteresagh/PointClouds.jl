@@ -129,6 +129,7 @@ GL.VIEW([
  	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ])
 
+
 ## Toro fit
 
 V,CV = Lar.toroidal(2,4)([50,50])
@@ -145,7 +146,7 @@ GL.VIEW([
 
 
 params = PointClouds.torusfit(V,normals)
-Vtorus, FVtorus = PointClouds.larmodeltorus(params)()
+Vtorus, FVtorus = PointClouds.larmodeltorus(params2)()
 
 GL.VIEW([
  	GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[6])
