@@ -138,6 +138,7 @@ function regionsegmentcloud(filename::String,from::String, to::String, region,pa
 
 	# 1.- initialize
 	# info of model
+	println("=========================================")
 	shape,pointsmodel,params = region
 	aabb = Lar.boundingbox(pointsmodel)
 
@@ -188,9 +189,11 @@ function regionsegmentcloud(filename::String,from::String, to::String, region,pa
 
 
 	# 3.- merge .las and save
+	println("creation of file")
  	header, pointdata = PointClouds.mergelas(headers,arraylaspoint,bb,scale)
 	savenewlas(writefile,header,pointdata)
 	println("file .las saved in $writefile")
+	println("=========================================")
 	# questi punti li tolgo dall'albero?? cioè da ogni file .las
 	return 1
 end
