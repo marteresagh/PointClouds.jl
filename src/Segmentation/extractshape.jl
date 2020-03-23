@@ -1,3 +1,6 @@
+#TODO migliorare codice per ogni forma
+#region è definita come tripla forma punti e parametri
+#usa questa per definire queste nuove funzioni
 """
 	extractplaneshape(P,params,α)
 

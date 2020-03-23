@@ -63,10 +63,8 @@ end
 		 aabb::Tuple{Array{Float64,1},Array{Float64,1}})
 
 """
-function segmentcloud(filename::String,
-	 from::String, to::String,
-	 model
-	#=aabb::Tuple{Array{Float64,1},Array{Float64,1}}=#)
+function volumesegmentcloud(filename::String,
+	 from::String, to::String, model)
 
 	# 1.- initialize
 	# info of model
@@ -134,7 +132,7 @@ end
 		 aabb::Tuple{Array{Float64,1},Array{Float64,1}})
 
 """
-function regionsegmentcloud(filename::String,from::String, to::String, region,par::Float64)
+function regionsegmentcloud(filename::String,from::String, to::String, region, par::Float64)
 
 	# 1.- initialize
 	# info of model
@@ -182,9 +180,7 @@ function regionsegmentcloud(filename::String,from::String, to::String, region,pa
 			if f%100==0
 				println("file processed $f of $l")
 			end
-
 		end
-
 	end
 
 
@@ -270,7 +266,7 @@ end
 """
  	createlasdata(p,h,header)
 
-genera laspoint coerenti con il mio header.
+Generate laspoint coerenti con il mio header (soprattutto per quanto riguarda la traslazione).
 """
 function createlasdata(p,h,hmerge)
 	type = pointformat(h)
@@ -339,15 +335,4 @@ function bbincremental!(coordpoint,bb)
 	end
 
 	return true
-end
-
-
-"""
-"""
-function pointin(model,test) #passo il modello e il test di contenimento
-
-	function pointin0(point)
-
-	end
-	return pointin0
 end
