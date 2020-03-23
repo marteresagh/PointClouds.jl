@@ -27,15 +27,15 @@ using Random
 		Random.seed!()
 		# random points on cone
 		s = rand(20:40)
-		H=rand(4:30)
-		R=rand(1:20)
-		V,_=PointClouds.cone(R,H)([s,s])
-		params = PointClouds.conefit(V)
+		H = rand(4:30)
+		R = rand(1:20)
+		V,_ = PointClouds.cone(R,H)([s,s])
+		params = ([0,0,0.],[0.,0.,1.],atan(R/H),H)
 
-		V=PointClouds.AlphaStructures.matrixPerturbation(V,atol=0.1)
-		npoints=size(V,2)
+		V = PointClouds.AlphaStructures.matrixPerturbation(V,atol=0.1)
+		npoints = size(V,2)
 		PointClouds.projectpointson(V,params,"cone") #poits projected on cone
-		res=[PointClouds.rescone(V[:,i],params) for i in 1:npoints]
+		res = [PointClouds.rescone(V[:,i],params) for i in 1:npoints]
 		@test isapprox.(res[2:end],0,atol=1e-3)==[1 for i in 2:npoints]
 	end
 
