@@ -122,8 +122,8 @@ end
 """
 Iterative shape detection.
 """
-function segmentation(V::Lar.Points,FV::Lar.Cells, N::Int, par::Float64,
-    shape="rand"::String,VALID=10::Int64)
+function segmentation(V::Lar.Points,FV::Lar.Cells,rgb::Lar.Points, N::Int, par::Float64,
+    shape="rand"::String;VALID=10::Int64)
 
 	# 1. - initialization
 	Vcurrent = copy(V)
@@ -135,7 +135,7 @@ function segmentation(V::Lar.Points,FV::Lar.Cells, N::Int, par::Float64,
 
 	# find N shapes
 	while i < N
-
+		global pointsonshape,params
 		notfound = true
 		while notfound
 			if shape == "rand"
@@ -152,14 +152,12 @@ function segmentation(V::Lar.Points,FV::Lar.Cells, N::Int, par::Float64,
 			end
 		end
 
-
 		i = i+1
 		println("$i shapes found")
 		push!(regions,[pointsonshape,params])
 
 		# delete points of region found from current model
-		Vcurrent,FVcurrent = PointClouds.deletepoints(Vcurrent,FVcurrent,pointsonshape)
-
+		Vcurrent,FVcurrent = PointClouds.deletepoints(Vcurrent,FVcurrent,rgb,pointsonshape)
 	end
 
 	return regions

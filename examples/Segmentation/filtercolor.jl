@@ -33,21 +33,9 @@ GL.VIEW(
 );
 
 ## plane detection
-flag = true
-while flag
-	global flag
-	try
-		pointsonshape,params = PointClouds.shapedetection(V,FV,0.02,"plane",VALID=100)
-		flag = false
-	catch y
-		if !isa(y, AssertionError)
-			flag = false
-			@show "error"
-		end
-	end
-end
+regions = PointClouds.segmentation(V,FV,rgb,1, 0.02,"plane")
+pointsonplane,params=regions[1]
 
-pointsonshape,params = PointClouds.shapedetection(V,FV,0.02,"plane",VALID=100)
 Vplane, FVplane = PointClouds.larmodelplane(pointsonplane,params)
 # extract model on plane and remained model
 P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsonplane)
