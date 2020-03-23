@@ -8,7 +8,6 @@ using Random
 		H=rand(4:30)
 		R=rand(1:20)
 		V = Array{Float64,1}[]
-		#theta = random.random()*2*math.pi
 		for i in 1:npoints
     		theta = rand()*2*pi
 		    z = rand()*H
@@ -24,7 +23,6 @@ using Random
 		@test isapprox(R,params[3],atol=1e-3)
 		@test params[4]<=H
 	end
-
 
 	@testset "Points residual" begin
 		Random.seed!()
@@ -66,7 +64,6 @@ using Random
 
 	end
 
-
 	@testset "Points projected on cylinder" begin
 		Random.seed!()
 		## random points on cylinder
@@ -85,6 +82,7 @@ using Random
 
 		#cylinder
 		V = hcat(V...)
+		V=PointClouds.AlphaStructures.matrixPerturbation(V,atol=0.1)
 		params = PointClouds.cylinderfit(V)
 
 		PointClouds.projectpointson(V,params,"cylinder") #poits projected on cylinder

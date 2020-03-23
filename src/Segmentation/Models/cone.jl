@@ -118,7 +118,7 @@ end
 	conefit(points)
 
 """
-function conefit(points)
+function conefit(points::Lar.Points)
 	#p=(apex,direction)
 
 	# [f1,f2,f3,..]
@@ -158,6 +158,9 @@ function conefit(points)
 
 
 	npoints = size(points,2)
+	@assert npoints>=6 "conefit: at least 5 points needed"
+	@assert Lar.rank(points')==3 "conefit: aligned points"
+
 	coneaxis, coneVertex, coneCosAngle = PointClouds.initialcone(points)
 
 	initial = vcat(coneVertex,coneaxis.*1/coneCosAngle)[:,1]

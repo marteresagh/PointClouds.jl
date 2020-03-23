@@ -21,7 +21,6 @@ using Random
 		@test isapprox(params[1],[0,0,0],atol=1e-3)
 	end
 
-
 	@testset "Points residual" begin
 		Random.seed!()
 		## random points on sphere
@@ -56,7 +55,6 @@ using Random
 
 	end
 
-
 	@testset "Points projected on sphere" begin
 		Random.seed!()
 		## random points on sphere
@@ -71,6 +69,7 @@ using Random
 
 		#sphere
 		V = hcat(V...)
+		V=PointClouds.AlphaStructures.matrixPerturbation(V,atol=0.1)
 		params = PointClouds.spherefit(V)
 
 		PointClouds.projectpointson(V,params,"sphere") #poits projected on sphere
