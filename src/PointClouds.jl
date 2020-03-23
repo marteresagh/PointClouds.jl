@@ -26,7 +26,7 @@ module PointClouds
 	include("Segmentation/Models/plane.jl")
 	include("Segmentation/Models/torus.jl")
 	include("Segmentation/extractshape.jl")
-	include("Segmentation/newfit.jl")
+	include("Segmentation/segmentation.jl")
 	include("Segmentation/color.jl")
 
 	include("voxel.jl")
