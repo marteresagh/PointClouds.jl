@@ -14,7 +14,7 @@ V1,(VV,EV,FV,CV)=Lar.cuboid([1,1,1],true)
 model = V,EV,FV
 PointClouds.segmentcloud(filename,from,to,model)
 
-
+AABB=PointClouds.las2aabb(from)
 
 from="C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
 allfile=PointClouds.filelevel(from,4)

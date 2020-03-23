@@ -126,6 +126,75 @@ function segmentcloud(filename::String,
 	return 1
 end
 
+
+"""
+	segmentcloud(filename::String,
+		 from::String, to::String,
+		 #= model: poi metto il modello al posto dell'aabb=#
+		 aabb::Tuple{Array{Float64,1},Array{Float64,1}})
+
+"""
+function regionsegmentcloud(filename::String,from::String, to::String, region,par::Float64)
+
+	# 1.- initialize
+	# info of model
+	shape,pointsmodel,params = region
+	aabb = Lar.boundingbox(pointsmodel)
+
+	writefile = to*"\\"*filename*".las"
+	bb = ([Inf,Inf,Inf],[-Inf,-Inf,-Inf]) # initialize aabb of my finales points
+
+	headers = LasIO.LasHeader[] # all headers
+	arraylaspoint = Array{LasIO.LasPoint,1}[] # all points fall in my model
+
+	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = readJSON(from) # useful parameters
+	pathr = from*"\\"*octreeDir*"\\r" # path to directory "r"
+
+	println("search in $pathr ")
+
+	# 2.- check all file
+	for (root, dirs, files) in walkdir(pathr)
+		l = length(files)
+		f = 0
+		for file in files
+			#@show file
+			pointstaken = LasIO.LasPoint[]
+			if endswith(file, ".las")
+		        fname = joinpath(root, file) # path to files
+				AABB = PointClouds.las2aabb(fname) # AABB of octree
+				h, pdata = LasIO.FileIO.load(fname) # read data
+				if PointClouds.AABBdetection(AABB,aabb) # iff #TODO attenzione ai casi in cui interseca il bb ma non ho punti che ricadono nel modello
+					push!(headers,h)
+					for p in pdata
+						coordpoint = PointClouds.xyz(p,h)
+						if PointClouds.isclosetomodel(coordpoint,params, par, shape) # pointinmodel(model,coordpoint) #come lo voglio definire il cilindro??
+							bbincremental!(coordpoint,bb)
+							push!(pointstaken,p)
+						end
+					end
+					#@show length(pointstaken)
+					push!(arraylaspoint,pointstaken)
+				end
+			end
+			#progession
+			f = f+1
+			if f%100==0
+				println("file processed $f of $l")
+			end
+
+		end
+
+	end
+
+
+	# 3.- merge .las and save
+ 	header, pointdata = PointClouds.mergelas(headers,arraylaspoint,bb,scale)
+	savenewlas(writefile,header,pointdata)
+	println("file .las saved in $writefile")
+	# questi punti li tolgo dall'albero?? cioè da ogni file .las
+	return 1
+end
+
 """
 	 xyz(p::LasPoint, h::LasHeader)
 

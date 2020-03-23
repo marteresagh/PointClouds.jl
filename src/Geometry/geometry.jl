@@ -82,12 +82,9 @@ end
 
 
 """
-	 AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
-
 Compute collision detection of two AABB.
-
 """
-function  AABBdetection(aabb::Tuple{Array{Float64,1},Array{Float64,1}},AABB::Tuple{Array{Float64,1},Array{Float64,1}})::Bool
+function  AABBdetection(aabb::Tuple{Array{Float64,2},Array{Float64,2}},AABB::Tuple{Array{Float64,2},Array{Float64,2}})::Bool
 	A=hcat(aabb...)
 	B=hcat(AABB...)
 	@assert size(A,1) == size(B,1) "AABBdetection: not same dimension"

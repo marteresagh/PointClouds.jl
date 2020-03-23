@@ -154,7 +154,7 @@ function segmentation(V::Lar.Points,FV::Lar.Cells,rgb::Lar.Points, N::Int, par::
 
 		i = i+1
 		println("$i shapes found")
-		push!(regions,[pointsonshape,params])
+		push!(regions,[shapecurrent,pointsonshape,params])
 
 		# delete points of region found from current model
 		Vcurrent,FVcurrent = PointClouds.deletepoints(Vcurrent,FVcurrent,rgb,pointsonshape)
