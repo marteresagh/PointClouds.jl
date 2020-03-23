@@ -15,7 +15,7 @@ ys = 4*rand(npoints)
 zs = Float64[]
 
 for i in 1:npoints
-    push!(zs, xs[i]*xslope + ys[i]*yslope + off+0.1*rand()) # points perturbation
+    push!(zs, xs[i]*xslope + ys[i]*yslope + off+0*rand()) # points perturbation
 end
 
 ## points input
@@ -27,7 +27,8 @@ GL.VIEW([
 
 ## shape detection
 FV = PointClouds.DTprojxy(V) # connection for neighborhood
-pointsonshape,params = PointClouds.shapedetection(V,FV,0.05,"plane")
+pointsonshape,params = PointClouds.shapedetection(V,FV,0.05,"plane",VALID=10)
+
 
 # plane model to view
 Vplane,FVplane = PointClouds.larmodelplane(V,params)

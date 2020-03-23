@@ -1,5 +1,5 @@
 
-@testset "Delaunay triangulation" begin
+@testset "DELAUNAY TRIANGULATION" begin
 
 	@testset "one tetrahedron" begin
 		P = [

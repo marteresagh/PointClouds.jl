@@ -1,6 +1,6 @@
 using LasIO
 
-@testset "Load file .las" begin
+@testset "LOAD FILE .las" begin
 
 	@testset "lasPoint without color" begin
 		fname = "test/lasfile/srs.las"

@@ -20,7 +20,7 @@ function extractplaneshape(P,params,α)
 	_, _, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
 
 	# 4. extract boundary
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
 	Mbound = Lar.u_boundary_2(FV,EV)
 	ev = (Mbound'*ones(length(FV))).%2
 	EV = EV[Bool.(ev)]

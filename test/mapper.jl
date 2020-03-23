@@ -16,7 +16,7 @@ function BoxCalculation(Vertices)
 	return Box
 end
 
-@testset "cone" begin
+@testset "MAPPER: cone model" begin
 	@test BoxCalculation(PointClouds.cone(1,5,2*pi)()[1])==20
 	@test BoxCalculation(PointClouds.cone(2,2,pi)()[1])==16
 	@test BoxCalculation(PointClouds.cone(1,4,pi)()[1])==8

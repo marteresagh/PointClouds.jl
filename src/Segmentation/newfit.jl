@@ -1,10 +1,10 @@
 """
 Detect points on shape.
 """
-function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;NOTSHAPE=10::Int64)
+function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;VALID=10::Int64)
 
 	# adjacency list
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.FV2EV,FV)...;dims=1))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
    	adj = Lar.verts2verts(EV)
 	R = Int64[]
 	pointsonshape=Array{Float64,2}[]
@@ -37,10 +37,7 @@ function shapedetection(V::Lar.Points,FV::Lar.Cells,par::Float64,shape::String;N
 		params = PointClouds.surfacefitparams(pointsonshape,shape)
 	end
 
-	if size(pointsonshape,2) <= NOTSHAPE
-		#println("findshape: not valid")
-		return nothing, nothing
-	end
+	@assert size(pointsonshape,2) >= VALID "shapedetection: uninteresting model"
 
     return  pointsonshape,params
 end
@@ -126,7 +123,7 @@ end
 Iterative shape detection.
 """
 function segmentation(V::Lar.Points,FV::Lar.Cells, N::Int, par::Float64,
-    shape="rand"::String,NOTVALID=10::Int64)
+    shape="rand"::String,VALID=10::Int64)
 
 	# 1. - initialization
 	Vcurrent = copy(V)
@@ -138,16 +135,23 @@ function segmentation(V::Lar.Points,FV::Lar.Cells, N::Int, par::Float64,
 
 	# find N shapes
 	while i < N
-		pointsonshape = nothing
-		params = nothing
 
-		while isnothing(pointsonshape)
-		   if shape == "rand"
-	            shapecurrent = randomshape()
-	       end
-	       pointsonshape,params = PointClouds.shapedetection(Vcurrent,FVcurrent,par,
-			    shapecurrent;NOTVALID=NOTVALID)
+		notfound = true
+		while notfound
+			if shape == "rand"
+ 	        	shapecurrent = PointClouds.randomshape(["plane","sphere","cylinder","cone"])
+ 	       	end
+			try
+				pointsonshape,params = PointClouds.shapedetection(Vcurrent,FVcurrent,par,
+				   shapecurrent;VALID=VALID)
+				notfound = false
+			catch y
+				if !isa(y, AssertionError)
+					notfound = false
+				end
+			end
 		end
+
 
 		i = i+1
 		println("$i shapes found")
@@ -159,4 +163,11 @@ function segmentation(V::Lar.Points,FV::Lar.Cells, N::Int, par::Float64,
 	end
 
 	return regions
+end
+
+"""
+Return a random string in an array of strings.
+"""
+function randomshape(s::Array{String,1})::String
+	return rand(s)
 end

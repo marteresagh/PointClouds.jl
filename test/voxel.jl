@@ -27,38 +27,40 @@ function random3cells(shape,npoints)
 	return pointcloud,V,CV
 end
 
+@testset "VOXELIZATION" begin
 
-@testset "extraction model" begin
-	V,CV = Lar.cuboidGrid([2,1,1])
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
-	@test length(FV)==11
-	@test length(EV)==20
-	V,FVouter = PointClouds.extractsurfaceboundary(V,CV)
-	@test length(FVouter)==10
+	@testset "extraction boundary" begin
+		V,CV = Lar.cuboidGrid([2,1,1])
+		FV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2FV,CV)))))
+		EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2EV,CV)))))
+		@test length(FV)==11
+		@test length(EV)==20
+		V,FVouter = PointClouds.extractsurfaceboundary(V,CV)
+		@test length(FVouter)==10
 
-	V,CV = Lar.cuboidGrid([5,3,2])
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
-	@test length(FV)==121
-	@test length(EV)==162
-	V,FVouter = PointClouds.extractsurfaceboundary(V,CV)
-	@test length(FVouter)==62
+		V,CV = Lar.cuboidGrid([5,3,2])
+		FV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2FV,CV)))))
+		EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2EV,CV)))))
+		@test length(FV)==121
+		@test length(EV)==162
+		V,FVouter = PointClouds.extractsurfaceboundary(V,CV)
+		@test length(FVouter)==62
 
-end
+	end
 
-@testset "sparse matrix" begin
-	pointcloud,V,CV = random3cells([40,12,5],400)
-	VV = [[v] for v=1:size(V,2)]
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
-	nV = size(V,2)
-	nEV = length(EV)
-	nFV = length(FV)
-	nCV = length(CV)
+	@testset "sparse matrix" begin
+		pointcloud,V,CV = random3cells([40,12,5],400)
+		VV = [[v] for v=1:size(V,2)]
+		FV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2FV,CV)))))
+		EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2EV,CV)))))
+		nV = size(V,2)
+		nEV = length(EV)
+		nFV = length(FV)
+		nCV = length(CV)
 
-	@test PointClouds.K(VV) == Matrix(Lar.I,nV,nV)
-	@test size(PointClouds.K(EV)) == (nEV,nV)
-	@test size(PointClouds.K(FV)) == (nFV,nV)
-	@test size(PointClouds.K(CV)) == (nCV,nV)
+		@test PointClouds.K(VV) == Matrix(Lar.I,nV,nV)
+		@test size(PointClouds.K(EV)) == (nEV,nV)
+		@test size(PointClouds.K(FV)) == (nFV,nV)
+		@test size(PointClouds.K(CV)) == (nCV,nV)
+	end
 end

@@ -62,8 +62,8 @@ end
 
 function extractsurfaceboundary(V::Lar.Points,CV::Lar.Cells)
 	VV = [[v] for v=1:size(V,2)]
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2EV,CV)...;dims=1))))
-	FV = convert(Array{Array{Int64,1},1}, collect(Set(cat(map(PointClouds.CV2FV,CV)...;dims=1))))
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2EV,CV)))))
+	FV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.CV2FV,CV)))))
 
 	# M_0 = K(VV)
 	# M_1 = K(EV)

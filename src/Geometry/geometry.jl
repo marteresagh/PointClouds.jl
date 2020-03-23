@@ -63,8 +63,6 @@ matchcolumn(a,B) = findfirst(j->all(i->a[i] == B[i,j],1:size(B,1)),1:size(B,2))
 
 """
  	height()
-
-
 """
 function height(direction:: Array{Float64,1}, V::Lar.Points)
 	hmin = +Inf
@@ -118,4 +116,12 @@ function flat(allplanes)
 		params = allplanes[i][2]
 		allplanes[i][1]=PointClouds.pointsproj(allplanes[i][1],params)
 	end
+end
+
+
+"""
+ 	CAT(args)
+"""
+function CAT(args)
+	return reduce( (x,y) -> append!(x,y), args; init=[] )
 end
