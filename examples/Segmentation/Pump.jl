@@ -6,7 +6,7 @@ using PointClouds
 include("../viewfunction.jl")
 
 ## input data
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\PUMP"
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\TUBE"
 allfile = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
@@ -34,14 +34,23 @@ GL.VIEW(
 );
 
 ## shape detection
-regions = PointClouds.segmentation(V,FV,rgb,1, 0.005,"cylinder";VALID=50)
-shape,pointsoncyl,params=regions[1]
+regions = PointClouds.segmentation(V,FV,rgb,1, 0.008,"cylinder";VALID=1000)
+shape,pointsoncyl,params = regions[1]
 Vcyl, FVcyl = PointClouds.larmodelcyl(params)([36,36])
-
+P,FP,Prgb = PointClouds.extractionmodel(V,FV,rgb,pointsoncyl)
 GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,V'),GL.Point4d(0,0,0,1))
 	GL.GLGrid(Vcyl,FVcyl,GL.COLORS[2],1.)
 ]);
+
+## shape of
+P,FW =  PointClouds.shapeof(regions[1],0.05)
+GL.VIEW([
+	#colorview(P,[[i] for i in 1:size(P,2)],Prgb)
+	colorview(P,FW,Prgb)
+]);
+
+
 
 ## segment original pointcloud
 # riporta i parametri nella loro posizione originale
@@ -49,4 +58,4 @@ region=[shape,pointsoncyl.+centroid,(params[1],params[2]+centroid,params[3],para
 filename="tube"
 from="C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\PUMP"
 to="C:\\Users\\marte\\Documents\\SegmentCloud"
-PointClouds.regionsegmentcloud(filename, from, to, region,0.05)
+PointClouds.regionsegmentcloud(filename, from, to, region,0.008)

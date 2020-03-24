@@ -1,4 +1,4 @@
-# ```
+
 """
 	filelevel(path,lev)
 """
@@ -57,16 +57,11 @@ function readJSON(path::String)
 end
 
 """
-	segmentcloud(filename::String,
-		 from::String, to::String,
-		 #= model: poi metto il modello al posto dell'aabb=#
-		 aabb::Tuple{Array{Float64,1},Array{Float64,1}})
-
+	volumesegmentcloud(filename::String, from::String, to::String, model)
 """
-function volumesegmentcloud(filename::String,
-	 from::String, to::String, model)
+function volumesegmentcloud(filename::String, from::String, to::String, model)
 
-	# 1.- initialize
+	# initialize
 	# info of model
 	V,EV,FV = model
 	aabb = Lar.boundingbox(V)
@@ -82,12 +77,11 @@ function volumesegmentcloud(filename::String,
 
 	println("search in $pathr ")
 
-	# 2.- check all file
+	# check all file
 	for (root, dirs, files) in walkdir(pathr)
 		l = length(files)
 		f = 0
 		for file in files
-			#@show file
 			pointstaken = LasIO.LasPoint[]
 			if endswith(file, ".las")
 		        fname = joinpath(root, file) # path to files
@@ -102,7 +96,6 @@ function volumesegmentcloud(filename::String,
 							push!(pointstaken,p)
 						end
 					end
-					#@show length(pointstaken)
 					push!(arraylaspoint,pointstaken)
 				end
 			end
@@ -111,12 +104,10 @@ function volumesegmentcloud(filename::String,
 			if f%100==0
 				println("file processed $f of $l")
 			end
-
 		end
-
 	end
 
-	# 3.- merge .las and save
+	# merge .las and save
  	header, pointdata = mergelas(headers,arraylaspoint,bb,scale)
 	savenewlas(writefile,header,pointdata)
 	println("file .las saved in $writefile")
@@ -126,13 +117,9 @@ end
 
 
 """
-	segmentcloud(filename::String,
-		 from::String, to::String,
-		 #= model: poi metto il modello al posto dell'aabb=#
-		 aabb::Tuple{Array{Float64,1},Array{Float64,1}})
-
+	regionsegmentcloud(filename::String,from::String, to::String, region, par::Float64)
 """
-function regionsegmentcloud(filename::String,from::String, to::String, region, par::Float64)
+function regionsegmentcloud(filename::String, from::String, to::String, region, par::Float64)
 
 	# 1.- initialize
 	# info of model
@@ -156,7 +143,6 @@ function regionsegmentcloud(filename::String,from::String, to::String, region, p
 		l = length(files)
 		f = 0
 		for file in files
-			#@show file
 			pointstaken = LasIO.LasPoint[]
 			if endswith(file, ".las")
 		        fname = joinpath(root, file) # path to files
@@ -171,11 +157,10 @@ function regionsegmentcloud(filename::String,from::String, to::String, region, p
 							push!(pointstaken,p)
 						end
 					end
-					#@show length(pointstaken)
 					push!(arraylaspoint,pointstaken)
 				end
 			end
-			#progession
+			# progession
 			f = f+1
 			if f%100==0
 				println("file processed $f of $l")
@@ -183,8 +168,7 @@ function regionsegmentcloud(filename::String,from::String, to::String, region, p
 		end
 	end
 
-
-	# 3.- merge .las and save
+	# merge .las and save
 	println("creation of file")
  	header, pointdata = PointClouds.mergelas(headers,arraylaspoint,bb,scale)
 	savenewlas(writefile,header,pointdata)
@@ -221,13 +205,13 @@ end
 Merge more file .las.
 """
 function mergelas(headers,pointdata,bb,scale)
-	@assert length(headers) == length(pointdata) "inconsistent data"
+	@assert length(headers) == length(pointdata) "mergelas: inconsistent data"
 
-	# 1. - header of merging las
+	# header of merging las
 	hmerge = createheader(headers,pointdata,bb,scale)
 	data = LasIO.LasPoint[]
 
-	# 2. - Las point data merge
+	# Las point data merge
 	for i in 1:length(pointdata)
 		for p in pointdata[i]
 			laspoint = createlasdata(p,headers[i],hmerge)
@@ -245,20 +229,23 @@ crea header coerente con i miei punti.
 """
 function createheader(headers,pointdata,bb,scale)
 	type = pointformat(headers[1])
-
 	h = deepcopy(headers[1])
+
 	h.x_scale = scale
     h.y_scale = scale
     h.z_scale = scale
+
 	h.x_offset = bb[1][1]
     h.y_offset = bb[1][2]
     h.z_offset = bb[1][3]
+
     h.x_max = bb[2][1]
     h.x_min = bb[1][1]
     h.y_max = bb[2][2]
     h.y_min = bb[1][2]
     h.z_max = bb[2][3]
     h.z_min = bb[1][3]
+
 	h.records_count = sum(length.(pointdata))
 	return h
 end
@@ -298,7 +285,6 @@ function createlasdata(p,h,hmerge)
 		red = p.red
 		green = p.green
 		blue = p.blue
-
 		return type(x, y, z,
 					intensity, flag_byte, raw_classification,
 					scan_angle, user_data, pt_src_id,
@@ -317,7 +303,6 @@ function createlasdata(p,h,hmerge)
 					)
 
 	end
-
 end
 
 """
@@ -325,6 +310,7 @@ end
 
 """
 function bbincremental!(coordpoint,bb)
+
 	for i in 1:length(coordpoint)
 		if coordpoint[i] < bb[1][i]
 			bb[1][i] = coordpoint[i]
