@@ -61,7 +61,7 @@ PointClouds.regionsegmentcloud(filename, from, to, region,0.03)
 
 
 ## extract boundary of flat shape
-W,EW =  PointClouds.extractplaneshape(P,params,0.2)
+W,EW =  PointClouds.boundaryflatshape(regions[1],0.2)
 GL.VIEW([
 	#colorview(P,[[i] for i in 1:size(P,2)],Prgb)
 	GL.GLGrid(W,EW)

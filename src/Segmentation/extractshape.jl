@@ -1,46 +1,53 @@
-#TODO migliorare codice per ogni forma
-#region è definita come tripla forma punti e parametri
-#usa questa per definire queste nuove funzioni
-"""
-	extractplaneshape(P,params,α)
 
-Return boundary of 2D α-shapes of `P` projected on plane defined by params.
 """
-function extractplaneshape(P,params,α)
+Shape reconstruction of an extracted region.
+"""
+function shapeof(region, α; extractbound = false)
+	shape, points, params = region
+	PointClouds.projectpointson(points,params,shape)
+	if shape == "plane"
+		axis,centroid = params
+		# rotate points on XY plane
+		mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
+		W = Lar.inv(mrot)*(points)
+
+		# alpha shape
+		DT = PointClouds.delaunayMATLAB(W[[1,2],:])
+		filtration = AlphaStructures.alphaFilter(W[[1,2],:], DT);
+		_, _, FV = AlphaStructures.alphaSimplex(W[[1,2],:], filtration, α);
+		return points, FV
+	else
+		DT = PointClouds.delaunayMATLAB(points)
+	   	filtration = AlphaStructures.alphaFilter(points, DT);
+	   	_, _, FV, _ = AlphaStructures.alphaSimplex(points, filtration, α)
+	   return points, FV
+	end
+end
+
+"""
+Extract boundary of flat shape.
+"""
+function boundaryflatshape(region,α)
+	shape, points, params = region
+
+	@assert shape == "plane" "boundaryflatshape: is not flat region"
 	axis,centroid = params
-
-	# 1. projection points on plane
-	PointClouds.pointsproj(P,params)
-
-	# 2. rotate points on XY plane
+	#  projection points on plane
+	PointClouds.projectpointson(points,params,shape)
+	# rotate points on XY plane
 	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
-	W = Lar.inv(mrot)*(P)
+	W = Lar.inv(mrot)*(points)
 
-	# 3. triangulation
-	W1 = W[[1,2],:]
-	DT = PointClouds.delaunayMATLAB(W1)
-	filtration = AlphaStructures.alphaFilter(W1, DT);
-	_, _, FV = AlphaStructures.alphaSimplex(W1, filtration, α);
+	# triangulation
+	DT = PointClouds.delaunayMATLAB( W[[1,2],:])
+	filtration = AlphaStructures.alphaFilter( W[[1,2],:], DT);
+	_, _, FV = AlphaStructures.alphaSimplex( W[[1,2],:], filtration, α);
 
-	# 4. extract boundary
+	# extract boundary
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
 	Mbound = Lar.u_boundary_2(FV,EV)
 	ev = (Mbound'*ones(length(FV))).%2
 	EV = EV[Bool.(ev)]
 
-	return P,EV
-end
-
-
-"""
-	extractshape(P,params,α)
-
-Return α-shapes of `P` projected on shape defined by params.
-"""
-function extractshape(P,params,α)
-	PointClouds.pointsprojcyl(P,params)
-	DT = PointClouds.delaunayMATLAB(P)
-	filtration = AlphaStructures.alphaFilter(P, DT);
-	_, _, FP, TP = AlphaStructures.alphaSimplex(P, filtration, α)
-	return P,FP
+	return points,EV
 end
