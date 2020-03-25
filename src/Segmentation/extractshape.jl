@@ -2,7 +2,7 @@
 """
 Shape reconstruction of an extracted region.
 """
-function shapeof(region, α; extractbound = false)
+function shapeof(region, α)
 	shape, points, params = region
 	PointClouds.projectpointson(points,params,shape)
 	if shape == "plane"

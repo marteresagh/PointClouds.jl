@@ -57,16 +57,28 @@ function readJSON(path::String)
 end
 
 """
+	boxmodel(aabb::Tuple{Array{Float64,2},Array{Float64,2}})
+"""
+function boxmodel(aabb::Tuple{Array{Float64,2},Array{Float64,2}})
+	min,max = aabb
+	V = [	min[1]  min[1]  min[1]  min[1]  max[1]  max[1]  max[1]  max[1];
+		 	min[2]  min[2]  max[2]  max[2]  min[2]  min[2]  max[2]  max[2];
+		 	min[3]  max[3]  min[3]  max[3]  min[3]  max[3]  min[3]  max[3] ]
+	EV = [[1, 2],  [3, 4], [5, 6],  [7, 8],  [1, 3],  [2, 4],  [5, 7],  [6, 8],  [1, 5],  [2, 6],  [3, 7],  [4, 8]]
+	FV = [[1, 2, 3, 4],  [5, 6, 7, 8],  [1, 2, 5, 6],  [3, 4, 7, 8],  [1, 3, 5, 7],  [2, 4, 6, 8]]
+	return V,EV,FV
+end
+
+"""
 	volumesegmentcloud(filename::String, from::String, to::String, model)
 """
-function volumesegmentcloud(filename::String, from::String, to::String, model)
+function volumesegmentcloud(from::String, to::String, aabb::Tuple{Array{Float64,2},Array{Float64,2}})
 
 	# initialize
 	# info of model
-	V,EV,FV = model
-	aabb = Lar.boundingbox(V)
+	V,EV,FV = PointClouds.boxmodel(aabb)
 
-	writefile = to*"\\"*filename*".las"
+	writefile = to
 	bb = ([Inf,Inf,Inf],[-Inf,-Inf,-Inf]) # initialize aabb of my finales points
 
 	headers = LasIO.LasHeader[] # all headers
@@ -87,11 +99,11 @@ function volumesegmentcloud(filename::String, from::String, to::String, model)
 		        fname = joinpath(root, file) # path to files
 				AABB = PointClouds.las2aabb(fname) # AABB of octree
 				h, pdata = LasIO.FileIO.load(fname) # read data
-				if AABBdetection(AABB,aabb) # iff #TODO attenzione ai casi in cui interseca il bb ma non ho punti che ricadono nel modello
+				if AABBdetection(AABB,aabb)
 					push!(headers,h)
 					for p in pdata
 						coordpoint = xyz(p,h)
-						if !isempty(Lar.testinternalpoint(V,EV,FV)(coordpoint)) # pointinmodel(model,coordpoint) #come lo voglio definire il cilindro??
+						if !isempty(Lar.testinternalpoint(V,EV,FV)(coordpoint))
 							bbincremental!(coordpoint,bb)
 							push!(pointstaken,p)
 						end
@@ -128,7 +140,7 @@ function regionsegmentcloud(filename::String, from::String, to::String, region, 
 	aabb = Lar.boundingbox(pointsmodel)
 
 	writefile = to*"\\"*filename*".las"
-	bb = ([Inf,Inf,Inf],[-Inf,-Inf,-Inf]) # initialize aabb of my finales points
+	bb = ([Inf,Inf,Inf],[-Inf,-Inf,-Inf]) # initialize aabb of my finale points
 
 	headers = LasIO.LasHeader[] # all headers
 	arraylaspoint = Array{LasIO.LasPoint,1}[] # all points fall in my model
@@ -148,11 +160,11 @@ function regionsegmentcloud(filename::String, from::String, to::String, region, 
 		        fname = joinpath(root, file) # path to files
 				AABB = PointClouds.las2aabb(fname) # AABB of octree
 				h, pdata = LasIO.FileIO.load(fname) # read data
-				if PointClouds.AABBdetection(AABB,aabb) # iff #TODO attenzione ai casi in cui interseca il bb ma non ho punti che ricadono nel modello
+				if PointClouds.AABBdetection(AABB,aabb)
 					push!(headers,h)
 					for p in pdata
 						coordpoint = PointClouds.xyz(p,h)
-						if PointClouds.isclosetomodel(coordpoint,params, par, shape) # pointinmodel(model,coordpoint) #come lo voglio definire il cilindro??
+						if PointClouds.isclosetomodel(coordpoint,params, par, shape)
 							bbincremental!(coordpoint,bb)
 							push!(pointstaken,p)
 						end

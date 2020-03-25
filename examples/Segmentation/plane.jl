@@ -25,6 +25,12 @@ GL.VIEW([
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);
 
+GL.VIEW([
+    GL.GLPoints(convert(Lar.Points,V'),GL.COLORS[6])
+	GL.GLGrid(V,FV)
+	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+]);
+
 ## shape detection
 FV = PointClouds.DTprojxy(V) # connection for neighborhood
 pointsonshape,params = PointClouds.shapedetection(V,FV,0.05,"plane",VALID=10)

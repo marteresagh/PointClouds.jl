@@ -6,7 +6,7 @@ using PointClouds
 include("../viewfunction.jl")
 
 ## input data
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\TUBE"
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\PUMP"
 allfile = PointClouds.filelevel(fname,0)
 _,_,_,_,_,spacing = PointClouds.readJSON(fname)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
@@ -49,8 +49,6 @@ GL.VIEW([
 	#colorview(P,[[i] for i in 1:size(P,2)],Prgb)
 	colorview(P,FW,Prgb)
 ]);
-
-
 
 ## segment original pointcloud
 # riporta i parametri nella loro posizione originale
