@@ -122,3 +122,15 @@ end
 function CAT(args)
 	return reduce( (x,y) -> append!(x,y), args; init=[] )
 end
+
+
+"""
+Check if point is in a aabb
+"""
+function isinbox(aabb,p)
+	min=aabb[1]
+	max=aabb[2]
+	return (  p[1]>=min[1] && p[1]<=max[1] &&
+			  p[2]>=min[2] && p[2]<=max[2] &&
+			   p[3]>=min[3] && p[3]<=max[3] )
+end

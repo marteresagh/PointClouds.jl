@@ -33,5 +33,6 @@ module PointClouds
 
 	include("printmodel.jl")
 	include("matlab.jl")
+	include("pointinaabb.jl")
 
 end
