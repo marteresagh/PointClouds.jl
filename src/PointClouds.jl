@@ -33,6 +33,8 @@ module PointClouds
 
 	include("printmodel.jl")
 	include("matlab.jl")
-	include("pointinaabb.jl")
+	include("extractpc.jl")
+
+	include("FileIO/ply.jl")
 
 end
