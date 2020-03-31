@@ -32,29 +32,39 @@ end
 """
 save point clouds
 """
-function saveply(f, vertices, normals, rgb)
+
+function saveply(f, vertices; normals=nothing, rgb=nothing)
     io = open(f,"w")
-        vts,fcs = model
 
-        nV = size(vts,2)
-        nF = length(fcs)
-        nface=length(fcs[1])
+    nV = size(vertices,2)
 
+    # write the header
+    write(io, "ply\n")
+    write(io, "format ascii 1.0\n")
+    write(io, "element vertex $nV\n")
+    write(io, "property float x\nproperty float y\nproperty float z\n")
 
-        # write the header
-        write(io, "ply\n")
-        write(io, "format ascii 1.0\n")
-        write(io, "element vertex $nV\n")
-        write(io, "property float x\nproperty float y\nproperty float z\n")
-        write(io, "end_header\n")
+    if !isnothing(normals)
+        write(io, "property float nx\nproperty float ny\nproperty float nz\n")
+    end
 
-        # write the vertices and faces
-        for i in 1:nV
-            println(io, join(vts[:,i], " "))
-        end
-        for i in 1:nF
-            println(io, nface, " ", join(fcs[i].-1, " "))
-        end
+    if !isnothing(rgb)
+        write(io, "property uchar red\nproperty uchar green\nproperty uchar blue\n")
+    end
+    write(io, "end_header\n")
+
+    # write the vertices and faces
+    for i in 1:nV
+		if normals==rgb
+			println(io, join(vertices[:,i], " "))
+		elseif !isnothing(normals)
+	        println(io, join(vertices[:,i], " "), " ", join(normals[:,i], " "))
+		elseif !isnothing(rgb)
+	        println(io, join(vertices[:,i], " "), " ", join(floor.(Int,rgb[:,i].*255), " "))
+		else
+			println(io, join(vertices[:,i], " "), " ", join(normals[:,i], " "), " ", join(floor.(Int,rgb[:,i].*255), " "))
+		end
+    end
     close(io)
 end
 
