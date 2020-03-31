@@ -1,16 +1,17 @@
 using LasIO
+const tf = dirname(@__FILE__)
 
 @testset "LOAD FILE .las" begin
 
 	@testset "lasPoint without color" begin
-		fname = "test/lasfile/srs.las"
+		fname = joinpath(tf, "lasfile/srs.las") #"test/lasfile/srs.las"
 		V,VV,rgb = PointClouds.loadlas(fname)
 		@test size(V) == (3,10)
 		@test isempty(rgb)
 	end
 
 	@testset "lasPoint with color" begin
-		fname = "test/lasfile/cava.las"
+		fname = joinpath(tf, "lasfile/cava.las") #"test/lasfile/cava.las"
 		V,VV,rgb = PointClouds.loadlas(fname)
 		@test size(V) == size(rgb)
 		@test typeof(V) == Lar.Points{Float64}
@@ -20,7 +21,7 @@ using LasIO
 	end
 
 	@testset "more file .las" begin
-		fname = "test/lasfile/srs.las"
+		fname =  joinpath(tf, "lasfile/srs.las") #"test/lasfile/srs.las"
 		V,VV,rgb =  PointClouds.loadlas(fname,fname)
 		@test size(V) == (3,20)
 		V,VV,rgb = PointClouds.loadlas(fname,fname,fname)
