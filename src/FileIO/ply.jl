@@ -33,7 +33,7 @@ end
 save point clouds
 """
 
-function saveply(f, vertices; normals=nothing, rgb=nothing)
+function saveply(f, vertices::Lar.Points; normals=nothing, rgb=nothing)
     io = open(f,"w")
 
     nV = size(vertices,2)
@@ -69,7 +69,19 @@ function saveply(f, vertices; normals=nothing, rgb=nothing)
 end
 
 
-# function load(fs::Stream{format"PLY_ASCII"}, MeshType=GLNormalMesh)
+function saveply(f,vertices::Lar.Points,rgb::Array{LasIO.N0f16,2})
+	PointClouds.saveply(f,vertices; rgb=rgb)
+end
+
+function saveply(f,vertices::Lar.Points,normals::Lar.Points)
+	PointClouds.saveply(f,vertices; normals=normals)
+end
+
+function saveply(f,vertices::Lar.Points,normals::Lar.Points,rgb::Array{LasIO.N0f16,2})
+	PointClouds.saveply(f,vertices; normals = normals, rgb = rgb)
+end
+
+# function ply2lar(fs::Stream{format"PLY_ASCII"}, MeshType=GLNormalMesh)
 #     io = stream(fs)
 #     nV = 0
 #     nF = 0

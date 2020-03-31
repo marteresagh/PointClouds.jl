@@ -10,15 +10,15 @@ module PointClouds
 	using Polynomials, LsqFit
 
 	include("navigatedirectory.jl")
-	include("laspointsreader.jl")
+	include("extractpc.jl")
+	#include("laspointsreader.jl")
 
 	include("Geometry/geometry.jl")
 	include("Geometry/extractionsimplex.jl")
 	include("Geometry/residual.jl")
 	include("Geometry/projection.jl")
 	include("Geometry/mapper.jl")
-
-	include("normals.jl")
+	include("Geometry/normals.jl")
 
 	include("Segmentation/Models/cone.jl")
 	include("Segmentation/Models/sphere.jl")
@@ -33,8 +33,9 @@ module PointClouds
 
 	include("printmodel.jl")
 	include("matlab.jl")
-	include("extractpc.jl")
 
 	include("FileIO/ply.jl")
+	include("FileIO/json.jl")
+	include("FileIO/las.jl")
 
 end
