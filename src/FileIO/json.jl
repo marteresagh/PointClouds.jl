@@ -1,9 +1,9 @@
 """
-	readJSON(path::String)
+	readcloudJSON(path::String)
 
 Read a file `.json`.
 """
-function readJSON(path::String)
+function readcloudJSON(path::String)
 	dict=Dict{String,Any}[]
 	open(path * "\\cloud.js", "r") do f
 	    dict=JSON.parse(f)  # parse and transform data
