@@ -1,7 +1,7 @@
 """
 save lar model
 """
-function saveply(f, model::Lar.LAR)
+function saveply(f::String, model::Lar.LAR)
     io = open(f,"w")
         vts,fcs = model
 
@@ -32,8 +32,8 @@ end
 """
 save point clouds
 """
-
-function saveply(f, vertices::Lar.Points; normals=nothing, rgb=nothing)
+function saveply(f::String, vertices::Lar.Points; normals=nothing, rgb=nothing)
+	@assert endswith(f,".ply") "saveply: not .ply"
     io = open(f,"w")
 
     nV = size(vertices,2)
@@ -69,15 +69,15 @@ function saveply(f, vertices::Lar.Points; normals=nothing, rgb=nothing)
 end
 
 
-function saveply(f,vertices::Lar.Points,rgb::Array{LasIO.N0f16,2})
+function saveply(f::String,vertices::Lar.Points,rgb::Array{LasIO.N0f16,2})
 	PointClouds.saveply(f,vertices; rgb=rgb)
 end
 
-function saveply(f,vertices::Lar.Points,normals::Lar.Points)
+function saveply(f::String,vertices::Lar.Points,normals::Lar.Points)
 	PointClouds.saveply(f,vertices; normals=normals)
 end
 
-function saveply(f,vertices::Lar.Points,normals::Lar.Points,rgb::Array{LasIO.N0f16,2})
+function saveply(f::String,vertices::Lar.Points,normals::Lar.Points,rgb::Array{LasIO.N0f16,2})
 	PointClouds.saveply(f,vertices; normals = normals, rgb = rgb)
 end
 

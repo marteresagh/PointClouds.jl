@@ -29,24 +29,20 @@ function boxmodel(aabb::Tuple{Array{Float64,2},Array{Float64,2}})
 end
 
 """
-	volumetricsegmentcloudlas(filename::String, from::String, to::String, model)
-
+save file .las.
 """
-# TODO refactoring
-# Separa questa funzione  costruisci tutti i punti e poi scegli il salvataggio ply o las, devi passargli il modello generato dal json.
-function volumetricsegmentcloudlas(from::String, to::String, aabb::Tuple{Array{Float64,2},Array{Float64,2}})
+function segmentpclas(from::String, to::String, model::Lar.LAR)
 
 	# initialize
-	# info of model
 
-	bb = ([Inf,Inf,Inf],[-Inf,-Inf,-Inf]) # initialize aabb of my finale points
-	V,EV,FV = PointClouds.boxmodel(aabb)
+	V,_,_ = model	# info of model
+	aabb = Lar.boundingbox(V)
+	scale,_,AABBroot,octreeDir,_,_ = PointClouds.readcloudJSON(from) # useful parameters
+	pathr = from*"\\"*octreeDir*"\\r" # path to directory "r"
 
 	headers = LasIO.LasHeader[] # all headers
 	arraylaspoint = Array{LasIO.LasPoint,1}[] # all points fall in my model
 
-	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(from) # useful parameters
-	pathr = from*"\\"*octreeDir*"\\r" # path to directory "r"
 
 	println("=========================================")
 	println("search in $pathr ")
@@ -59,14 +55,13 @@ function volumetricsegmentcloudlas(from::String, to::String, aabb::Tuple{Array{F
 			pointstaken = LasIO.LasPoint[]
 			if endswith(file, ".las")
 		        fname = joinpath(root, file) # path to files
-				AABB = PointClouds.las2aabb(fname) # AABB of octree
 				h, pdata = LasIO.FileIO.load(fname) # read data
-				if PointClouds.AABBdetection(AABB,aabb)
+				octreebb = PointClouds.las2aabb(h) # AABB of octree
+				if PointClouds.AABBdetection(octreebb,aabb)
 					push!(headers,h)
 					for p in pdata
-						coordpoint = xyz(p,h)
-						if PointClouds.ispointinpolyhedron((V,EV,FV),coordpoint)
-							PointClouds.bbincremental!(coordpoint,bb)
+						coordpoint = PointClouds.xyz(p,h)
+						if PointClouds.ispointinpolyhedron(model,coordpoint)
 							push!(pointstaken,p)
 						end
 					end
@@ -80,11 +75,166 @@ function volumetricsegmentcloudlas(from::String, to::String, aabb::Tuple{Array{F
 			end
 		end
 	end
+
+	#return headers,arraylaspoint,AABBroot,scale
 	println("file creation")
 	# merge .las and save
- 	header, pointdata = PointClouds.mergelas(headers,arraylaspoint,bb,scale)
+ 	header, pointdata = PointClouds.mergelas(headers,arraylaspoint,AABBroot,scale)
 	PointClouds.savenewlas(to,header,pointdata)
 	println("file .las saved in $to")
 	println("=========================================")
 	return 1
+end
+
+"""
+save file .ply
+"""
+function segmentpcply(from::String, to::String, model::Lar.LAR)
+
+	# initialize
+	V,_,_ = model # info of model
+	aabb = Lar.boundingbox(V)
+	scale,_,AABBroot,octreeDir,_,_ = PointClouds.readcloudJSON(from) # useful parameters
+	pathr = from*"\\"*octreeDir*"\\r" # path to directory "r"
+
+	verts = []
+	rgbs = []
+
+	println("=========================================")
+	println("search in $pathr ")
+
+	# check all file
+	dimdirs=0
+	d=0
+	for (root, dirs, files) in walkdir(pathr)
+		i = 0
+		l = length(files)
+		ld=length(dirs)
+		dimdirs=dimdirs+ld
+		if d%100==0
+			println("=======================")
+			println("folder $d of $dimdirs")
+			println("=======================")
+		end
+		f = 0
+		for file in files
+			pointstaken = LasIO.LasPoint[]
+			if endswith(file, ".las")
+		        fname = joinpath(root, file)  # path to files
+				h, pdata = LasIO.FileIO.load(fname) # read data
+				octreebb = PointClouds.las2aabb(h) # AABB of octree
+				if PointClouds.AABBdetection(octreebb,aabb)
+					#push!(headers,h)
+					for p in pdata
+						coordpoint = PointClouds.xyz(p,h)
+						if PointClouds.ispointinpolyhedron(model,coordpoint)
+							i=i+1
+							push!(verts,coordpoint)
+							push!(rgbs,PointClouds.color(p,h))
+						end
+					end
+				end
+			end
+			#progession
+			f = f+1
+			if f%100==0
+				println("file processed $f of $l")
+			end
+		end
+		d=d+1
+	end
+
+ 	println("file creation")
+ 	# save ply
+	PointClouds.saveply(to,hcat(verts...),hcat(rgbs...))
+	println("file .ply saved in $to")
+	println("=========================================")
+	return 1
+end
+
+# """
+# save file .ply
+# """
+# function segmentpcply(from::String, to::String, model::Lar.LAR)
+#
+# 	# initialize
+# 	V,_,_ = model # info of model
+# 	aabb = Lar.boundingbox(V)
+# 	scale,totalpoints,AABBroot,octreeDir,_,_ = PointClouds.readcloudJSON(from) # useful parameters
+# 	pathr = from*"\\"*octreeDir*"\\r" # path to directory "r"
+#
+# 	verts = Array{Any,1}(undef,totalpoints)
+# 	rgbs = Array{Any,1}(undef,totalpoints)
+#
+# 	println("=========================================")
+# 	println("search in $pathr ")
+#
+# 	# check all file
+# 	dimdirs=0
+# 	d = 0
+# 	i = 0
+# 	for (root, dirs, files) in walkdir(pathr)
+# 		l = length(files)
+# 		ld=length(dirs)
+# 		dimdirs=dimdirs+ld
+# 		if d%100==0
+# 			println("=======================")
+# 			println("folder $d of $dimdirs")
+# 			println("=======================")
+# 		end
+# 		f = 0
+# 		for file in files
+# 			pointstaken = LasIO.LasPoint[]
+# 			if endswith(file, ".las")
+# 		        fname = joinpath(root, file)  # path to files
+# 				h, pdata = LasIO.FileIO.load(fname) # read data
+# 				octreebb = PointClouds.las2aabb(h) # AABB of octree
+# 				if PointClouds.AABBdetection(octreebb,aabb)
+# 					#push!(headers,h)
+# 					for p in pdata
+# 						coordpoint = PointClouds.xyz(p,h)
+# 						if PointClouds.ispointinpolyhedron(model,coordpoint)
+# 							i=i+1
+# 							verts[i]=coordpoint
+# 							rgbs[i]=PointClouds.color(p,h)
+# 						end
+# 					end
+# 				end
+# 			end
+# 			#progession
+# 			f = f+1
+# 			if f%100==0
+# 				println("file processed $f of $l")
+# 			end
+# 		end
+# 		d=d+1
+# 	end
+#
+#  	println("file creation")
+#  	# save ply
+# 	PointClouds.saveply(to,hcat(verts[1:i]...),hcat(rgbs[1:i]...))
+# 	println("file .ply saved in $to")
+# 	println("=========================================")
+# 	return 1
+# end
+
+
+"""
+segment point cloud and save in a file.
+"""
+function segmentpc(from::String, to::String, model::Lar.LAR)
+	if endswith(to,".ply")
+		segmentpcply(from, to, model)
+	elseif endswith(to,".las")
+		segmentpclas(from, to, model)
+	else
+		println("file format not supported")
+	end
+end
+
+
+function clip(from::String, to::String, volume::String)
+	V,CV,FV,EV = PointClouds.volumemodel(volume)
+	model = V,EV,FV
+	PointClouds.segmentpc(from, to, model)
 end

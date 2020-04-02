@@ -46,6 +46,11 @@ function las2aabb(fname::String)
 	return reshape([AABB.xmin;AABB.ymin;AABB.zmin],(3,1)),reshape([AABB.xmax;AABB.ymax;AABB.zmax],(3,1))
 end
 
+function las2aabb(header::LasHeader)
+	AABB = LasIO.boundingbox(header)
+	return reshape([AABB.xmin;AABB.ymin;AABB.zmin],(3,1)),reshape([AABB.xmax;AABB.ymax;AABB.zmax],(3,1))
+end
+
 
 """
 	lascolor(fname::String)::Tuple{Lar.Points,Array{LasIO.N0f16,2}}
@@ -66,6 +71,16 @@ function lascolor(fname::String)::Array{LasIO.N0f16,2}
 	return rgbtot = Array{LasIO.N0f16,2}(undef, 3, 0)
 end
 
+function color(p::LasPoint, header::LasHeader)
+	type = LasIO.pointformat(header)
+	if type != LasPoint0 && type != LasPoint1
+		r = LasIO.ColorTypes.red(p)
+		g = LasIO.ColorTypes.green(p)
+		b = LasIO.ColorTypes.blue(p)
+		return vcat(r',g',b')
+	end
+	return rgbtot = Array{LasIO.N0f16,2}(undef, 3, 0)
+end
 
 """
 	 xyz(p::LasPoint, h::LasHeader)
@@ -73,7 +88,7 @@ end
 Return coords of this laspoint p.
 """
 function xyz(p::LasPoint, h::LasHeader)
-	return [xcoord(p, h); ycoord(p, h); zcoord(p, h)]
+	return [LasIO.xcoord(p, h); LasIO.ycoord(p, h); LasIO.zcoord(p, h)]
 end
 
 """

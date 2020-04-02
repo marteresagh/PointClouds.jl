@@ -72,7 +72,7 @@ function volumemodel(path::String)
 	V,(VV,EV,FV,CV) = Lar.apply(Lar.t(-0.5,-0.5,-0.5),Lar.cuboid([1,1,1],true))
 	mybox = (V,CV,FV,EV)
 	scalematrix = Lar.s(scale["x"],scale["y"],scale["z"])
-	rx = Lar.r(rotation["x"],0,0); ry = Lar.r(0,rotation["y"],0); rz = Lar.r(0,0,rotation["z"])
+	rx = Lar.r(2*pi+rotation["x"],0,0); ry = Lar.r(0,2*pi+rotation["y"],0); rz = Lar.r(0,0,2*pi+rotation["z"])
 	rot = rx * ry * rz
 	trasl = Lar.t(position["x"],position["y"],position["z"])
 	model = Lar.Struct([trasl,rot,scalematrix,mybox])
