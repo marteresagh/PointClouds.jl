@@ -14,3 +14,10 @@ LsqFit = "2fda8390-95c7-5789-9bda-21331edee243"
 MATLAB = "10e44e05-a98a-55b3-a45b-ba969058deb6"
 Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
+
+[targets]
+test = ["Test","Random"]
