@@ -48,8 +48,18 @@ function segmentpclas(from::String, to::String, model::Lar.LAR)
 	println("search in $pathr ")
 
 	# check all file
+	dimdirs=0
+	d=0
 	for (root, dirs, files) in walkdir(pathr)
+		i = 0
 		l = length(files)
+		ld=length(dirs)
+		dimdirs=dimdirs+ld
+		if d%100==0
+			println("=======================")
+			println("folder $d of $dimdirs")
+			println("=======================")
+		end
 		f = 0
 		for file in files
 			pointstaken = LasIO.LasPoint[]
@@ -74,6 +84,7 @@ function segmentpclas(from::String, to::String, model::Lar.LAR)
 				println("file processed $f of $l")
 			end
 		end
+		d=d+1
 	end
 
 	#return headers,arraylaspoint,AABBroot,scale
