@@ -78,3 +78,22 @@ function volumemodel(path::String)
 	model = Lar.Struct([trasl,rot,scalematrix,mybox])
 	return Lar.struct2lar(model) #V,CV,FV,EV
 end
+
+
+"""
+Save file .JSON of the boundingbox in path.
+"""
+function savebbJSON(path::String, aabb::Tuple{Array{Float64,2},Array{Float64,2}})
+	@assert isdir(path) "savebbJSON: not a valid directory"
+	min,max = (aabb[1],aabb[2])
+	name = split(path,"/")[end]
+	scale = DataStructures.OrderedDict{String,Any}("x"=>max[1]-min[1], "y"=>max[2]-min[2], "z"=>max[3]-min[3])
+	position = DataStructures.OrderedDict{String,Any}("x"=>(max[1]+min[1])/2, "y"=>(max[3]+min[3])/2, "z"=>(max[3]+min[3])/2)
+	rotation = DataStructures.OrderedDict{String,Any}("x"=>0., "y"=>0., "z"=>0.)
+	data = DataStructures.OrderedDict{String,Any}("clip"=>true, "name"=>name,
+			"scale"=>scale,"position"=>position,"rotation"=>rotation,
+			"permitExtraction"=>true)
+	open(path*"/"*name*".json","w") do f
+  		JSON.print(f, data,4)
+	end
+end

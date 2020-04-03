@@ -1,12 +1,8 @@
 using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
 using PointClouds
+using Test
 
-if VERSION < VersionNumber("1.0.0")
-	using Base.Test
-else
-	using Test
-end
 
 # include("navigatedirectory.jl")
 # include("fit.jl")
