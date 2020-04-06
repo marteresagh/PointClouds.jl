@@ -67,7 +67,8 @@ folder = "C:/Users/marte/Documents/SegmentCloud/CAVA"
 volume = "C:/Users/marte/Documents/FilePotree/cava.json"
 
 
-PointClouds.filesegment(potree, folder, volume)
+@time PointClouds.filesegment(potree, folder, volume)
+
 
 PointClouds.savebbJSON(folder, aabb)
 

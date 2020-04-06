@@ -190,6 +190,7 @@ function readmodel(volume::String)
 	return aabb,model
 end
 
+
 function filesegment(potree::String, folder::String, volume::String)
 	#potree => potree directory
 	#folder => cartella in cui salvare i file
@@ -207,7 +208,8 @@ function filesegment(potree::String, folder::String, volume::String)
 	_,_,AABBroot,octreeDir,_,_ = PointClouds.readcloudJSON(potree) # useful parameters
 	pathr = potree*"/"*octreeDir*"/r" # path to directory "r"
 
-
+	println("=========================================")
+	println("AABB saved")
 	#1. salvare il aabb del volume in folder
 	PointClouds.savebbJSON(folder, aabb)
 	PointClouds.aabbASCII(folder,aabb)
@@ -217,19 +219,20 @@ function filesegment(potree::String, folder::String, volume::String)
 	println("search in $pathr ")
 
 	# check all file
-
+	nfile = 0
 	for (root, dirs, files) in walkdir(pathr)
-		for file in files
+		Threads.@threads for file in files
+			nfile += 1
 			if endswith(file, ".las")
 				# initialize
  				inds = Int[]
 
 				# info file
-				name = split(file,".")[1] # file name
+				name = split(file,".")[1]*".ply" # file name
 		        fpath = joinpath(root, file)  # path to files
 
 				# info data
-				V,VV,rgb = PointClouds.loadlas(fpath)
+				V,_,rgb = PointClouds.loadlas(fpath)
 				octreebb = PointClouds.las2aabb(fpath)
 
 				if PointClouds.AABBdetection(octreebb,aabb)
@@ -243,9 +246,13 @@ function filesegment(potree::String, folder::String, volume::String)
 
 				#progession
 				if !isempty(inds)
-					println( "save file" )
-					PointClouds.saveply(folder*"/"*name*".ply",V[:,inds],rgb[:,inds])
+					PointClouds.saveply(joinpath(folder,name),V[:,inds],rgb[:,inds])
 				end
+
+				if nfile%50==0
+					println("$nfile files checked")
+				end
+
 				inds = nothing
 
 			end
@@ -255,7 +262,6 @@ function filesegment(potree::String, folder::String, volume::String)
 	println("=========================================")
 	return 1
 end
-
 
 """
 Clear the given folder

@@ -30,7 +30,7 @@ module PointClouds
 
 	include("voxel.jl")
 
-	include("printmodel.jl")
+	#include("printmodel.jl")
 	include("matlab.jl")
 
 	include("FileIO/ply.jl")
