@@ -47,14 +47,17 @@ PointClouds.saveply("test.ply", V)
 
 
 ###  Json
+aabb=(hcat([.5,.5,.5]),hcat([1,4.,10]))
+PointClouds.savebbJSON(folder, aabb)
+volume="C:/Users/marte/Documents/SegmentCloud/CAVA/CAVA.json"
 V,CV,FV,EV=PointClouds.volumemodel(volume)
 
 GL.VIEW(
 	[
-		colorview(Voriginal.-centroid,VV,rgb)
-		GL.GLGrid(V.-centroid,FV,GL.Point4d(1,1,1,1))
+		#colorview(Voriginal.-centroid,VV,rgb)
+		GL.GLGrid(V,FV,GL.Point4d(1,1,1,1))
 		#GL.GLLar2gl(V,CV)
-		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 
 	]
 )
@@ -65,6 +68,8 @@ volume = "C:/Users/marte/Documents/FilePotree/cava.json"
 
 
 PointClouds.filesegment(potree, folder, volume)
+
+PointClouds.savebbJSON(folder, aabb)
 
 for (root, dirs, files) in walkdir(potree)
 	for file in files

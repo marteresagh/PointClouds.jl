@@ -195,18 +195,21 @@ function filesegment(potree::String, folder::String, volume::String)
 	#folder => cartella in cui salvare i file
 	#volume => JSON format of volume
 
+	@assert isdir(potree) "filesegment: $potree not an existing path"
+	@assert isdir(folder) "filesegment: $folder not an existing folder"
+	@assert isfile(volume) "filesegment: $volume not an existing file"
 	PointClouds.clearfolder(folder) #remove all file in directory
 
 	#0. read volume
-	aabb,model = readmodel(volume)
+	aabb,model = PointClouds.readmodel(volume)
 
 	#read potree
-	_,_,octreebb,octreeDir,_,_ = PointClouds.readcloudJSON(potree) # useful parameters
-	pathr = potree*"\\"*octreeDir*"\\r" # path to directory "r"
+	_,_,AABBroot,octreeDir,_,_ = PointClouds.readcloudJSON(potree) # useful parameters
+	pathr = potree*"/"*octreeDir*"/r" # path to directory "r"
 
 
 	#1. salvare il aabb del volume in folder
-	savebbJSON(folder, aabb)
+	PointClouds.savebbJSON(folder, aabb)
 
 	#2. per ogni file in potree salvare il file segmentato in folder
 	println("=========================================")
@@ -218,35 +221,32 @@ function filesegment(potree::String, folder::String, volume::String)
 		for file in files
 			if endswith(file, ".las")
 				# initialize
-				verts = []
-				rgbs = []
+ 				inds = Int[]
 
 				# info file
 				name = split(file,".")[1] # file name
 		        fpath = joinpath(root, file)  # path to files
 
 				# info data
-				h, pdata = LasIO.FileIO.load(fpath) # read data
-				octreebb = PointClouds.las2aabb(h) # AABB of octree
+				V,VV,rgb = PointClouds.loadlas(fpath)
+				octreebb = PointClouds.las2aabb(fpath)
 
 				if PointClouds.AABBdetection(octreebb,aabb)
-					i = 0
-					for p in pdata
-						coordpoint = PointClouds.xyz(p,h)
+					for  i in 1:size(V,2)
+						coordpoint = V[:,i]
 						if PointClouds.ispointinpolyhedron(model,coordpoint)
-							i=i+1
-							push!(verts,coordpoint)
-							push!(rgbs,PointClouds.color(p,h))
+							push!(inds,i)
 						end
 					end
 				end
+
 				#progession
-				if !isempty(verts)
+				if !isempty(inds)
 					println( "save file" )
-					PointClouds.saveply(folder*"/"*name*".ply",hcat(verts...),hcat(rgbs...))
+					PointClouds.saveply(folder*"/"*name*".ply",V[:,inds],rgb[:,inds])
 				end
-				verts = nothing
-				rgbs = nothing
+				inds = nothing
+
 			end
 		end
 	end
