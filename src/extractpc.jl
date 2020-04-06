@@ -210,6 +210,7 @@ function filesegment(potree::String, folder::String, volume::String)
 
 	#1. salvare il aabb del volume in folder
 	PointClouds.savebbJSON(folder, aabb)
+	PointClouds.aabbASCII(folder,aabb)
 
 	#2. per ogni file in potree salvare il file segmentato in folder
 	println("=========================================")

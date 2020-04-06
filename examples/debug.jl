@@ -48,8 +48,8 @@ PointClouds.saveply("test.ply", V)
 
 ###  Json
 aabb=(hcat([.5,.5,.5]),hcat([1,4.,10]))
-PointClouds.savebbJSON(folder, aabb)
-volume="C:/Users/marte/Documents/SegmentCloud/CAVA/CAVA.json"
+PointClouds.aabbASCII(folder, aabb)
+volume = "C:/Users/marte/Documents/SegmentCloud/CAVA/CAVA.json"
 V,CV,FV,EV=PointClouds.volumemodel(volume)
 
 GL.VIEW(

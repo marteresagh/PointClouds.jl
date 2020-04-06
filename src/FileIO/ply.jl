@@ -81,48 +81,17 @@ function saveply(f::String,vertices::Lar.Points,normals::Lar.Points,rgb::Array{L
 	PointClouds.saveply(f,vertices; normals = normals, rgb = rgb)
 end
 
-# function ply2lar(fs::Stream{format"PLY_ASCII"}, MeshType=GLNormalMesh)
-#     io = stream(fs)
-#     nV = 0
-#     nF = 0
-#
-#     properties = String[]
-#
-#     # read the header
-#     line = readline(io)
-#
-#     while !startswith(line, "end_header")
-#         if startswith(line, "element vertex")
-#             nV = parse(Int, split(line)[3])
-#         elseif startswith(line, "element face")
-#             nF = parse(Int, split(line)[3])
-#         elseif startswith(line, "property")
-#             push!(properties, line)
-#         end
-#         line = readline(io)
-#     end
-#     VertexType  = vertextype(MeshType)
-#     FaceType    = facetype(MeshType)
-#     FaceEltype  = eltype(FaceType)
-#
-#     vts         = Array{VertexType}(undef, nV)
-#     #fcs         = Array{FaceType}(undef, nF)
-#     fcs         = FaceType[]
-#
-#     # read the data
-#     for i = 1:nV
-#         vts[i] = VertexType(parse.(eltype(VertexType), split(readline(io)))) # line looks like: "-0.018 0.038 0.086"
-#     end
-#
-#     for i = 1:nF
-#         line    = split(readline(io))
-#         len     = parse(Int, popfirst!(line))
-#         if len == 3
-#             push!(fcs, Face{3, FaceEltype}(reinterpret(ZeroIndex{Int}, parse.(Int, line)))) # line looks like: "3 0 1 3"
-#         elseif len == 4
-#             push!(fcs, decompose(FaceType, Face{4, FaceEltype}(reinterpret(ZeroIndex{Int}, parse.(Int, line))))...) # line looks like: "4 0 1 2 3"
-#         end
-#     end
-#
-#     return MeshType(vts, fcs)
-# end
+
+"""
+Save a file ASCII of AABB coordinates in a single row: x_min y_min z_min x_max y_max z_max. 
+"""
+function aabbASCII(folder::String,aabb::Tuple{Array{Float64,2},Array{Float64,2}})
+	@assert isdir(folder) "aabbASCII: $folder not a valid directory"
+	min,max = (aabb[1],aabb[2])
+	name = splitdir(folder)[2]*".txt"
+
+	open(joinpath(folder,name),"w") do f
+		write(f,"$(min[1]) $(min[2]) $(min[3]) $(max[1]) $(max[2]) $(max[3])")
+	end
+	return 1
+end
