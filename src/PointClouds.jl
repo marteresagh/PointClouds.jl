@@ -4,14 +4,13 @@ module PointClouds
 
 	using LinearAlgebraicRepresentation
 	Lar = LinearAlgebraicRepresentation
-	using LasIO, JSON	
+	using LasIO, JSON
 	using Combinatorics, DataStructures, SparseArrays
 	using MATLAB,AlphaStructures
 	using Polynomials, LsqFit
 
 	include("navigatedirectory.jl")
 	include("extractpc.jl")
-	#include("laspointsreader.jl")
 
 	include("Geometry/geometry.jl")
 	include("Geometry/extractionsimplex.jl")

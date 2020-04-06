@@ -59,46 +59,15 @@ GL.VIEW(
 	]
 )
 
+potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CAVA"
+folder = "C:/Users/marte/Documents/SegmentCloud/CAVA"
+volume = "C:/Users/marte/Documents/FilePotree/cava.json"
 
 
-from = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CUPOLA"
-to = "C:\\Users\\marte\\Documents\\SegmentCloud\\roof.ply"
-volume = "C:\\Users\\marte\\Documents\\FilePotree\\cava.json"
+PointClouds.filesegment(potree, folder, volume)
 
-PointClouds.clip(from, to, volume)
-
-function N1(n)
-	a=Int[]
-	for i in 1:n
-		push!(a,i)
+for (root, dirs, files) in walkdir(potree)
+	for file in files
+		@show file
 	end
-	return a
 end
-
-
-function N2(n)
-	a=Array{Int,1}(undef,n)
-	for i in 1:n
-		a[i]=i
-	end
-	return a
-end
-
-V,(VV,EV,FV,CV) = Lar.apply(Lar.t(-0.5,-0.5,-0.5),Lar.cuboid([1,2,5],true))
-mybox = (V,CV,FV,EV)
-myboxr = Lar.apply(Lar.r(0,0,-pi/3),mybox)
-(V,CV,FV,EV)=myboxr
-
-
-GL.VIEW(
-	[
-		GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
-		#GL.GLLar2gl(V,CV)
-		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-
-	]
-)
-
-
-
-savebbJSON(from, aabb)
