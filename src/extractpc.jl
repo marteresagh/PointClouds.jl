@@ -206,7 +206,7 @@ function filesegment(potree::String, folder::String, volume::String)
 
 	#read potree
 	_,_,AABBroot,octreeDir,_,_ = PointClouds.readcloudJSON(potree) # useful parameters
-	pathr = potree*"/"*octreeDir*"/r" # path to directory "r"
+	pathr = joinpath(potree,octreeDir,"r") # path to directory "r"
 
 	println("=========================================")
 	println("AABB saved")
@@ -249,7 +249,7 @@ function filesegment(potree::String, folder::String, volume::String)
 					PointClouds.saveply(joinpath(folder,name),V[:,inds],rgb[:,inds])
 				end
 
-				if nfile%50==0
+				if nfile%100==0
 					println("$nfile files checked")
 				end
 
@@ -260,7 +260,6 @@ function filesegment(potree::String, folder::String, volume::String)
 	end
 	println("file .ply saved in $folder")
 	println("=========================================")
-	return 1
 end
 
 """

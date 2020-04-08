@@ -1,21 +1,62 @@
-using LinearAlgebraicRepresentation, ViewerGL,AlphaStructures
+using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
+
+using ViewerGL
 GL = ViewerGL
-
-V,(VV,EV,FV,CV) = Lar.cuboid([5,3,2],true)
-
-V1,(VV1,EV1,FV1,CV1) = Lar.cuboid([10,6,9],true)
-model = Lar.apply(Lar.t(1,2,3),Lar.apply(Lar.r(pi/4,0,0),(V,FV)))
-model1 = Lar.apply(Lar.t(5,6,7),Lar.apply(Lar.r(0,-pi/6,0),(V1,FV1)))
-
+include("viewfunction.jl")
+V,(VV,EV,FV,CV) = Lar.cuboid([2,5,1],true)
+rgb = rand(3,8)
+#
+# V1,(VV1,EV1,FV1,CV1) = Lar.cuboid([10,6,9],true)
+# model = Lar.apply(Lar.t(1,2,3),Lar.apply(Lar.r(pi/4,0,0),(V,FV)))
+# model1 = Lar.apply(Lar.t(5,6,7),Lar.apply(Lar.r(0,-pi/6,0),(V1,FV1)))
+tri = Lar.quads2triangles(FV)
+model = V,tri
 GL.VIEW([
-	GL.GLPoints(convert(Lar.Points,model[1]'))
-	GL.GLPoints(convert(Lar.Points,model1[1]'))
-	GL.GLGrid(model...,GL.COLORS[2])
-	GL.GLGrid(model1...,)
+	colorview(V,tri,rgb)
+	#colorview(modelXZ...,rgb)
+	#GL.GLGrid(model1...,)
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);
 
+
+R=[0. 1 0 0 ; 0 0 1 0; 1 0 0 0; 0 0 0 1] #YZ giustaFV
+R2=[0. 0 1 0 ; 0 1 0 0; 1 0 0 0; 0 0 0 1] #YZ sbagliata
+
+R=[1 0 0 0; 0 0 1 0; 0 -1 0 0; 0 0 0 1]
+R=[0 -1 0 0 ; 0 0 1 0; -1 0 0 0; 0 0 0 1]
+modelXZ=Lar.apply(R,model)
+
+GL.VIEW([
+	# colorview(V,tri,rgb)
+	colorview(modelXZ...,rgb)
+	#GL.GLGrid(model1...,)
+	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+]);
+
+modelYZsbagliata=Lar.apply(R2,model)
+GL.VIEW([
+	#GL.GLPoints(convert(Lar.Points,model[1]'))
+	#GL.GLPoints(convert(Lar.Points,model1[1]'))
+	GL.GLGrid(modelYZsbagliata...,GL.COLORS[5])
+	GL.GLGrid(modelYZgiusta...,GL.COLORS[2])
+	GL.GLGrid(model...,)
+	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+]);
+
+
+R=[0. 0 1 0 ; 1 0 0 0; 0 1 0 0; 0 0 0 1] #XZ giusta
+R2=[1. 0 0 0 ; 0 0 1 0; 0 1 0 0; 0 0 0 1] #XZ sbagliata
+modelYZgiusta=Lar.apply(R,model)
+modelYZsbagliata=Lar.apply(R2,model)
+GL.VIEW([
+	#GL.GLPoints(convert(Lar.Points,model[1]'))
+	#GL.GLPoints(convert(Lar.Points,model1[1]'))
+	GL.GLGrid(modelYZsbagliata...,GL.COLORS[5])
+	GL.GLGrid(modelYZgiusta...,GL.COLORS[2])
+	GL.GLGrid(model...,)
+	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+]);
 # prendo le due origini
 O = model[1][:,1]
 O1 = model1[1][:,1]
