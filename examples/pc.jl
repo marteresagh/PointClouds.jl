@@ -5,31 +5,38 @@ using ViewerGL
 GL = ViewerGL
 include("viewfunction.jl")
 V,(VV,EV,FV,CV) = Lar.cuboid([2,5,1],true)
-rgb = rand(3,8)
-#
+rgb = [1 0.996 0.160 0.160 0.160 0.454 1 1; 0.168 1 1 0.992 0.360 0.160 0.160 0.537; 0.160 0.160 0.231 1 1 1 1 0.160]
+
 # V1,(VV1,EV1,FV1,CV1) = Lar.cuboid([10,6,9],true)
 # model = Lar.apply(Lar.t(1,2,3),Lar.apply(Lar.r(pi/4,0,0),(V,FV)))
 # model1 = Lar.apply(Lar.t(5,6,7),Lar.apply(Lar.r(0,-pi/6,0),(V1,FV1)))
 tri = Lar.quads2triangles(FV)
 model = V,tri
 GL.VIEW([
-	colorview(V,tri,rgb)
+	colorview(model...,rgb)
 	#colorview(modelXZ...,rgb)
 	#GL.GLGrid(model1...,)
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);
 
+pirot=[-1 0 0 0; 0 1 0 0; 0 0 -1 0; 0 0 0 1] #rotazione di pi
+Rp=[-1 0 0 0; 0 0 1 0; 0 1 0 0; 0 0 0 1] #XZ con vista +
+Rm=[1 0 0 0; 0 0 1 0; 0 -1 0 0; 0 0 0 1] #XZ con vista -
+pirot*Rp==Rm
 
-R=[0. 1 0 0 ; 0 0 1 0; 1 0 0 0; 0 0 0 1] #YZ giustaFV
-R2=[0. 0 1 0 ; 0 1 0 0; 1 0 0 0; 0 0 0 1] #YZ sbagliata
+Rp=[1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1]
+Rm=[-1 0 0 0; 0 1 0 0; 0 0 -1 0; 0 0 0 1] #XY con vista -
+pirot*Rp==Rm
 
-R=[1 0 0 0; 0 0 1 0; 0 -1 0 0; 0 0 0 1]
-R=[0 -1 0 0 ; 0 0 1 0; -1 0 0 0; 0 0 0 1]
-modelXZ=Lar.apply(R,model)
+Rp=[0 1 0 0; 0 0 1 0; 1 0 0 0; 0 0 0 1] #YZ con vista +
+Rm=[0 -1 0 0; 0 0 1 0; -1 0 0 0; 0 0 0 1] #YZ con vista -
+pirot*Rp==Rm
+#R=[0 -1 0 0 ; 0 0 1 0; -1 0 0 0; 0 0 0 1]
+modelR=Lar.apply(rx*rz,model)
 
 GL.VIEW([
 	# colorview(V,tri,rgb)
-	colorview(modelXZ...,rgb)
+	colorview(modelR...,rgb)
 	#GL.GLGrid(model1...,)
 	GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 ]);

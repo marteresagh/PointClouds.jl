@@ -65,9 +65,9 @@ GL.VIEW(
 potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CAVA"
 folder = "C:/Users/marte/Documents/SegmentCloud/CAVA"
 volume = "C:/Users/marte/Documents/FilePotree/cava.json"
+ispath(volume)
 
-
-@time PointClouds.filesegment(potree, folder, volume)
+PointClouds.filesegment(potree, folder, volume)
 
 
 PointClouds.savebbJSON(folder, aabb)
