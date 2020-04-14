@@ -5,7 +5,7 @@ Return true if  `point` is in the `model`.
 """
 function ispointinpolyhedron(model,point)
 	V,EV,FV = model
-	test = Lar.testinternalpoint(V,EV,FV)(point)
+	test = PointClouds.testinternalpoint(V,EV,FV)(point)
 	if length(test)%2==0
 		return false
 	else

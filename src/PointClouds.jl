@@ -29,6 +29,7 @@ module PointClouds
 	include("Segmentation/color.jl")
 
 	include("voxel.jl")
+	include("bool3d.jl")
 
 	#include("printmodel.jl")
 	include("matlab.jl")

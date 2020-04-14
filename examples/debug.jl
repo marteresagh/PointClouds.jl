@@ -1,12 +1,12 @@
-using LinearAlgebraicRepresentation, AlphaStructures
+using LinearAlgebraicRepresentation #AlphaStructures
 Lar = LinearAlgebraicRepresentation
 using PointClouds
 using ViewerGL
 GL = ViewerGL
 include("viewfunction.jl")
 # from my local repository
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
-level = 2
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\point-cloud-private"
+level = 0
 allfile = PointClouds.filelevel(fname,level,false)
 _,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
 spacing = spacing/2^level
@@ -20,7 +20,7 @@ model = PointClouds.boxmodel(aabb)
 GL.VIEW(
 	[
 		colorview(V,VV,rgb)
-		GL.GLGrid(W,EW)
+		#GL.GLGrid(W,EW)
 	]
 );
 
@@ -55,25 +55,29 @@ V,CV,FV,EV=PointClouds.volumemodel(volume)
 GL.VIEW(
 	[
 		#colorview(Voriginal.-centroid,VV,rgb)
-		GL.GLGrid(V,FV,GL.Point4d(1,1,1,1))
+		GL.GLPoints(convert(Lar.Points,T1'))
+		GL.GLGrid(T,FT,GL.Point4d(1,1,1,1))
 		#GL.GLLar2gl(V,CV)
 		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 
 	]
 )
 
-potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/CAVA"
+potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/point-cloud-private"
 folder = "C:/Users/marte/Documents/SegmentCloud/CAVA"
 volume = "C:/Users/marte/Documents/FilePotree/cava.json"
+
+aabb=(hcat([295370.8436816006, 4781124.438537028, 225.44601794335939]),hcat([295632.16918208889, 4781385.764037516, 486.77151843164065]))
+aabb=(hcat([0,0,0.]),hcat([1,1.,1]))
+
+"295370.8436816006 4781124.438537028 225.44601794335939 295632.16918208889 4781385.764037516 486.77151843164065"
+
+
 ispath(volume)
+PointClouds.clip(potree,folder,aabb)
 
-PointClouds.filesegment(potree, folder, volume)
 
-
-PointClouds.savebbJSON(folder, aabb)
-
-for (root, dirs, files) in walkdir(potree)
-	for file in files
-		@show file
-	end
-end
+T,(VV,EV,FV,CV)= Lar.cuboid([1,1,1],true)
+point=[0,0.5,0.5]
+model = T,EV,FV
+PointClouds.ispointinpolyhedron(model,point)
