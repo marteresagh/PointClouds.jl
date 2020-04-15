@@ -7,30 +7,27 @@ function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Un
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
 
-    verts,edges,faces = model
-    BBPO = Lar.boundingbox(verts) #da rivedere il BBPO su piano generico
-
-
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
 
-    RGBArray, rasterquote = PointClouds.createrasterarray(coordsystemmatrix,GSD,BBPO)
+    RGBtensor, rasterquote, resX, resY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
 
     # jpg creation
     # PointClouds.imagecreation(potreedirs,outputjpg,model,GSD,PO)
-    println("jpg saved in $outputjpg")
+    println("image saved in $outputjpg")
 
 end
 
-function imagecreation(potreedirs::Array{String,1}, outputjpg::String, model::Lar.LAR, GSD::Float64, PO::String)
-    # devo creare il raster
-    # devo conoscere il aabb di bbin
-    # e calcolare la risoluzione
-    # e definire cosìil tensore dell'immagine
-    verts,edges,faces = model
-    minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
-    RGBArray =
-    save(outputjpg, colorview(RGB, RGBArray))
-end
+# function imagecreation(potreedirs::Array{String,1}, outputjpg::String, model::Lar.LAR, GSD::Float64, PO::String)
+#     # devo creare il raster
+#     # devo conoscere il aabb di bbin
+#     # e calcolare la risoluzione
+#     # e definire cosìil tensore dell'immagine
+#     verts,edges,faces = model
+#     minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
+#     RGBArray = initrasterarray(coordsystemmatrix, GSD, verts)
+#
+#     save(outputjpg, colorview(RGB, RGBArray))
+# end
 
 
 function newcoordsyst(PO::String)
@@ -69,17 +66,33 @@ function newcoordsyst(PO::String)
 end
 
 
-function createrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, BBPO::Tuple{Array{Float64,2},Array{Float64,2}})
-    
+function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, model::Lar.LAR)
+
+    verts,edges,faces = model
+
+    bbglobalextention = zeros(3)
+    for i in 1:3
+        coord=PointClouds.projdist(coordsystemmatrix[i,:]).([verts[:,j] for j in 1:size(verts,2)])
+        min,max = extrema(coord)
+        bbglobalextention[i] = max-min
+    end
+
+    resX = Int(bbglobalextention[1] / GSD) + 1
+    resY = Int(bbglobalextention[2] / GSD) + 1
+
     # Z-BUFFER MATRIX
-    rasterQuote = fill(-Inf,(resY,resX))
+    rasterquote = fill(-Inf,(resY,resX))
 
     # RASTER IMAGE MATRIX
     rasterChannels = 3
-    RGBArray = fill(1.,(rasterChannels,resY, resX))
+    RGBtensor = fill(1.,(rasterChannels,resY, resX))
 
+    return RGBtensor, rasterquote, resX, resY
+end
 
-    b
-    h
-    return RGBArray, rasterquote
+function projdist(unitvector)
+    function projdist0(vert)
+        return Lar.dot(unitvector,vert)
+    end
+    return projdist0
 end

@@ -77,10 +77,17 @@ using PointClouds
 filedir = "C:\\Users\\marte\\Documents\\FilePotree\\directory.txt"
 files = PointClouds.getdirectories(filedir)
 
-aabb=(hcat([0,0,0.]),hcat([1,1.,1]))
+aabb=(hcat([0,0,0.]),hcat([1,2.,5]))
 volume = "C:/Users/marte/Documents/FilePotree/cava.json"
 
 model = PointClouds.getmodel(aabb)
 model = PointClouds.getmodel(volume)
 verts,edges,faces = model
 minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
+
+PO = "XY-"
+coordsystemmatrix = PointClouds.newcoordsyst(PO)
+
+RGBtensor, rasterquote, resX, resY = PointClouds.initrasterarray(coordsystemmatrix,0.1,model)
+
+save("outputjpg.jpg", colorview(RGB, RGBtensor))
