@@ -71,5 +71,16 @@ ispath(volume)
 PointClouds.clip(potree,folder,aabb)
 
 ## image julia
+using LinearAlgebraicRepresentation #AlphaStructures
+Lar = LinearAlgebraicRepresentation
+using PointClouds
 filedir = "C:\\Users\\marte\\Documents\\FilePotree\\directory.txt"
-files = PointClouds.getdirectory(filedir)
+files = PointClouds.getdirectories(filedir)
+
+aabb=(hcat([0,0,0.]),hcat([1,1.,1]))
+volume = "C:/Users/marte/Documents/FilePotree/cava.json"
+
+model = PointClouds.getmodel(aabb)
+model = PointClouds.getmodel(volume)
+verts,edges,faces = model
+minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
