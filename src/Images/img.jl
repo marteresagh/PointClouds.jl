@@ -7,11 +7,38 @@ function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Un
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
 
+    verts,edges,faces = model
+    BBPO = Lar.boundingbox(verts) #da rivedere il BBPO su piano generico
+
+
+    coordsystemmatrix = PointClouds.newcoordsyst(PO)
+
+    RGBArray, rasterquote = PointClouds.createrasterarray(coordsystemmatrix,GSD,BBPO)
+
+    # jpg creation
+    # PointClouds.imagecreation(potreedirs,outputjpg,model,GSD,PO)
+    println("jpg saved in $outputjpg")
+
+end
+
+function imagecreation(potreedirs::Array{String,1}, outputjpg::String, model::Lar.LAR, GSD::Float64, PO::String)
+    # devo creare il raster
+    # devo conoscere il aabb di bbin
+    # e calcolare la risoluzione
+    # e definire cosìil tensore dell'immagine
+    verts,edges,faces = model
+    minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
+    RGBArray =
+    save(outputjpg, colorview(RGB, RGBArray))
+end
+
+
+function newcoordsyst(PO::String)
     planecode = PO[1:2]
     @assert planecode == "XY" || planecode == "XZ" || planecode == "YZ" "orthoprojectionimage: $PO not valid view "
 
     directionview = PO[3]
-    @assert directionview == "+" || directionview == "-" "orthoprojectionimage: $PO not valid view "
+    @assert directionview == '+' || directionview == '-' "orthoprojectionimage: $PO not valid view "
 
     coordsystemmatrix = Matrix{Float64}(Lar.I,3,3)
 
@@ -34,23 +61,25 @@ function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Un
 
     # if directionview == "+"
     #     continue
-    if directionview == "-"
+    if directionview == '-'
         R=[-1. 0 0; 0 1. 0; 0 0 -1]
         coordsystemmatrix = R*coordsystemmatrix
     end
-
-    # jpg creation
-    PointClouds.imagecreation(potreedirs,outputjpg,model,GSD,PO)
-    println("jpg saved in $outputjpg")
-
+    return coordsystemmatrix
 end
 
-function imagecreation(potreedirs::Array{String,1}, outputjpg::String, model::Lar.LAR, GSD::Float64, PO::String)
-    # devo creare il raster
-    # devo conoscere il aabb di bbin
-    # e calcolare la risoluzione
-    # e definire cosìil tensore dell'immagine
-    verts,edges,faces = model
-    minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
 
+function createrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, BBPO::Tuple{Array{Float64,2},Array{Float64,2}})
+    
+    # Z-BUFFER MATRIX
+    rasterQuote = fill(-Inf,(resY,resX))
+
+    # RASTER IMAGE MATRIX
+    rasterChannels = 3
+    RGBArray = fill(1.,(rasterChannels,resY, resX))
+
+
+    b
+    h
+    return RGBArray, rasterquote
 end

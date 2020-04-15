@@ -38,5 +38,6 @@ module PointClouds
 	include("FileIO/json.jl")
 	include("FileIO/las.jl")
 	include("FileIO/utilities.jl")
+	include("Images/img.jl")
 
 end
