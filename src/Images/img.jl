@@ -1,8 +1,13 @@
+"""
+Return the image of orthoprojection.
+"""
 function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, PO::String )
     # check validity
     @assert isdir(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
     @assert isdir(folder) "orthoprojectionimage: $folder not an existing folder"
     @assert length(PO)==3 "orthoprojectionimage: $PO not valid view "
+
+    #metto tutto qui poi separo in sotto funzioni
     # initialization
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
@@ -18,10 +23,6 @@ function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Un
 end
 
 # function imagecreation(potreedirs::Array{String,1}, outputjpg::String, model::Lar.LAR, GSD::Float64, PO::String)
-#     # devo creare il raster
-#     # devo conoscere il aabb di bbin
-#     # e calcolare la risoluzione
-#     # e definire cosìil tensore dell'immagine
 #     verts,edges,faces = model
 #     minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
 #     RGBArray = initrasterarray(coordsystemmatrix, GSD, verts)
@@ -30,6 +31,9 @@ end
 # end
 
 
+"""
+new basis.
+"""
 function newcoordsyst(PO::String)
     planecode = PO[1:2]
     @assert planecode == "XY" || planecode == "XZ" || planecode == "YZ" "orthoprojectionimage: $PO not valid view "
@@ -66,7 +70,19 @@ function newcoordsyst(PO::String)
 end
 
 
+"""
+initialize raster image.
+"""
 function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, model::Lar.LAR)
+
+    # prova per la costruzione di BBPO su un generico piano
+    function projdist(unitvector)
+        function projdist0(vert)
+            return Lar.dot(unitvector,vert)
+        end
+        return projdist0
+    end
+
 
     verts,edges,faces = model
 
@@ -77,8 +93,8 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
         bbglobalextention[i] = max-min
     end
 
-    resX = Int(bbglobalextention[1] / GSD) + 1
-    resY = Int(bbglobalextention[2] / GSD) + 1
+    resX = map(Int∘trunc,bbglobalextention[1] / GSD) + 1
+    resY = map(Int∘trunc,bbglobalextention[2] / GSD) + 1
 
     # Z-BUFFER MATRIX
     rasterquote = fill(-Inf,(resY,resX))
@@ -88,11 +104,4 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
     RGBtensor = fill(1.,(rasterChannels,resY, resX))
 
     return RGBtensor, rasterquote, resX, resY
-end
-
-function projdist(unitvector)
-    function projdist0(vert)
-        return Lar.dot(unitvector,vert)
-    end
-    return projdist0
 end
