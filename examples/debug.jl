@@ -40,12 +40,6 @@ V,(VV,EV,FV,CV) = Lar.cuboid([1,1,1],true)
 
 
 
-
-########  PLY reader
-
-PointClouds.saveply("test.ply", V)
-
-
 ###  Json
 aabb=(hcat([.5,.5,.5]),hcat([1,4.,10]))
 PointClouds.aabbASCII(folder, aabb)
@@ -76,8 +70,6 @@ aabb=(hcat([0,0,0.]),hcat([1,1.,1]))
 ispath(volume)
 PointClouds.clip(potree,folder,aabb)
 
-
-T,(VV,EV,FV,CV)= Lar.cuboid([1,1,1],true)
-point=[0,0.5,0.5]
-model = T,EV,FV
-PointClouds.ispointinpolyhedron(model,point)
+## image julia
+filedir = "C:\\Users\\marte\\Documents\\FilePotree\\directory.txt"
+files = PointClouds.getdirectory(filedir)

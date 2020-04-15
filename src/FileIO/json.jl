@@ -63,11 +63,13 @@ end
 
 
 """
-	volumemodel(path::String)
+	volumemodelfromjson(path::String)
 
 Return LAR model of Potree volume tools.
 """
-function volumemodel(path::String)
+function volumemodelfromjson(path::String)
+	@assert isfile(path) "volumemodelfromjson: $path not an existing file"
+
 	position, scale, rotation = PointClouds.volumeJSON(path)
 	V,(VV,EV,FV,CV) = Lar.apply(Lar.t(-0.5,-0.5,-0.5),Lar.cuboid([1,1,1],true))
 	mybox = (V,CV,FV,EV)

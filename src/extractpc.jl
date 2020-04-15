@@ -13,31 +13,8 @@ function ispointinpolyhedron(model,point)
 	end
 end
 
-"""
-	boxmodel(aabb::Tuple{Array{Float64,2},Array{Float64,2}})
 
-Return LAR model of the aligned axis box defined by `aabb`.
-"""
-function boxmodel(aabb::Tuple{Array{Float64,2},Array{Float64,2}})
-	min,max = aabb
-	V = [	min[1]  min[1]  min[1]  min[1]  max[1]  max[1]  max[1]  max[1];
-		 	min[2]  min[2]  max[2]  max[2]  min[2]  min[2]  max[2]  max[2];
-		 	min[3]  max[3]  min[3]  max[3]  min[3]  max[3]  min[3]  max[3] ]
-	EV = [[1, 2],  [3, 4], [5, 6],  [7, 8],  [1, 3],  [2, 4],  [5, 7],  [6, 8],  [1, 5],  [2, 6],  [3, 7],  [4, 8]]
-	FV = [[1, 2, 3, 4],  [5, 6, 7, 8],  [1, 2, 5, 6],  [3, 4, 7, 8],  [1, 3, 5, 7],  [2, 4, 6, 8]]
-	return V,EV,FV
-end
 
-"""
-	readmodel(volume::String)
-
-Read volume model from a file .json.
-"""
-function readmodel(volume::String)
-	V,CV,FV,EV = PointClouds.volumemodel(volume)
-	model = V,EV,FV
-	return model
-end
 #
 # """
 # 	filesegment(potree::String, folder::String, volume::String)
