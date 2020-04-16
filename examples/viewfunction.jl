@@ -6,7 +6,7 @@ using Combinatorics
 
 Create the GLMesh to view points,edges,triangles and tetrahedrons with colors from each point.
 """
-function colorview(V::Lar.Points,CV::Lar.Cells,rgb::Lar.Points,alpha=1.0)::GL.GLMesh
+function viewRGB(V::Lar.Points,CV::Lar.Cells,rgb::Lar.Points,alpha=1.0)::GL.GLMesh
 
 	function viewtetra(V::Lar.Points, CV::Lar.Cells,rgb,alpha)::GL.GLMesh
 		triangles = Array{Int64,1}[]
@@ -17,7 +17,7 @@ function colorview(V::Lar.Points,CV::Lar.Cells,rgb::Lar.Points,alpha=1.0)::GL.GL
 		end
 		# mesh building
 		unique!(sort!.(triangles))
-		mesh = colorview(V,triangles,rgb,alpha);
+		mesh = viewRGB(V,triangles,rgb,alpha);
 	end
 
 	n = size(V,1)  # space dimension

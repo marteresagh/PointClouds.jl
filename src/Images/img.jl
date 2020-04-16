@@ -14,7 +14,7 @@ function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Un
 
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
 
-    RGBtensor, rasterquote, resX, resY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
+    RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
 
     # jpg creation
     # PointClouds.imagecreation(potreedirs,outputjpg,model,GSD,PO)
@@ -75,24 +75,20 @@ initialize raster image.
 """
 function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, model::Lar.LAR)
 
-    # prova per la costruzione di BBPO su un generico piano
-    function projdist(unitvector)
-        function projdist0(vert)
-            return Lar.dot(unitvector,vert)
-        end
-        return projdist0
-    end
-
-
     verts,edges,faces = model
+    bbglobalextention = zeros(2) # basta farlo sui primi due, X e Y quanto è profonda la scatola non mi interessa in questo momento
+    ref = zeros(2)
 
-    bbglobalextention = zeros(3)
-    for i in 1:3
-        coord=PointClouds.projdist(coordsystemmatrix[i,:]).([verts[:,j] for j in 1:size(verts,2)])
-        min,max = extrema(coord)
-        bbglobalextention[i] = max-min
+    # questo loop calcola le dimensioni del raster e mi restituisce i valori di riferimento per la creazione dell'immagine
+    # qualunque sia la vista senza la costruzione del BBPO solo allineato agli assi
+    for i in 1:2
+        coord = PointClouds.projdist(coordsystemmatrix[i,:]).([verts[:,j] for j in 1:size(verts,2)])
+        extr = extrema(coord)
+        bbglobalextention[i] = extr[2]-extr[1]
+        ref[i] = extr[i]
     end
 
+    # IMAGE RESOLUTION
     resX = map(Int∘trunc,bbglobalextention[1] / GSD) + 1
     resY = map(Int∘trunc,bbglobalextention[2] / GSD) + 1
 
@@ -103,5 +99,33 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
     rasterChannels = 3
     RGBtensor = fill(1.,(rasterChannels,resY, resX))
 
-    return RGBtensor, rasterquote, resX, resY
+    # refX=ref[1]
+    # refY=ref[2]
+    return RGBtensor, rasterquote, ref[1], ref[2]
+end
+
+#prova su punti di esempio poi da estende ai punti della nuvola
+function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
+    npoints = size(V,2)
+    for i in 1:npoints
+        x = PointClouds.projdist(coordsystemmatrix[1,:])(V[:,i])
+        y = PointClouds.projdist(coordsystemmatrix[2,:])(V[:,i])
+        z = PointClouds.projdist(coordsystemmatrix[3,:])(V[:,i])
+        xcoord = map(Int∘trunc,(x-refX) / GSD)+1
+        ycoord = map(Int∘trunc,(refY-y) / GSD)+1
+        if rasterquote[ycoord,xcoord] < z
+            rasterquote[ycoord,xcoord] = z
+            RGBtensor[1, ycoord, xcoord] = rgb[1,i]
+            RGBtensor[2, ycoord, xcoord] = rgb[2,i]
+            RGBtensor[3, ycoord, xcoord] = rgb[3,i]
+        end
+    end
+    return RGBtensor
+end
+
+function projdist(unitvector)
+    function projdist0(vert)
+        return Lar.dot(unitvector,vert)
+    end
+    return projdist0
 end
