@@ -1,35 +1,26 @@
 """
 Return the image of orthoprojection.
 """
-function orthoprojectionimage(txtpotreedirs::String, outputjpg::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, PO::String )
+function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, PO::String )
     # check validity
-    @assert isdir(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
-    @assert isdir(folder) "orthoprojectionimage: $folder not an existing folder"
+    @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
     @assert length(PO)==3 "orthoprojectionimage: $PO not valid view "
 
-    #metto tutto qui poi separo in sotto funzioni
     # initialization
+    println("initialization")
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
-
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
-
     RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
+    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY
 
-    # jpg creation
-    # PointClouds.imagecreation(potreedirs,outputjpg,model,GSD,PO)
-    println("image saved in $outputjpg")
+    #image creation
+    println("image creation")
+    RGBtensor = PointClouds.imagecreation(potreedirs,params)
+    save(outputimage, Images.colorview(RGB, RGBtensor))
+    println("image saved in $outputimage")
 
 end
-
-# function imagecreation(potreedirs::Array{String,1}, outputjpg::String, model::Lar.LAR, GSD::Float64, PO::String)
-#     verts,edges,faces = model
-#     minGlobalBounds, maxGlobalBounds = Lar.boundingbox(verts)
-#     RGBArray = initrasterarray(coordsystemmatrix, GSD, verts)
-#
-#     save(outputjpg, colorview(RGB, RGBArray))
-# end
-
 
 """
 new basis.
@@ -63,7 +54,7 @@ function newcoordsyst(PO::String)
     # if directionview == "+"
     #     continue
     if directionview == '-'
-        R=[-1. 0 0; 0 1. 0; 0 0 -1]
+        R = [-1. 0 0; 0 1. 0; 0 0 -1]
         coordsystemmatrix = R*coordsystemmatrix
     end
     return coordsystemmatrix
@@ -79,11 +70,10 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
     bbglobalextention = zeros(2) # basta farlo sui primi due, X e Y quanto è profonda la scatola non mi interessa in questo momento
     ref = zeros(2)
 
-    # questo loop calcola le dimensioni del raster e mi restituisce i valori di riferimento per la creazione dell'immagine
-    # qualunque sia la vista senza la costruzione del BBPO solo allineato agli assi
+	newcoord=coordsystemmatrix*verts
+
     for i in 1:2
-        coord = PointClouds.projdist(coordsystemmatrix[i,:]).([verts[:,j] for j in 1:size(verts,2)])
-        extr = extrema(coord)
+        extr = extrema(newcoord[i,:])
         bbglobalextention[i] = extr[2]-extr[1]
         ref[i] = extr[i]
     end
@@ -103,29 +93,90 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
     # refY=ref[2]
     return RGBtensor, rasterquote, ref[1], ref[2]
 end
+#
+# #prova
+# function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
+#     npoints = size(V,2)
+#     for i in 1:npoints
+#         x = PointClouds.projdist(coordsystemmatrix[1,:])(V[:,i])
+#         y = PointClouds.projdist(coordsystemmatrix[2,:])(V[:,i])
+#         z = PointClouds.projdist(coordsystemmatrix[3,:])(V[:,i])
+#         xcoord = map(Int∘trunc,(x-refX) / GSD)+1
+#         ycoord = map(Int∘trunc,(refY-y) / GSD)+1
+#         if rasterquote[ycoord,xcoord] < z
+#             rasterquote[ycoord,xcoord] = z
+#             RGBtensor[1, ycoord, xcoord] = rgb[1,i]
+#             RGBtensor[2, ycoord, xcoord] = rgb[2,i]
+#             RGBtensor[3, ycoord, xcoord] = rgb[3,i]
+#         end
+#     end
+#     return RGBtensor
+# end
 
-#prova su punti di esempio poi da estende ai punti della nuvola
-function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
-    npoints = size(V,2)
-    for i in 1:npoints
-        x = PointClouds.projdist(coordsystemmatrix[1,:])(V[:,i])
-        y = PointClouds.projdist(coordsystemmatrix[2,:])(V[:,i])
-        z = PointClouds.projdist(coordsystemmatrix[3,:])(V[:,i])
-        xcoord = map(Int∘trunc,(x-refX) / GSD)+1
-        ycoord = map(Int∘trunc,(refY-y) / GSD)+1
-        if rasterquote[ycoord,xcoord] < z
-            rasterquote[ycoord,xcoord] = z
-            RGBtensor[1, ycoord, xcoord] = rgb[1,i]
-            RGBtensor[2, ycoord, xcoord] = rgb[2,i]
-            RGBtensor[3, ycoord, xcoord] = rgb[3,i]
-        end
+"""
+Cerca nei file di potree quali punti considerare
+"""
+function imagecreation(potreedirs::Array{String,1},params)
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+    aabbmodel = Lar.boundingbox(model[1])
+    for potree in potreedirs
+        println("======== PROJECT $potree ========")
+
+        scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
+    	tree = joinpath(potree,octreeDir,"r") # path to directory "r"
+
+    	println("Search in $tree ")
+
+    	# 2.- check all file
+    	for (root, _, _) in walkdir(tree)
+            files=PointClouds.searchfile(root,".las")
+
+            println("Search in $root ")
+            println("$(length(files)) files to process")
+    		for i in 1:length(files) # legge tutti i files
+
+                if i%10==0
+                    println("$i files processed")
+                end
+
+			    lasfile = joinpath(root, files[i]) # path to file
+				header, laspoints = LasIO.FileIO.load(lasfile)
+                nodebb = PointClouds.las2aabb(header)
+
+                if PointClouds.AABBdetection(nodebb,aabbmodel) #se il nodo e il modello si intersecano allora
+                    PointClouds.updateimage!(params,header,laspoints)
+                end
+				#break
+    		end
+
+    	end
     end
     return RGBtensor
 end
 
-function projdist(unitvector)
-    function projdist0(vert)
-        return Lar.dot(unitvector,vert)
+"""
+aggiorna l'immagine.
+"""
+function updateimage!(params,header,laspoints)
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+
+    for laspoint in laspoints
+        point = PointClouds.xyz(laspoint,header)
+        if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
+            rgb = PointClouds.color(laspoint,header)
+            p = coordsystemmatrix*point
+            xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
+            ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+
+            if rasterquote[ycoord,xcoord] < p[3]
+                rasterquote[ycoord,xcoord] = p[3]
+                RGBtensor[1, ycoord, xcoord] = rgb[1]
+                RGBtensor[2, ycoord, xcoord] = rgb[2]
+                RGBtensor[3, ycoord, xcoord] = rgb[3]
+            end
+        end
     end
-    return projdist0
 end
+
+
+searchfile(path,key) = filter(x->occursin(key,x), readdir(path,join=true))

@@ -8,6 +8,7 @@ module PointClouds
 	using Combinatorics, DataStructures, SparseArrays
 	using MATLAB,AlphaStructures
 	using Polynomials, LsqFit
+	using Images
 
 	include("navigatedirectory.jl")
 	include("extractpc.jl")
