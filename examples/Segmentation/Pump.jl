@@ -8,7 +8,7 @@ include("../viewfunction.jl")
 ## input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\PUMP"
 allfile = PointClouds.filelevel(fname,0)
-_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+_,_,_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 centroid,V = PointClouds.subtractaverage(Vtot)
 
