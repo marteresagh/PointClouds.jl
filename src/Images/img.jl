@@ -1,3 +1,22 @@
+function modelintersectoctree(model, octreenode)
+	verts,edges,faces = model
+	aabbmodel = Lar.boundingbox(verts)
+	if PointClouds.AABBdetection(aabbmodel,octreenode)
+		Voctree,_,_ = PointClouds.boxmodelfromaabb(octreenode)
+		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
+		test = length.(inter).%2
+		if test == ones(size(Voctree,2))
+			return 2 # octreenode all in model
+		elseif isempty(test)
+			return 0
+		else
+			return 1 #interseca ma non contiene
+		end
+	else
+		return 0 # no intersection
+	end
+end
+
 """
 Return the image of orthoprojection.
 """
@@ -116,6 +135,7 @@ end
 """
 Cerca nei file di potree quali punti considerare
 """
+#considera quali punti prendere in partenza, devo modificare la lettura del jsaon e inserire anche il resto dei parametri sopratutto tightbb
 function imagecreation(potreedirs::Array{String,1},params)
     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
     aabbmodel = Lar.boundingbox(model[1])
@@ -123,33 +143,59 @@ function imagecreation(potreedirs::Array{String,1},params)
         println("======== PROJECT $potree ========")
 
         scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
-    	tree = joinpath(potree,octreeDir,"r") # path to directory "r"
+		tree = joinpath(potree,octreeDir,"r") # path to directory "r"
 
-    	println("Search in $tree ")
+		println("Search in $tree ")
 
-    	# 2.- check all file
-    	for (root, _, _) in walkdir(tree)
-            files=PointClouds.searchfile(root,".las")
+		# 2.- check all file
+		files = PointClouds.searchfile(tree,".las")
+		nfiles = length(files)
+		println("$(nfiles) files to process")
 
-            println("Search in $root ")
-            println("$(length(files)) files to process")
-    		for i in 1:length(files) # legge tutti i files
+		if PointClouds.modelintersectoctree(model, AABBoriginal) == 2
+			println("all model")
 
-                if i%10==0
-                    println("$i files processed")
-                end
+			for i in 1:nfiles # for all files
+				#progression
+	            if i%100 == 0
+	                println("$i files processed of $nfiles")
+	            end
 
-			    lasfile = joinpath(root, files[i]) # path to file
-				header, laspoints = LasIO.FileIO.load(lasfile)
-                nodebb = PointClouds.las2aabb(header)
+				header, laspoints = LasIO.FileIO.load(files[i])
+	            # nodebb = PointClouds.las2aabb(header)
 
-                if PointClouds.AABBdetection(nodebb,aabbmodel) #se il nodo e il modello si intersecano allora
-                    PointClouds.updateimage!(params,header,laspoints)
-                end
-				#break
-    		end
+	            # if PointClouds.AABBdetection(nodebb,aabbmodel) #se il nodo e il modello si intersecano allora
+	            #     PointClouds.updateimage!(params,header,laspoints)
+	            # end
+				PointClouds.updateimage2!(params,header,laspoints)
+			end
+		elseif PointClouds.modelintersectoctree(model, AABBoriginal) == 1
+			println("interect model")
+			for i in 1:nfiles # for all files
+				#progression
+				if i%100 == 0
+					println("$i files processed of $nfiles")
+				end
 
-    	end
+				header, laspoints = LasIO.FileIO.load(files[i])
+				nodebb = PointClouds.las2aabb(header)
+
+				# if PointClouds.AABBdetection(nodebb,aabbmodel) #se il nodo e il modello si intersecano allora
+				#     PointClouds.updateimage!(params,header,laspoints)
+				# end
+
+				inter = PointClouds.modelintersectoctree(model, nodebb)
+				@show inter
+				if inter == 1
+					 PointClouds.updateimage!(params,header,laspoints)
+				elseif inter == 2
+					PointClouds.updateimage2!(params,header,laspoints)
+				end
+			end
+		elseif PointClouds.modelintersectoctree(model, AABBoriginal) == 0
+			println("no point in model")
+		end
+
     end
     return RGBtensor
 end
@@ -169,7 +215,7 @@ function updateimage!(params,header,laspoints)
             ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
 
             if rasterquote[ycoord,xcoord] < p[3]
-                rasterquote[ycoord,xcoord] = p[3]
+            	rasterquote[ycoord,xcoord] = p[3]
                 RGBtensor[1, ycoord, xcoord] = rgb[1]
                 RGBtensor[2, ycoord, xcoord] = rgb[2]
                 RGBtensor[3, ycoord, xcoord] = rgb[3]
@@ -178,5 +224,32 @@ function updateimage!(params,header,laspoints)
     end
 end
 
+function updateimage2!(params,header,laspoints)
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
 
-searchfile(path,key) = filter(x->occursin(key,x), readdir(path,join=true))
+    for laspoint in laspoints
+        point = PointClouds.xyz(laspoint,header)
+        #if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
+            rgb = PointClouds.color(laspoint,header)
+            p = coordsystemmatrix*point
+            xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
+            ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+
+            if rasterquote[ycoord,xcoord] < p[3]
+            	rasterquote[ycoord,xcoord] = p[3]
+                RGBtensor[1, ycoord, xcoord] = rgb[1]
+                RGBtensor[2, ycoord, xcoord] = rgb[2]
+                RGBtensor[3, ycoord, xcoord] = rgb[3]
+            end
+        #end
+    end
+end
+
+function searchfile(path,key)
+	files = String[]
+	for (root, _, _) in walkdir(path)
+		thisfiles=filter(x->occursin(key,x), readdir(root,join=true))
+		union!(files,thisfiles)
+	end
+	return files
+end

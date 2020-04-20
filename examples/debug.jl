@@ -85,34 +85,68 @@ GL.VIEW(
 	]
 )
 
-using LasIO
-rgb=convert(Array{LasIO.N0f16,2},V)
-PointClouds.saveply("example.ply", example[1], rgb)
-
 
 ## image potree
 using PointClouds
 using Images
 
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
-outputimage = "prova.png"
-bbin = (hcat([458117.68, 4493768.53, 196.68]),hcat([ 458452.43, 4494171.78, 237.49]))
-#bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
-GSD = 0.3
-PO = "XZ+"
-#outputimage = PO*".png"
-@benchmark PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO)
+#outputimage = "prova.png"
+#bbin = (hcat([295370.8436816006, 4781124.438537028, 225.44601794335939]),hcat([295632.16918208889, 4781376.7190012, 300.3583829030762]))
+bbin = (hcat([458117.68, 4493768.53, 196.68]),hcat([ 458452.43, 4494171.78, 237.49])) #CAVA
+bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
+GSD = 0.1
+PO = "YZ-"
+outputimage = "CAVA_"*PO*".png"
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO)
 
-scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON("C:/Users/marte/Documents/potreeDirectory/pointclouds/CAVA")
-searchdir(path,key) = filter(x->occursin(key,x), readdir(path,join=true))
+using Distributed
+
+addprocs(8)
+@everywhere using SharedArrays
+
+@everywhere n = 100000
+@everywhere urls = rand(n)
+@everywhere results = SharedArray{Float64}(n)
+
+n=100000
+urls = rand(n)
+results = Array{Float64}(undef,n)
+
+@time @async for i in 1:n
+	results[i] = urls[i]
+end
+
+@time for i in 1:n
+    results[i] = urls[i]
+end
+
+
+using BenchmarkTools
+function searchfile(path,key)
+	files = String[]
+	for (root, _, _) in walkdir(path)
+		thisfiles=filter(x->occursin(key,x), readdir(root,join=true))
+		union!(files,thisfiles)
+	end
+	return files
+end
+
+@time files = searchfile("C:/Users/marte/Documents/potreeDirectory/pointclouds/point-cloud-private",".las")
+
+function psearchfile(path,key)
+	files = String[]
+	@async for (root, _, _) in walkdir(path)
+		thisfiles=filter(x->occursin(key,x), readdir(root,join=true))
+		union!(files,thisfiles)
+	end
+	return @sync files
+end
+
+@time pfiles = psearchfile("C:/Users/marte/Documents/potreeDirectory/pointclouds/point-cloud-private",".las")
+
+pfiles==files
 
 
 
-
-@benchmark PointClouds.searchfile("C:/Users/marte/Documents/potreeDirectory/pointclouds/CAVA/data/r",".las")
-
-
-@benchmark prova2(coordsystemmatrix,V[:,1])
-@benchmark LasIO.FileIO.load("C:/Users/marte/Documents/potreeDirectory/pointclouds/CAVA/data/r/r.las")
-
-using LasIO
+PointClouds.readcloudJSON("C:\Users\marte\Documents\potreeDirectory\pointclouds\CAVA")

@@ -11,8 +11,8 @@ function readcloudJSON(path::String)
 	dictAABB = dict["boundingBox"]
 	scale = dict["scale"]
 	npoints = dict["points"]
-	AABB=([dictAABB["lx"],dictAABB["ly"],dictAABB["lz"]],
-			[dictAABB["ux"],dictAABB["uy"],dictAABB["uz"]])
+	AABB=(hcat([dictAABB["lx"],dictAABB["ly"],dictAABB["lz"]]),hcat(
+			[dictAABB["ux"],dictAABB["uy"],dictAABB["uz"]]))
 	octreeDir = dict["octreeDir"]
 	hierarchyStepSize = dict["hierarchyStepSize"]
 	spacing = dict["spacing"]

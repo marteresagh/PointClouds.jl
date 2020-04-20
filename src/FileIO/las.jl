@@ -48,7 +48,7 @@ end
 
 function las2aabb(header::LasHeader)
 	AABB = LasIO.boundingbox(header)
-	return reshape([AABB.xmin;AABB.ymin;AABB.zmin],(3,1)),reshape([AABB.xmax;AABB.ymax;AABB.zmax],(3,1))
+	return (hcat([AABB.xmin;AABB.ymin;AABB.zmin]),hcat([AABB.xmax;AABB.ymax;AABB.zmax]))
 end
 
 
