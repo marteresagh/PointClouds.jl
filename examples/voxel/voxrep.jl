@@ -8,7 +8,7 @@ include("../viewfunction.jl")
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
 LOD = 3
 allfile = PointClouds.filelevel(fname,LOD)
-_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+_,_,_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
 spacing=spacing/2^LOD
 Vtot,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Vtot)

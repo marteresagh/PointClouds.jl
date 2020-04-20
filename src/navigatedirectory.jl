@@ -3,7 +3,7 @@
 	filelevel(path,lev)
 """
 function filelevel(path,lev,allprev=true)
-	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(path) # useful parameters
+	typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(path) # useful parameters
 	pathr = path*"\\"*octreeDir*"\\r" # path to directory "r"
 
 	println("search in $pathr ")
@@ -114,7 +114,7 @@ function regionsegmentcloud(filename::String, from::String, to::String, region, 
 	headers = LasIO.LasHeader[] # all headers
 	arraylaspoint = Array{LasIO.LasPoint,1}[] # all points fall in my model
 
-	scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = readcloudJSON(from) # useful parameters
+	typeofpoints,scale,npoints,AABBr,tightBB,octreeDir,hierarchyStepSize,spacing = readcloudJSON(from) # useful parameters
 	pathr = from*"\\"*octreeDir*"\\r" # path to directory "r"
 
 	println("search in $pathr ")

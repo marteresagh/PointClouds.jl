@@ -6,17 +6,22 @@ Read a file `.json`.
 function readcloudJSON(path::String)
 	dict=Dict{String,Any}[]
 	open(path * "\\cloud.js", "r") do f
-	    dict=JSON.parse(f)  # parse and transform data
+	    dict = JSON.parse(f)  # parse and transform data
 	end
 	dictAABB = dict["boundingBox"]
+	dicttightBB = dict["tightBoundingBox"]
+	AABB = (hcat([dictAABB["lx"],dictAABB["ly"],dictAABB["lz"]]),
+			hcat([dictAABB["ux"],dictAABB["uy"],dictAABB["uz"]]))
+	tightBB = (hcat([dicttightBB["lx"],dicttightBB["ly"],dicttightBB["lz"]]),
+				hcat([dicttightBB["ux"],dicttightBB["uy"],dicttightBB["uz"]]))
+
 	scale = dict["scale"]
 	npoints = dict["points"]
-	AABB=(hcat([dictAABB["lx"],dictAABB["ly"],dictAABB["lz"]]),hcat(
-			[dictAABB["ux"],dictAABB["uy"],dictAABB["uz"]]))
+    typeofpoints = dict["pointAttributes"]
 	octreeDir = dict["octreeDir"]
 	hierarchyStepSize = dict["hierarchyStepSize"]
 	spacing = dict["spacing"]
-	return scale,npoints,AABB,octreeDir,hierarchyStepSize,spacing
+	return typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing
 end
 
 

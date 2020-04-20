@@ -9,7 +9,7 @@ include("../viewfunction.jl")
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE"
 level = 1
 allfile = PointClouds.filelevel(fname,level,false)
-_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+_,_,_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
 spacing = spacing/2^level
 
 Voriginal,VV,rgb = PointClouds.loadlas(allfile...)

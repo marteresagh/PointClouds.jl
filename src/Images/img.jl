@@ -142,7 +142,7 @@ function imagecreation(potreedirs::Array{String,1},params)
     for potree in potreedirs
         println("======== PROJECT $potree ========")
 
-        scale,npoints,AABBoriginal,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
+		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
 		tree = joinpath(potree,octreeDir,"r") # path to directory "r"
 
 		println("Search in $tree ")
@@ -152,7 +152,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 		nfiles = length(files)
 		println("$(nfiles) files to process")
 
-		if PointClouds.modelintersectoctree(model, AABBoriginal) == 2
+		if PointClouds.modelintersectoctree(model, AABB) == 2
 			println("all model")
 
 			for i in 1:nfiles # for all files
@@ -169,7 +169,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 	            # end
 				PointClouds.updateimage2!(params,header,laspoints)
 			end
-		elseif PointClouds.modelintersectoctree(model, AABBoriginal) == 1
+		elseif PointClouds.modelintersectoctree(model, AABB) == 1
 			println("interect model")
 			for i in 1:nfiles # for all files
 				#progression
@@ -192,7 +192,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 					PointClouds.updateimage2!(params,header,laspoints)
 				end
 			end
-		elseif PointClouds.modelintersectoctree(model, AABBoriginal) == 0
+		elseif PointClouds.modelintersectoctree(model, AABB) == 0
 			println("no point in model")
 		end
 
