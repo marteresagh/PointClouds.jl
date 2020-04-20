@@ -1,3 +1,4 @@
+
 function modelintersectoctree(model, octreenode)
 	verts,edges,faces = model
 	aabbmodel = Lar.boundingbox(verts)
@@ -5,10 +6,10 @@ function modelintersectoctree(model, octreenode)
 		Voctree,_,_ = PointClouds.boxmodelfromaabb(octreenode)
 		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
 		test = length.(inter).%2
-		if test == ones(size(Voctree,2))
+		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0]
 			return 2 # octreenode all in model
-		elseif isempty(test)
-			return 0
+		elseif test == zeros(size(Voctree,2))
+			return 0 # no intersection
 		else
 			return 1 #interseca ma non contiene
 		end
@@ -152,8 +153,8 @@ function imagecreation(potreedirs::Array{String,1},params)
 		nfiles = length(files)
 		println("$(nfiles) files to process")
 
-		if PointClouds.modelintersectoctree(model, AABB) == 2
-			println("all model")
+		if PointClouds.modelintersectoctree(model, tightBB) == 2
+			println("===== Full point cloud =====")
 
 			for i in 1:nfiles # for all files
 				#progression
@@ -169,8 +170,8 @@ function imagecreation(potreedirs::Array{String,1},params)
 	            # end
 				PointClouds.updateimage2!(params,header,laspoints)
 			end
-		elseif PointClouds.modelintersectoctree(model, AABB) == 1
-			println("interect model")
+		elseif PointClouds.modelintersectoctree(model, tightBB) == 1
+			println("===== Part of =====")
 			for i in 1:nfiles # for all files
 				#progression
 				if i%100 == 0
@@ -185,15 +186,14 @@ function imagecreation(potreedirs::Array{String,1},params)
 				# end
 
 				inter = PointClouds.modelintersectoctree(model, nodebb)
-				@show inter
 				if inter == 1
 					 PointClouds.updateimage!(params,header,laspoints)
 				elseif inter == 2
 					PointClouds.updateimage2!(params,header,laspoints)
 				end
 			end
-		elseif PointClouds.modelintersectoctree(model, AABB) == 0
-			println("no point in model")
+		elseif PointClouds.modelintersectoctree(model, tightBB) == 0
+			println("===== No point in model =====")
 		end
 
     end

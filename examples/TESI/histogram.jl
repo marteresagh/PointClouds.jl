@@ -40,7 +40,7 @@ end
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CUPOLA"
 level = 0
 allfile = PointClouds.filelevel(fname,level)
-_,_,_,_,_,spacing = PointClouds.readJSON(fname)
+_,_,_,_,_,_,_,spacing = PointClouds.readJSON(fname)
 
 Voriginal,VV,rgb = PointClouds.loadlas(allfile...)
 _,V = PointClouds.subtractaverage(Voriginal)
