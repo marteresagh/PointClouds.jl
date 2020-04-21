@@ -1,27 +1,3 @@
-"""
-A model and an AABB intersection:
- - 0 -> model not intersect AABB
- - 1 -> model intersect but not contains AABB
- - 2 -> model contains AABB
-"""
-function modelintersectoctree(model, octreenode)
-	verts,edges,faces = model
-	aabbmodel = Lar.boundingbox(verts)
-	if PointClouds.AABBdetection(aabbmodel,octreenode)
-		Voctree,_,_ = PointClouds.boxmodelfromaabb(octreenode)
-		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
-		test = length.(inter).%2
-		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0]
-			return 2 # octreenode all in model
-		elseif test == zeros(size(Voctree,2))
-			return 0 # no intersection
-		else
-			return 1 #interseca ma non contiene
-		end
-	else
-		return 0 # no intersection
-	end
-end
 
 """
 Return the image of orthoprojection.
@@ -139,11 +115,8 @@ function imagecreation(potreedirs::Array{String,1},params)
 		nfiles = length(files)
 		println("$(nfiles) files to process")
 
-		full = PointClouds.modelintersectoctree(model, tightBB)
-		@assert full != 0 "imagecreation: no point in model"
-
-		if PointClouds.modelintersectoctree(model, tightBB) == 2
-
+		if PointClouds.modelcontainsoctree(model, tightBB) == 2
+			#println("Full")
 			for i in 1:nfiles # for all files
 				#progression
 	            if i%100 == 0
@@ -155,8 +128,8 @@ function imagecreation(potreedirs::Array{String,1},params)
 
 			end
 
-		elseif PointClouds.modelintersectoctree(model, tightBB) == 1
-
+		elseif PointClouds.modelcontainsoctree(model, tightBB) == 1
+			#println("Limited")
 			for i in 1:nfiles # for all files
 				#progression
 				if i%100 == 0
@@ -235,7 +208,54 @@ function searchfile(path::String,key::String)
 	return files
 end
 
+"""
+A model and an AABB intersection:
+ - 0 -> model not intersect AABB
+ - 1 -> model intersect but not contains AABB
+ - 2 -> model contains AABB
+"""
+function modelcontainsoctree(model,octree)
+	verts,edges,faces = model
+	aabbmodel = Lar.boundingbox(verts)
+	if PointClouds.AABBdetection(aabbmodel,octree)
+		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
+		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
+		test = length.(inter).%2
+		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0]
+			return 2 # full model
+		else
+			return 1 #non è sicuro
+		end
+	else
+		return 0 # no intersection
+	end
+end
 
+function modelintersectoctree(model, node)
+	verts,edges,faces = model
+	aabbmodel = Lar.boundingbox(verts)
+	if PointClouds.AABBdetection(aabbmodel,node)
+		Voctree,EVoctree,FVoctree = PointClouds.boxmodelfromaabb(node)
+		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
+		if length.(inter) == [2, 0, 2, 0, 2, 0, 2, 0]
+			return 1
+		end
+		test = length.(inter).%2
+		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0]
+			return 2 # octreenode all in model
+		elseif test == zeros(size(Voctree,2))
+			inter = PointClouds.testinternalpoint(Voctree,EVoctree,FVoctree).([verts[:,i] for i in 1:size(verts,2)])
+			if length.(inter) == [2, 0, 2, 0, 2, 0, 2, 0]
+				return 1
+			end
+			return 0 # no intersection
+		else
+			return 1 #interseca ma non contiene
+		end
+	else
+		return 0 # no intersection
+	end
+end
 
 # function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
 #     npoints = size(V,2)
