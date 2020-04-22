@@ -71,7 +71,7 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
     bbglobalextention = zeros(2) # basta farlo sui primi due, X e Y quanto è profonda la scatola non mi interessa in questo momento
     ref = zeros(2)
 
-	newcoord=coordsystemmatrix*verts
+	newcoord = coordsystemmatrix*verts
 
     for i in 1:2
         extr = extrema(newcoord[i,:])
@@ -115,7 +115,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 		nfiles = length(files)
 		println("$(nfiles) files to process")
 
-		if PointClouds.modelcontainsoctree(model, tightBB) == 2
+		if PointClouds.modelsdetection(model, tightBB) == 2
 			#println("Full")
 			for i in 1:nfiles # for all files
 				#progression
@@ -128,7 +128,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 
 			end
 
-		elseif PointClouds.modelcontainsoctree(model, tightBB) == 1
+		elseif PointClouds.modelsdetection(model, tightBB) == 1
 			#println("Limited")
 			for i in 1:nfiles # for all files
 				#progression
@@ -139,7 +139,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 				header, laspoints = LasIO.FileIO.load(files[i])
 				nodebb = PointClouds.las2aabb(header)
 
-				inter = PointClouds.modelintersectoctree(model, nodebb)
+				inter = PointClouds.modelsdetection(model, nodebb)
 				if inter == 1
 					 PointClouds.updateimagewithfilter!(params,header,laspoints)
 				elseif inter == 2
@@ -214,6 +214,50 @@ A model and an AABB intersection:
  - 1 -> model intersect but not contains AABB
  - 2 -> model contains AABB
 """
+
+function modelsdetection(model,octree)
+	verts,edges,faces = model
+	aabbmodel = Lar.boundingbox(verts)
+	if PointClouds.AABBdetection(aabbmodel,octree)
+		#ci sono 3 casi se i due bounding box si incontrano:
+		# 1. octree è tutto interno  return 2
+		# 1. octree esterno return 0
+		# 1. octree intersecato ma non contenuto return 1
+		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
+		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
+		test = length.(inter).%2
+		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest ultimo se si sovrappongono
+			return 2 # full model
+		elseif !separatingaxis(model, tightAABB)
+			return 0
+		else
+			return 1
+		end
+	else
+		return 0 # no intersection
+	end
+end
+
+
+function separatingaxis(model,tightAABB)
+	V,EV,FV = PointClouds.getmodel(tightAABB)
+	verts,edges,faces = model
+	axis_x = (verts[:,5]-verts[:,1])/Lar.norm(verts[:,5]-verts[:,1])
+	axis_y = (verts[:,2]-verts[:,1])/Lar.norm(verts[:,2]-verts[:,1])
+	axis_z = (verts[:,3]-verts[:,1])/Lar.norm(verts[:,3]-verts[:,1])
+	coordsystem = [axis_x';axis_y';axis_z']
+	newverts = coordsystem*verts
+	newV = coordsystem*V
+	newaabb = [extrema(newverts[i,:]) for i in 1:3]
+	newAABB = [extrema(newV[i,:]) for i in 1:3]
+	aabb = (hcat([newaabb[1][1],newaabb[2][1],newaabb[3][1]]),hcat([newaabb[1][2],newaabb[2][2],newaabb[3][2]]))
+	AABB = (hcat([newAABB[1][1],newAABB[2][1],newAABB[3][1]]),hcat([newAABB[1][2],newAABB[2][2],newAABB[3][2]]))
+	return PointClouds.AABBdetection(aabb,AABB)
+end
+
+
+
+
 function modelcontainsoctree(model,octree)
 	verts,edges,faces = model
 	aabbmodel = Lar.boundingbox(verts)
