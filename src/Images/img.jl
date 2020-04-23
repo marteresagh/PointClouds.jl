@@ -228,7 +228,7 @@ function modelsdetection(model,octree)
 		test = length.(inter).%2
 		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest ultimo se si sovrappongono
 			return 2 # full model
-		elseif !separatingaxis(model, tightAABB)
+		elseif !separatingaxis(model, octree)
 			return 0
 		else
 			return 1
