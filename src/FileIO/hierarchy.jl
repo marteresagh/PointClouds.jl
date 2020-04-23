@@ -37,7 +37,6 @@ function triepotree(potree::String)
 	files = PointClouds.searchfile(tree,".las")
 	for file in files
 		name = rsplit(splitdir(file)[2],".")[1]
-		@show name
 		trie[name]=file
 	end
 
