@@ -273,3 +273,30 @@ end
 #     end
 #     return RGBtensor
 # end
+
+
+#
+# """
+# imagecreation con i trie
+# """
+# #considera quali punti prendere in partenza, devo modificare la lettura del jsaon e inserire anche il resto dei parametri sopratutto tightbb
+# function imagecreation(potreedirs::Array{String,1},params)
+#     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+#     aabbmodel = Lar.boundingbox(model[1])
+#     for potree in potreedirs
+#         println("======== PROJECT $potree ========")
+#
+# 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
+# 		tree = joinpath(potree,octreeDir,"r") # path to directory "r"
+#
+# 		trie = PointClouds.triepotree(potree).children['r']
+# 		println("Search in $tree ")
+#
+# 		# 2.- check all file
+# 		for node in keys(trie) #iterator sull'albero
+# 			file = trie[node] #se il nodo in cui sto è tutto contenuto in modello allora prendo tutto il sottoalbero
+# 			# se il nodo non interseca cancello tutto il sotto albero
+# 			# se il nodo è intersecato allora faccio il controllo sui punti
+# 		end
+#     return RGBtensor
+# end
