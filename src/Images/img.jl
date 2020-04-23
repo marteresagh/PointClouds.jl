@@ -68,7 +68,7 @@ initialize raster image.
 function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, model::Lar.LAR)
 
     verts,edges,faces = model
-    bbglobalextention = zeros(2) # basta farlo sui primi due, X e Y quanto è profonda la scatola non mi interessa in questo momento
+    bbglobalextention = zeros(2)
     ref = zeros(2)
 
 	newcoord = coordsystemmatrix*verts
@@ -226,7 +226,7 @@ function modelsdetection(model,octree)
 		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
 		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
 		test = length.(inter).%2
-		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest ultimo se si sovrappongono
+		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest' ultimo se si sovrappongono
 			return 2 # full model
 		elseif !separatingaxis(model, octree)
 			return 0
@@ -239,8 +239,8 @@ function modelsdetection(model,octree)
 end
 
 
-function separatingaxis(model,tightAABB)
-	V,EV,FV = PointClouds.getmodel(tightAABB)
+function separatingaxis(model,octree)
+	V,EV,FV = PointClouds.getmodel(octree)
 	verts,edges,faces = model
 	axis_x = (verts[:,5]-verts[:,1])/Lar.norm(verts[:,5]-verts[:,1])
 	axis_y = (verts[:,2]-verts[:,1])/Lar.norm(verts[:,2]-verts[:,1])
@@ -255,51 +255,6 @@ function separatingaxis(model,tightAABB)
 	return PointClouds.AABBdetection(aabb,AABB)
 end
 
-
-
-
-function modelcontainsoctree(model,octree)
-	verts,edges,faces = model
-	aabbmodel = Lar.boundingbox(verts)
-	if PointClouds.AABBdetection(aabbmodel,octree)
-		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
-		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
-		test = length.(inter).%2
-		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0]
-			return 2 # full model
-		else
-			return 1 #non è sicuro
-		end
-	else
-		return 0 # no intersection
-	end
-end
-
-function modelintersectoctree(model, node)
-	verts,edges,faces = model
-	aabbmodel = Lar.boundingbox(verts)
-	if PointClouds.AABBdetection(aabbmodel,node)
-		Voctree,EVoctree,FVoctree = PointClouds.boxmodelfromaabb(node)
-		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
-		if length.(inter) == [2, 0, 2, 0, 2, 0, 2, 0]
-			return 1
-		end
-		test = length.(inter).%2
-		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0]
-			return 2 # octreenode all in model
-		elseif test == zeros(size(Voctree,2))
-			inter = PointClouds.testinternalpoint(Voctree,EVoctree,FVoctree).([verts[:,i] for i in 1:size(verts,2)])
-			if length.(inter) == [2, 0, 2, 0, 2, 0, 2, 0]
-				return 1
-			end
-			return 0 # no intersection
-		else
-			return 1 #interseca ma non contiene
-		end
-	else
-		return 0 # no intersection
-	end
-end
 
 # function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
 #     npoints = size(V,2)
