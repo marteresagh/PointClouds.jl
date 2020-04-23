@@ -10,6 +10,7 @@ module PointClouds
 	using Polynomials, LsqFit
 	using Images
 
+
 	include("navigatedirectory.jl")
 	include("extractpc.jl")
 
@@ -39,6 +40,8 @@ module PointClouds
 	include("FileIO/json.jl")
 	include("FileIO/las.jl")
 	include("FileIO/utilities.jl")
+	include("FileIO/hierarchy.jl")
+
 	include("Images/img.jl")
 
 end
