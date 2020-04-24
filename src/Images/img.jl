@@ -102,44 +102,45 @@ Cerca nei file di potree quali punti considerare
 function imagecreation(potreedirs::Array{String,1},params)
     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
     aabbmodel = Lar.boundingbox(model[1])
+	testfunction = PointClouds.testinternalpoint(model...)
+
     for potree in potreedirs
         println("======== PROJECT $potree ========")
 
 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
 		tree = joinpath(potree,octreeDir,"r") # path to directory "r"
 
-		println("Search in $tree ")
+		println("Search in ",tree)
 
 		# 2.- check all file
 		files = PointClouds.searchfile(tree,".las")
 		nfiles = length(files)
-		println("$(nfiles) files to process")
+		println(nfiles," files to process")
 
-		if PointClouds.modelsdetection(model, tightBB) == 2
+		if PointClouds.modelsdetection(model, tightBB, testfunction) == 2
 			#println("Full")
 			for i in 1:nfiles # for all files
 				#progression
 	            if i%100 == 0
-	                println("$i files processed of $nfiles")
+	               println(i," files processed of ", nfiles)
 	            end
 
 				header, laspoints = LasIO.FileIO.load(files[i])
 				PointClouds.updateimage!(params,header,laspoints)
-
 			end
 
-		elseif PointClouds.modelsdetection(model, tightBB) == 1
+		elseif PointClouds.modelsdetection(model, tightBB, testfunction) == 1
 			#println("Limited")
 			for i in 1:nfiles # for all files
 				#progression
 				if i%100 == 0
-					println("$i files processed of $nfiles")
+					println(i," files processed of ", nfiles)
 				end
 
 				header, laspoints = LasIO.FileIO.load(files[i])
 				nodebb = PointClouds.las2aabb(header)
 
-				inter = PointClouds.modelsdetection(model, nodebb)
+				inter = PointClouds.modelsdetection(model, nodebb, testfunction)
 				if inter == 1
 					 PointClouds.updateimagewithfilter!(params,header,laspoints)
 				elseif inter == 2
@@ -214,8 +215,7 @@ A model and an AABB intersection:
  - 1 -> model intersect but not contains AABB
  - 2 -> model contains AABB
 """
-
-function modelsdetection(model,octree)
+function modelsdetection(model,octree,testfunction)
 	verts,edges,faces = model
 	aabbmodel = Lar.boundingbox(verts)
 	if PointClouds.AABBdetection(aabbmodel,octree)
@@ -224,7 +224,7 @@ function modelsdetection(model,octree)
 		# 1. octree esterno return 0
 		# 1. octree intersecato ma non contenuto return 1
 		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
-		inter = PointClouds.testinternalpoint(verts,edges,faces).([Voctree[:,i] for i in 1:size(Voctree,2)])
+		inter = testfunction.([Voctree[:,i] for i in 1:size(Voctree,2)])
 		test = length.(inter).%2
 		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest' ultimo se si sovrappongono
 			return 2 # full model
