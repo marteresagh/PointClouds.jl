@@ -21,7 +21,6 @@ function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::
     RGBtensor = PointClouds.imagecreation(potreedirs,params)
     save(outputimage, Images.colorview(RGB, RGBtensor))
     println("image saved in $outputimage")
-
 end
 
 """
@@ -327,9 +326,19 @@ function imagecreation(potreedirs::Array{String,1},params)
 	model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
     for potree in potreedirs
         println("======== PROJECT $potree ========")
+		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree)
 
 		trie = PointClouds.triepotree(potree)
-		PointClouds.dfsimage(trie,params)
+		if PointClouds.modelsdetection(model, tightBB) == 2
+			println("full model")
+			for k in keys(trie)
+				file = trie[k]
+				PointClouds.updateimage!(params,file)
+			end
+		else
+			println("DFS")
+			PointClouds.dfsimage(trie,params)
+		end
 	end
     return RGBtensor
 end

@@ -52,8 +52,6 @@ function dfsimage(t,params)
 	file = t.value
 	nodebb = PointClouds.las2aabb(file)
 	inter = PointClouds.modelsdetection(model, nodebb)
-	@show file
-	@show inter
 	if inter == 1
 		PointClouds.updateimagewithfilter!(params,file)
 		for key in collect(keys(t.children))
