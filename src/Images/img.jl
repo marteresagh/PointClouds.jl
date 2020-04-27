@@ -1,4 +1,5 @@
 
+
 """
 Return the image of orthoprojection.
 """
@@ -98,11 +99,9 @@ end
 """
 Cerca nei file di potree quali punti considerare
 """
-#considera quali punti prendere in partenza, devo modificare la lettura del jsaon e inserire anche il resto dei parametri sopratutto tightbb
-function imagecreation(potreedirs::Array{String,1},params)
+function _imagecreation(potreedirs::Array{String,1},params)
     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
     aabbmodel = Lar.boundingbox(model[1])
-	testfunction = PointClouds.testinternalpoint(model...)
 
     for potree in potreedirs
         println("======== PROJECT $potree ========")
@@ -140,7 +139,7 @@ function imagecreation(potreedirs::Array{String,1},params)
 				header, laspoints = LasIO.FileIO.load(files[i])
 				nodebb = PointClouds.las2aabb(header)
 
-				inter = PointClouds.modelsdetection(model, nodebb, testfunction)
+				inter = PointClouds.modelsdetection(model, nodebb)
 				if inter == 1
 					 PointClouds.updateimagewithfilter!(params,header,laspoints)
 				elseif inter == 2
@@ -153,49 +152,49 @@ function imagecreation(potreedirs::Array{String,1},params)
     end
     return RGBtensor
 end
-
-"""
-aggiorna l'immagine.
-"""
-function updateimagewithfilter!(params,header,laspoints)
-    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
-
-    for laspoint in laspoints
-        point = PointClouds.xyz(laspoint,header)
-        if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
-            rgb = PointClouds.color(laspoint,header)
-            p = coordsystemmatrix*point
-            xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
-            ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
-
-            if rasterquote[ycoord,xcoord] < p[3]
-            	rasterquote[ycoord,xcoord] = p[3]
-                RGBtensor[1, ycoord, xcoord] = rgb[1]
-                RGBtensor[2, ycoord, xcoord] = rgb[2]
-                RGBtensor[3, ycoord, xcoord] = rgb[3]
-            end
-        end
-    end
-end
-
-function updateimage!(params,header,laspoints)
-    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
-
-    for laspoint in laspoints
-        point = PointClouds.xyz(laspoint,header)
-        rgb = PointClouds.color(laspoint,header)
-        p = coordsystemmatrix*point
-        xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
-        ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
-
-        if rasterquote[ycoord,xcoord] < p[3]
-        	rasterquote[ycoord,xcoord] = p[3]
-            RGBtensor[1, ycoord, xcoord] = rgb[1]
-            RGBtensor[2, ycoord, xcoord] = rgb[2]
-            RGBtensor[3, ycoord, xcoord] = rgb[3]
-        end
-    end
-end
+#
+# """
+# aggiorna l'immagine.
+# """
+# function updateimagewithfilter!(params,header,laspoints)
+#     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+#
+#     for laspoint in laspoints
+#         point = PointClouds.xyz(laspoint,header)
+#         if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
+#             rgb = PointClouds.color(laspoint,header)
+#             p = coordsystemmatrix*point
+#             xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
+#             ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+#
+#             if rasterquote[ycoord,xcoord] < p[3]
+#             	rasterquote[ycoord,xcoord] = p[3]
+#                 RGBtensor[1, ycoord, xcoord] = rgb[1]
+#                 RGBtensor[2, ycoord, xcoord] = rgb[2]
+#                 RGBtensor[3, ycoord, xcoord] = rgb[3]
+#             end
+#         end
+#     end
+# end
+#
+# function updateimage!(params,header,laspoints)
+#     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+#
+#     for laspoint in laspoints
+#         point = PointClouds.xyz(laspoint,header)
+#         rgb = PointClouds.color(laspoint,header)
+#         p = coordsystemmatrix*point
+#         xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
+#         ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+#
+#         if rasterquote[ycoord,xcoord] < p[3]
+#         	rasterquote[ycoord,xcoord] = p[3]
+#             RGBtensor[1, ycoord, xcoord] = rgb[1]
+#             RGBtensor[2, ycoord, xcoord] = rgb[2]
+#             RGBtensor[3, ycoord, xcoord] = rgb[3]
+#         end
+#     end
+# end
 
 """
 In recursive mode, search all files with key in filename.
@@ -215,7 +214,7 @@ A model and an AABB intersection:
  - 1 -> model intersect but not contains AABB
  - 2 -> model contains AABB
 """
-function modelsdetection(model,octree,testfunction)
+function modelsdetection(model,octree)
 	verts,edges,faces = model
 	aabbmodel = Lar.boundingbox(verts)
 	if PointClouds.AABBdetection(aabbmodel,octree)
@@ -224,7 +223,7 @@ function modelsdetection(model,octree,testfunction)
 		# 1. octree esterno return 0
 		# 1. octree intersecato ma non contenuto return 1
 		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
-		inter = testfunction.([Voctree[:,i] for i in 1:size(Voctree,2)])
+		inter = PointClouds.testinternalpoint(model...).([Voctree[:,i] for i in 1:size(Voctree,2)])
 		test = length.(inter).%2
 		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest' ultimo se si sovrappongono
 			return 2 # full model
@@ -275,28 +274,62 @@ end
 # end
 
 
-#
-# """
-# imagecreation con i trie
-# """
-# #considera quali punti prendere in partenza, devo modificare la lettura del jsaon e inserire anche il resto dei parametri sopratutto tightbb
-# function imagecreation(potreedirs::Array{String,1},params)
-#     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
-#     aabbmodel = Lar.boundingbox(model[1])
-#     for potree in potreedirs
-#         println("======== PROJECT $potree ========")
-#
-# 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
-# 		tree = joinpath(potree,octreeDir,"r") # path to directory "r"
-#
-# 		trie = PointClouds.triepotree(potree).children['r']
-# 		println("Search in $tree ")
-#
-# 		# 2.- check all file
-# 		for node in keys(trie) #iterator sull'albero
-# 			file = trie[node] #se il nodo in cui sto è tutto contenuto in modello allora prendo tutto il sottoalbero
-# 			# se il nodo non interseca cancello tutto il sotto albero
-# 			# se il nodo è intersecato allora faccio il controllo sui punti
-# 		end
-#     return RGBtensor
-# end
+"""
+aggiorna l'immagine.
+"""
+function updateimagewithfilter!(params,file)
+	header, laspoints = LasIO.FileIO.load(file)
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+
+    for laspoint in laspoints
+        point = PointClouds.xyz(laspoint,header)
+        if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
+            rgb = PointClouds.color(laspoint,header)
+            p = coordsystemmatrix*point
+            xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
+            ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+
+            if rasterquote[ycoord,xcoord] < p[3]
+            	rasterquote[ycoord,xcoord] = p[3]
+                RGBtensor[1, ycoord, xcoord] = rgb[1]
+                RGBtensor[2, ycoord, xcoord] = rgb[2]
+                RGBtensor[3, ycoord, xcoord] = rgb[3]
+            end
+        end
+    end
+end
+
+function updateimage!(params,file)
+	header, laspoints = LasIO.FileIO.load(file)
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+
+    for laspoint in laspoints
+        point = PointClouds.xyz(laspoint,header)
+        rgb = PointClouds.color(laspoint,header)
+        p = coordsystemmatrix*point
+        xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
+        ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+
+        if rasterquote[ycoord,xcoord] < p[3]
+        	rasterquote[ycoord,xcoord] = p[3]
+            RGBtensor[1, ycoord, xcoord] = rgb[1]
+            RGBtensor[2, ycoord, xcoord] = rgb[2]
+            RGBtensor[3, ycoord, xcoord] = rgb[3]
+        end
+    end
+end
+
+
+"""
+imagecreation con i trie
+"""
+function imagecreation(potreedirs::Array{String,1},params)
+	model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+    for potree in potreedirs
+        println("======== PROJECT $potree ========")
+
+		trie = PointClouds.triepotree(potree)
+		PointClouds.dfsimage(trie,params)
+	end
+    return RGBtensor
+end

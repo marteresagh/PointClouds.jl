@@ -138,7 +138,7 @@ GL = ViewerGL
 using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
 using PointClouds
-
+using DataStructures
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
@@ -146,129 +146,26 @@ potree = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
 
 potree="C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\COLOMBELLA"
 trie = PointClouds.triepotree(potree)
-readdir("src")
 
-using DataStructures
+PointClouds.dfs(trie)
+
 trie = DataStructures.Trie{String}()
-
 trie["r"]="r.las"
 trie["r0"]="r0.las"
-trie["r00"]="r00.las"
 trie["r1"]="r1.las"
-trie["r12"]="r12.las"
-trie["r001"]="r001.las"
-trie["r13"]="r13.las"
-t0 = trie
-t1 = t0.children['r']
-t2 = t1.children['1']
-t3 = t2.children['2']
-a=collect(path(trie, "1"))
-
-t = Trie{Int}()
-
-t["amy"] = 56
-t["ann"] = 15
-t["emma"] = 30
-t["rob"] = 27
-t["roger"] = 52
-t["kevin"] = Int8(11)
-t["bodfs"] = 23
-
-function dfs(t)
-	iter = DataStructures.TrieIterator(t,"rob")
-	next = iterate(iter)
-	while next !== nothing
-		@show next[1]
-		println()
-	    (i, state) = next
-		@show i.value
-	    # body
-	    next = iterate(iter,state)
-	end
-	@show next
-end
-
-dfs(t)
-iter = DataStructures.TrieIterator(trie, "")
-next = iterate(iter)
-
-
-
-
-t0 = t
-t1 = t0.children['r']
-t2 = t1.children['o']
-t3 = t2.children['b']
-collect(path(t, "b")) == [t0]
-collect(path(t, "rob")) == [t0, t1, t2, t3]
-collect(path(t, "robb")) == [t0, t1, t2, t3]
-collect(path(t, "ro")) == [t0, t1, t2]
-collect(path(t, "roa")) == [t0, t1, t2]
-
-t1 = t0.children['b']
-
-
-using DataStructures
-trie = DataStructures.Trie{String}()
-
-trie["r"]="r.las"
-trie["r0"]="r0.las"
 trie["r00"]="r00.las"
-trie["r1"]="r1.las"
-trie["r12"]="r12.las"
 trie["r001"]="r001.las"
+trie["r12"]="r12.las"
 trie["r13"]="r13.las"
+trie=trie.children['r']
 
-delete2!(t::Trie, key) = (delete!(d.children, key); d)
+t=trie.children['0']
 
-trimasto = delete2!(trie,"r1")
+keys(t)
 
-
-
-t0 = deepcopy(trie)
-
-delete!(t0.children,'r')
-
-r=t0.children['r']
-
-r.children
-
-r0=r.children['0']
-
-seen_prefix(t::Trie, str) = any(v -> v.is_key, path(t, str))
-
-it=path(t0,"r12")
-
-DataStructures.iterate(it,1)
-
-DataStructures.iterate(it)
-
-it=collect(path(r,"r12"))
-
-figli2=DataStructures.iterate(figli, 1)
-
-
-function dfs(t)
-	if !isempty(t.children)
-		@show collect(keys(t.children))
-
-		for key in collect(keys(t.children))
-			@show key
-			if  t.children[key].value!="r0.las"
-				@show t.children[key].value
-				dfs(t.children[key])
-			end
-		end
-	end
+subt = trie.children['0']
+for k in keys(subt)
+	file = subt[k]
+	@show file
+	#PointClouds.updateimage!(params)
 end
-
-dfs(trie)
-
-allnodes=keys(trie)
-
-while isempty(allnodes)
-	node = popfirst!(allnodes)
-	@show allnodes
-
-	if node=="r0"
-		t=subtrie()
