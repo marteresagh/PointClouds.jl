@@ -1,5 +1,3 @@
-
-
 """
 Return the image of orthoprojection.
 """
@@ -96,106 +94,6 @@ function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, mode
 end
 
 """
-Cerca nei file di potree quali punti considerare
-"""
-function _imagecreation(potreedirs::Array{String,1},params)
-    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
-    aabbmodel = Lar.boundingbox(model[1])
-
-    for potree in potreedirs
-        println("======== PROJECT $potree ========")
-
-		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree) # useful parameters togli quelli che non usi
-		tree = joinpath(potree,octreeDir,"r") # path to directory "r"
-
-		println("Search in ",tree)
-
-		# 2.- check all file
-		files = PointClouds.searchfile(tree,".las")
-		nfiles = length(files)
-		println(nfiles," files to process")
-
-		if PointClouds.modelsdetection(model, tightBB, testfunction) == 2
-			#println("Full")
-			for i in 1:nfiles # for all files
-				#progression
-	            if i%100 == 0
-	               println(i," files processed of ", nfiles)
-	            end
-
-				header, laspoints = LasIO.FileIO.load(files[i])
-				PointClouds.updateimage!(params,header,laspoints)
-			end
-
-		elseif PointClouds.modelsdetection(model, tightBB, testfunction) == 1
-			#println("Limited")
-			for i in 1:nfiles # for all files
-				#progression
-				if i%100 == 0
-					println(i," files processed of ", nfiles)
-				end
-
-				header, laspoints = LasIO.FileIO.load(files[i])
-				nodebb = PointClouds.las2aabb(header)
-
-				inter = PointClouds.modelsdetection(model, nodebb)
-				if inter == 1
-					 PointClouds.updateimagewithfilter!(params,header,laspoints)
-				elseif inter == 2
-					PointClouds.updateimage!(params,header,laspoints)
-				end
-			end
-
-		end
-
-    end
-    return RGBtensor
-end
-#
-# """
-# aggiorna l'immagine.
-# """
-# function updateimagewithfilter!(params,header,laspoints)
-#     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
-#
-#     for laspoint in laspoints
-#         point = PointClouds.xyz(laspoint,header)
-#         if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
-#             rgb = PointClouds.color(laspoint,header)
-#             p = coordsystemmatrix*point
-#             xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
-#             ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
-#
-#             if rasterquote[ycoord,xcoord] < p[3]
-#             	rasterquote[ycoord,xcoord] = p[3]
-#                 RGBtensor[1, ycoord, xcoord] = rgb[1]
-#                 RGBtensor[2, ycoord, xcoord] = rgb[2]
-#                 RGBtensor[3, ycoord, xcoord] = rgb[3]
-#             end
-#         end
-#     end
-# end
-#
-# function updateimage!(params,header,laspoints)
-#     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
-#
-#     for laspoint in laspoints
-#         point = PointClouds.xyz(laspoint,header)
-#         rgb = PointClouds.color(laspoint,header)
-#         p = coordsystemmatrix*point
-#         xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
-#         ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
-#
-#         if rasterquote[ycoord,xcoord] < p[3]
-#         	rasterquote[ycoord,xcoord] = p[3]
-#             RGBtensor[1, ycoord, xcoord] = rgb[1]
-#             RGBtensor[2, ycoord, xcoord] = rgb[2]
-#             RGBtensor[3, ycoord, xcoord] = rgb[3]
-#         end
-#     end
-# end
-
-"""
 In recursive mode, search all files with key in filename.
 """
 function searchfile(path::String,key::String)
@@ -207,70 +105,7 @@ function searchfile(path::String,key::String)
 	return files
 end
 
-"""
-A model and an AABB intersection:
- - 0 -> model not intersect AABB
- - 1 -> model intersect but not contains AABB
- - 2 -> model contains AABB
-"""
-function modelsdetection(model,octree)
-	verts,edges,faces = model
-	aabbmodel = Lar.boundingbox(verts)
-	if PointClouds.AABBdetection(aabbmodel,octree)
-		#ci sono 3 casi se i due bounding box si incontrano:
-		# 1. octree è tutto interno  return 2
-		# 1. octree esterno return 0
-		# 1. octree intersecato ma non contenuto return 1
-		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
-		inter = PointClouds.testinternalpoint(model...).([Voctree[:,i] for i in 1:size(Voctree,2)])
-		test = length.(inter).%2
-		if test == ones(size(Voctree,2)) || test == [1, 0, 1, 0, 1, 0, 1, 0] #quest' ultimo se si sovrappongono
-			return 2 # full model
-		elseif !separatingaxis(model, octree)
-			return 0
-		else
-			return 1
-		end
-	else
-		return 0 # no intersection
-	end
-end
 
-
-function separatingaxis(model,octree)
-	V,EV,FV = PointClouds.getmodel(octree)
-	verts,edges,faces = model
-	axis_x = (verts[:,5]-verts[:,1])/Lar.norm(verts[:,5]-verts[:,1])
-	axis_y = (verts[:,2]-verts[:,1])/Lar.norm(verts[:,2]-verts[:,1])
-	axis_z = (verts[:,3]-verts[:,1])/Lar.norm(verts[:,3]-verts[:,1])
-	coordsystem = [axis_x';axis_y';axis_z']
-	newverts = coordsystem*verts
-	newV = coordsystem*V
-	newaabb = [extrema(newverts[i,:]) for i in 1:3]
-	newAABB = [extrema(newV[i,:]) for i in 1:3]
-	aabb = (hcat([newaabb[1][1],newaabb[2][1],newaabb[3][1]]),hcat([newaabb[1][2],newaabb[2][2],newaabb[3][2]]))
-	AABB = (hcat([newAABB[1][1],newAABB[2][1],newAABB[3][1]]),hcat([newAABB[1][2],newAABB[2][2],newAABB[3][2]]))
-	return PointClouds.AABBdetection(aabb,AABB)
-end
-
-
-# function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
-#     npoints = size(V,2)
-#     for i in 1:npoints
-#         x = PointClouds.projdist(coordsystemmatrix[1,:])(V[:,i])
-#         y = PointClouds.projdist(coordsystemmatrix[2,:])(V[:,i])
-#         z = PointClouds.projdist(coordsystemmatrix[3,:])(V[:,i])
-#         xcoord = map(Int∘trunc,(x-refX) / GSD)+1
-#         ycoord = map(Int∘trunc,(refY-y) / GSD)+1
-#         if rasterquote[ycoord,xcoord] < z
-#             rasterquote[ycoord,xcoord] = z
-#             RGBtensor[1, ycoord, xcoord] = rgb[1,i]
-#             RGBtensor[2, ycoord, xcoord] = rgb[2,i]
-#             RGBtensor[3, ycoord, xcoord] = rgb[3,i]
-#         end
-#     end
-#     return RGBtensor
-# end
 
 
 """
@@ -282,7 +117,7 @@ function updateimagewithfilter!(params,file)
 
     for laspoint in laspoints
         point = PointClouds.xyz(laspoint,header)
-        if PointClouds.ispointinpolyhedron(model,point) # se il punto è interno allora
+        if PointClouds.inmodel(model)(point) # se il punto è interno allora
             rgb = PointClouds.color(laspoint,header)
             p = coordsystemmatrix*point
             xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
@@ -318,7 +153,6 @@ function updateimage!(params,file)
     end
 end
 
-
 """
 imagecreation con i trie
 """
@@ -330,10 +164,16 @@ function imagecreation(potreedirs::Array{String,1},params)
 
 		trie = PointClouds.triepotree(potree)
 		if PointClouds.modelsdetection(model, tightBB) == 2
-			println("full model")
+			println("FULL model")
+			i=1
+			l=length(keys(trie))
 			for k in keys(trie)
+				if i%100==0
+					println(i," files processed of ",l)
+				end
 				file = trie[k]
 				PointClouds.updateimage!(params,file)
+				i=i+1
 			end
 		else
 			println("DFS")
@@ -341,4 +181,92 @@ function imagecreation(potreedirs::Array{String,1},params)
 		end
 	end
     return RGBtensor
+end
+
+
+# function image(V,rgb::Lar.Points, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
+#     npoints = size(V,2)
+#     for i in 1:npoints
+#         x = PointClouds.projdist(coordsystemmatrix[1,:])(V[:,i])
+#         y = PointClouds.projdist(coordsystemmatrix[2,:])(V[:,i])
+#         z = PointClouds.projdist(coordsystemmatrix[3,:])(V[:,i])
+#         xcoord = map(Int∘trunc,(x-refX) / GSD)+1
+#         ycoord = map(Int∘trunc,(refY-y) / GSD)+1
+#         if rasterquote[ycoord,xcoord] < z
+#             rasterquote[ycoord,xcoord] = z
+#             RGBtensor[1, ycoord, xcoord] = rgb[1,i]
+#             RGBtensor[2, ycoord, xcoord] = rgb[2,i]
+#             RGBtensor[3, ycoord, xcoord] = rgb[3,i]
+#         end
+#     end
+#     return RGBtensor
+# end
+
+## da RIVEDERE
+"""
+A model and an AABB intersection:
+ - 0 -> model not intersect AABB
+ - 1 -> model intersect but not contains AABB
+ - 2 -> model contains AABB
+"""
+
+function modelsdetection(model,octree)
+	verts,edges,faces = model
+	aabbmodel = Lar.boundingbox(verts)
+	if PointClouds.AABBdetection(aabbmodel,octree)
+		#ci sono 3 casi se i due bounding box si incontrano:
+		# 1. octree è tutto interno  return 2
+		# 2. octree esterno return 0
+		# 3. octree intersecato ma non contenuto return 1
+		Voctree,EVoctree,FVoctree = PointClouds.getmodel(octree)
+		test = PointClouds.inmodel(model).([Voctree[:,i] for i in 1:size(Voctree,2)])
+		if test == ones(size(Voctree,2))
+			return 2 # full model
+		elseif !separatingaxis(model, octree)
+			return 0
+		else
+			return 1
+		end
+	else
+		return 0 # no intersection
+	end
+end
+
+function separatingaxis(model,octree)
+	V,EV,FV = PointClouds.getmodel(octree)
+	verts,edges,faces = model
+	axis_x = (verts[:,5]-verts[:,1])/Lar.norm(verts[:,5]-verts[:,1])
+	axis_y = (verts[:,2]-verts[:,1])/Lar.norm(verts[:,2]-verts[:,1])
+	axis_z = (verts[:,3]-verts[:,1])/Lar.norm(verts[:,3]-verts[:,1])
+	coordsystem = [axis_x';axis_y';axis_z']
+	newverts = coordsystem*verts
+	newV = coordsystem*V
+	newaabb = [extrema(newverts[i,:]) for i in 1:3]
+	newAABB = [extrema(newV[i,:]) for i in 1:3]
+	aabb = (hcat([newaabb[1][1],newaabb[2][1],newaabb[3][1]]),hcat([newaabb[1][2],newaabb[2][2],newaabb[3][2]]))
+	AABB = (hcat([newAABB[1][1],newAABB[2][1],newAABB[3][1]]),hcat([newAABB[1][2],newAABB[2][2],newAABB[3][2]]))
+	return PointClouds.AABBdetection(aabb,AABB)
+end
+
+
+function inmodel(model)
+	verts,edges,faces = model
+	axis_x = (verts[:,5]-verts[:,1])/Lar.norm(verts[:,5]-verts[:,1])
+	axis_y = (verts[:,2]-verts[:,1])/Lar.norm(verts[:,2]-verts[:,1])
+	axis_z = (verts[:,3]-verts[:,1])/Lar.norm(verts[:,3]-verts[:,1])
+	coordsystem = [axis_x';axis_y';axis_z']
+	newverts = coordsystem*verts
+	a = [extrema(newverts[i,:]) for i in 1:3]
+	A = (hcat([a[1][1],a[2][1],a[3][1]]),hcat([a[1][2],a[2][2],a[3][2]]))
+
+	function inmodel0(p)
+		newp = coordsystem*p
+		# 1. - axis x AleftB = A[1,max]<B[1,min]  ArightB = A[1,min]>B[1,max]
+		# 2. - axis y AfrontB = A[2,max]<B[2,min]  AbehindB = A[2,min]>B[2,max]
+			# 3. - axis z AbottomB = A[3,max]<B[3,min]  AtopB = A[3,min]>B[3,max]
+		return (A[2][1]>=newp[1] && A[1][1]<=newp[1]) &&
+					 (A[2][2]>=newp[2] && A[1][2]<=newp[2]) &&
+					  (A[2][3]>=newp[3] && A[1][3]<=newp[3])
+	end
+	return inmodel0
 end

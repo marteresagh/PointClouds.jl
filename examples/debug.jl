@@ -94,12 +94,8 @@ txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
 
-bbin = AABB
-bbin = (hcat([295400.8436816006; 4.781124438537028e6; 225.44601794335938]), hcat([295600.16918208887; 4.7813767190012e6; 300.3583829030762]))
-bbin = tightBB
-
 bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
-
+bbin = (hcat([458117.67; 4.49376852e6; 196.67]), hcat([458452.44; 4.49417179e6; 237.5]))
 GSD = 0.3
 PO = "XY+"
 outputimage = "Vista_"*PO*"_GSD_"*"$GSD"*".png"
@@ -112,6 +108,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 "295400.8436816006 4.781124438537028e6 225.44601794335938 295500.16918208887 4.7813767190012e6 300.3583829030762"
 
+julia script.jl C:/Users/marte/Documents/FilePotree/directory.txt -o prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
 
 ## models intersection
 using LinearAlgebraicRepresentation
@@ -123,39 +120,23 @@ V,(VV,EV,FV,CV) = Lar.apply(Lar.t(-0.5,-0.5,-0.5),Lar.apply(Lar.r(0,0,0),Lar.cub
 tightAABB = (hcat([0,0,0.]),hcat([1,1,1.]))
 modelAABB = PointClouds.getmodel(tightAABB)
 model = V,EV,FV
+
+
+V = rand(3,10)
+
+PointClouds.inmodel(model).([V[:,i] for i in 1:size(V,2)])
+PointClouds.inmodel(model)([-0.5,0.5,1])
+PointClouds.inmodel(model)([-30.,-30,-30])
+
 GL.VIEW(
 	[
-		#GL.GLPoints(convert(Lar.Points,V[:,4]'))
-		GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
-		GL.GLGrid(modelAABB[1],modelAABB[2],GL.Point4d(1,1,1,1))
+		GL.GLPoints(convert(Lar.Points,[0.5,0.5,0.5]'))
+		#GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
+		GL.GLGrid(model[1],model[2],GL.Point4d(1,1,1,1))
 		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 
 	]
 )
-
-V=rand(3,100000)
-function inmodel(model)
-	aabb=Lar.boundingbox(model[1])
-	A=hcat(aabb...)
-	dim = size(A,1)
-	m=1
-	M=2
-	function inmodel0(p)
-		# 1. - axis x AleftB = A[1,max]<B[1,min]  ArightB = A[1,min]>B[1,max]
-		# 2. - axis y AfrontB = A[2,max]<B[2,min]  AbehindB = A[2,min]>B[2,max]
-			# 3. - axis z AbottomB = A[3,max]<B[3,min]  AtopB = A[3,min]>B[3,max]
-		return !( A[1,M]<=p[1] || A[1,m]>=p[1] ||
-					 A[2,M]<=p[2] ||A[2,m]>=p[2] ||
-					  A[3,M]<=p[3] || A[3,m]>=p[3] )
-	end
-	return inmodel0
-end
-ciao = PointClouds.testinternalpoint(modelAABB...)
-@time ciao.([V[:,i] for i in 1:size(V,2)])
-
-
-
-@time inmodel(model).([V[:,i] for i in 1:size(V,2)])
 ## tree structures for file .hrc
 using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
@@ -168,3 +149,34 @@ potree = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
 
 potree = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\COLOMBELLA"
 trie = PointClouds.triepotree(potree)
+
+
+
+using PointClouds
+using Images
+
+txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
+potreedirs = PointClouds.getdirectories(txtpotreedirs)
+typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
+bbin = (hcat([458117.68; 4.49376853e6; 196.68]), hcat([458452.43; 4.49417178e6; 230.49]))
+PointClouds.modelsdetection(PointClouds.getmodel(bbin), tightBB)
+
+
+
+PointClouds.inmodel(PointClouds.getmodel(bbin))()
+bbin = tightBB
+
+bbin = AABB
+model=PointClouds.getmodel(tightBB)
+PointClouds.inmodel(PointClouds.getmodel(bbin)).([model[1][:,i] for i in 1:8])
+modelAABB = PointClouds.getmodel(bbin)
+modelBB = PointClouds.getmodel(tightBB)
+GL.VIEW(
+	[
+		GL.GLPoints(convert(Lar.Points,model[1][:,1]'))
+		GL.GLGrid(modelAABB[1],modelAABB[2],GL.Point4d(1,1,1,1))
+		GL.GLGrid(modelBB[1],modelBB[2],GL.Point4d(1,1,1,1))
+		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+
+	]
+)
