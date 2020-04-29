@@ -114,7 +114,7 @@ end
 aggiorna l'immagine.
 """
 function updateimagewithfilter!(params,file)
-	header, laspoints =  PointClouds.loadfile(fname)
+	header, laspoints =  PointClouds.readpotreefile(file)
     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
 
     for laspoint in laspoints
@@ -136,7 +136,7 @@ function updateimagewithfilter!(params,file)
 end
 
 function updateimage!(params,file)
-	header, laspoints =  PointClouds.loadfile(fname)
+	header, laspoints =  PointClouds.readpotreefile(file)
     model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
 
     for laspoint in laspoints

@@ -25,7 +25,7 @@ Read data from a file `.las`:
 - extrapolate color associated to each point
 """
 function las2lar(fname::String)::Tuple{Lar.Points,Array{Array{Int64,1},1}}
-	header, laspoints =  PointClouds.loadfile(fname)
+	header, laspoints =  PointClouds.readpotreefile(fname)
 	npoints = length(laspoints)
 	x = [LasIO.xcoord(laspoints[k], header) for k in 1:npoints]
 	y = [LasIO.ycoord(laspoints[k], header) for k in 1:npoints]
@@ -40,7 +40,7 @@ Return the AABB of the file `fname`.
 
 """
 function las2aabb(fname::String)
-	header, p =  PointClouds.loadfile(fname)
+	header, p =  PointClouds.readpotreefile(fname)
 	#header = read(fname, LasIO.LasHeader)
 	AABB = LasIO.boundingbox(header)
 	return reshape([AABB.xmin;AABB.ymin;AABB.zmin],(3,1)),reshape([AABB.xmax;AABB.ymax;AABB.zmax],(3,1))
@@ -59,7 +59,7 @@ Read data from a file `.las`:
 - extrapolate color associated to each point.
 """
 function lascolor(fname::String)::Array{LasIO.N0f16,2}
-	header, laspoints =  PointClouds.loadfile(fname)
+	header, laspoints =  PointClouds.readpotreefile(fname)
 	npoints = length(laspoints)
 	type = LasIO.pointformat(header)
 	if type != LasPoint0 && type != LasPoint1
@@ -227,7 +227,7 @@ function bbincremental!(coordpoint,bb)
 	return true
 end
 
-function loadfile(fname::String)
+function readpotreefile(fname::String)
 	if endswith(fname,".las")
 		header, laspoints = LasIO.FileIO.load(fname)
 	elseif endswith(fname,".laz")
