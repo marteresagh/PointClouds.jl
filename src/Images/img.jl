@@ -1,7 +1,7 @@
 """
 Return the image of orthoprojection.
 """
-function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, PO::String )
+function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD, PO::String )
     # check validity
     @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
     @assert length(PO)==3 "orthoprojectionimage: $PO not valid view "
@@ -14,10 +14,15 @@ function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::
     RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
     params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY
 
+	if PO == "XY+"
+		savetfw(outputimage, GSD, refX, refY)
+	end
+
     #image creation
     println("image creation")
     RGBtensor = PointClouds.imagecreation(potreedirs,params)
     save(outputimage, Images.colorview(RGB, RGBtensor))
+
     println("image saved in $outputimage")
 end
 
@@ -63,7 +68,7 @@ end
 """
 initialize raster image.
 """
-function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, model::Lar.LAR)
+function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD, model::Lar.LAR)
 
     verts,edges,faces = model
     bbglobalextention = zeros(2)
@@ -104,9 +109,6 @@ function searchfile(path::String,key::String)
 	end
 	return files
 end
-
-
-
 
 """
 aggiorna l'immagine.

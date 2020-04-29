@@ -42,3 +42,19 @@ end
 function getmodel(bbin::Tuple{Array{Float64,2},Array{Float64,2}})
 	return PointClouds.boxmodelfromaabb(bbin)
 end
+
+
+"""
+file tfw
+"""
+function savetfw(output::String, GSD, lx::Float64, uy::Float64)
+	fname = split(output,".")[1]
+	io = open(fname*".tfw","w")
+	write(io, "$(Float64(GSD))\n")
+	write(io, "0.000000000000000\n")
+	write(io, "0.000000000000000\n")
+	write(io, "-$(Float64(GSD))\n")
+	write(io, "$lx\n")
+	write(io, "$uy\n")
+	close(io)
+end
