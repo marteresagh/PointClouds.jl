@@ -96,7 +96,7 @@ typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = Poi
 bbin=tightBB
 bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
 bbin = (hcat([458117.67; 4.49376852e6; 196.67]), hcat([458452.44; 4.49417179e6; 237.5]))
-GSD = 1
+GSD = 0.1
 PO = "XY+"
 outputimage = "C:\\Users\\marte\\Documents\\Vista_"*PO*"_GSD_"*"$GSD"*".png"
 @time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO)
@@ -108,7 +108,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 "295400.8436816006 4.781124438537028e6 225.44601794335938 295500.16918208887 4.7813767190012e6 300.3583829030762"
 
-julia script.jl C:/Users/marte/Documents/FilePotree/directory.txt -o prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
+julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
 
 ## models intersection
 using LinearAlgebraicRepresentation
@@ -177,13 +177,11 @@ GL.VIEW(
 		GL.GLGrid(modelAABB[1],modelAABB[2],GL.Point4d(1,1,1,1))
 		GL.GLGrid(modelBB[1],modelBB[2],GL.Point4d(1,1,1,1))
 		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-
 	]
 )
 
 
 V,(VV,EV,FV,CV) = Lar.cuboid([1,1,1],true)
-
 PointClouds.testinternalpoint(V,EV,FV)([0.4,0.4,1])
 
 GL.VIEW(
@@ -195,3 +193,15 @@ GL.VIEW(
 
 	]
 )
+
+
+using LasIO
+using LazIO
+
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA\\data\\r\\r.las"
+
+h,p=LasIO.FileIO.load(fname)
+
+PointClouds.xyz(p[1], h)
+
+typeformat(fname)
