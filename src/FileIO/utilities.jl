@@ -48,7 +48,7 @@ end
 file tfw
 """
 function savetfw(output::String, GSD::Float64, lx::Float64, uy::Float64)
-	fname = split(output,".")[1]
+	fname = splitext(output)[1]
 	io = open(fname*".tfw","w")
 	write(io, "$(Float64(GSD))\n")
 	write(io, "0.000000000000000\n")
