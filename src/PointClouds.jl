@@ -4,7 +4,7 @@ module PointClouds
 
 	using LinearAlgebraicRepresentation
 	Lar = LinearAlgebraicRepresentation
-	using LasIO, JSON
+	using LasIO, LazIO, JSON
 	using Combinatorics, DataStructures, SparseArrays
 	using MATLAB,AlphaStructures
 	using Polynomials, LsqFit
