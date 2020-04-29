@@ -34,7 +34,12 @@ function triepotree(potree::String)
 	println("search in $tree ")
 
 	# 2.- check all file
-	files = PointClouds.searchfile(tree,".las")
+	if typeofpoints == "LAS"
+		files = PointClouds.searchfile(tree,".las")
+	elseif typeofpoints == "LAZ"
+		files = PointClouds.searchfile(tree,".laz")
+	end
+
 	for file in files
 		name = rsplit(splitdir(file)[2],".")[1]
 		trie[name] = file
