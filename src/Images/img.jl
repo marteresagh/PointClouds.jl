@@ -1,7 +1,7 @@
 """
 Return the image of orthoprojection.
 """
-function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD, PO::String )
+function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, PO::String )
     # check validity
     @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
     @assert length(PO)==3 "orthoprojectionimage: $PO not valid view "
@@ -68,7 +68,7 @@ end
 """
 initialize raster image.
 """
-function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD, model::Lar.LAR)
+function initrasterarray(coordsystemmatrix::Array{Float64,2}, GSD::Float64, model::Lar.LAR)
 
     verts,edges,faces = model
     bbglobalextention = zeros(2)
