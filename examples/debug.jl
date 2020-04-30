@@ -96,9 +96,9 @@ typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = Poi
 bbin=tightBB
 bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
 bbin = (hcat([458117.67; 4.49376852e6; 196.67]), hcat([458452.44; 4.49417179e6; 237.5]))
-GSD = 0.1
-PO = "XY+"
-outputimage = "C:\\Users\\marte\\Documents\\Vista_"*PO*"_GSD_"*"$GSD"*".png"
+GSD = 0.3
+PO = "XZ+"
+outputimage = "prova$PO.png"
 @time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO)
 "295370.8436816006 4.781124438537028e6 225.44601794335938 295632.16918208887 4.781385764037516e6 486.77151843164063" #colombella
 "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" #cava
@@ -108,7 +108,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 "295400.8436816006 4.781124438537028e6 225.44601794335938 295500.16918208887 4.7813767190012e6 300.3583829030762"
 
-julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
+julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
 
 ## models intersection
 using LinearAlgebraicRepresentation
@@ -199,9 +199,11 @@ using LasIO
 using LazIO
 
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA\\data\\r\\r.las"
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVALAZ\\data\\r\\r.laz"
 
-h,p=LasIO.FileIO.load(fname)
-
+header, laspoints =  PointClouds.readpotreefile(fname)
+ rgb=PointClouds.color(laspoints[1], header)
 PointClouds.xyz(p[1], h)
 
 typeformat(fname)
+typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON("C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVALAZ")
