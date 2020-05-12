@@ -208,3 +208,135 @@ GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
 	GL.GLFrame2
 ]);
+
+
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
+
+using ViewerGL
+GL = ViewerGL
+
+#versione 1
+function trasformazioneaffine2D(X::Lar.Points,Y::Lar.Points)
+	x=X[1,:]
+	y=X[2,:]
+	u=Y[1,:]
+	v=Y[2,:]
+	sx2=Lar.norm(x)^2
+	sxy=Lar.dot(x,y)
+	sx=sum(x)
+	sy2=Lar.norm(y)^2
+	sy=sum(y)
+	n=size(X,2)
+	sux=Lar.dot(u,x)
+	suy=Lar.dot(u,y)
+	su=sum(u)
+	svx=Lar.dot(v,x)
+	svy=Lar.dot(v,y)
+	sv=sum(v)
+
+	block = [  sx2 sxy sx;
+				sxy sy2 sy;
+				sx  sy  n  ]
+
+	zero = zeros(3,3)
+
+	A = [block zero; zero block]
+	b=[sux, suy, su, svx, svy, sv]
+	params=A\b
+
+	R = [ params[1] params[2];
+		params[4] params[5]]
+
+	t = [params[3], params[6]]
+	return R,t
+end
+
+
+
+## uso la versione 2
+function fitafftrasf2D(X::Lar.Points,Y::Lar.Points)
+	x = X[1,:]
+	y = X[2,:]
+	u = Y[1,:]
+	v = Y[2,:]
+	npoints=size(X,2)
+	phi = [ x y ones(npoints) zeros(npoints,3) ;
+			zeros(npoints,3) x y ones(npoints) ]
+	A = phi'*phi
+	b = phi'*[u;v]
+	params = A\b
+
+	R = [ params[1] params[2];
+		params[4] params[5]]
+
+	t = [params[3], params[6]]
+	return R,t
+end
+
+function fitafftrasf3D(X::Lar.Points,Y::Lar.Points)
+	x = X[1,:]
+	y = X[2,:]
+	z = X[3,:]
+	u = Y[1,:]
+	v = Y[2,:]
+	w = Y[3,:]
+	npoints = size(X,2)
+	phi = [ x y z ones(npoints) zeros(npoints,4) zeros(npoints,4);
+			zeros(npoints,4) x y z ones(npoints) zeros(npoints,4);
+			zeros(npoints,4) zeros(npoints,4) x y z ones(npoints)]
+	A = phi'*phi
+	b = phi'*[u;v;w]
+	params = A\b
+
+	R = [ params[1] params[2] params[3];
+		  params[5] params[6] params[7] ;
+		  params[9] params[10] params[11] ]
+
+	t = [params[4], params[8], params[12]]
+	return R,t
+end
+
+
+function res(R,T,X,Y)
+	newX = R*X.+T
+	for i in 1:size(X,2)
+		val = Lar.norm(Y[:,i]-newX[:,i])
+		println("$i => $val")
+	end
+end
+
+
+X=hcat([[1738.046, 958.344],[2791.177,2563.955],[292.847,1960.692],[3341.427,3282.396]]...)
+
+Y=hcat([[702.328,-7360.435],[883.796,-7091.401],[456.396,-7189.547],[976.040,-6969.580]]...)
+
+
+@time R,t = trasformazioneaffine2D(X,Y)
+
+res(R,t,X,Y)
+
+
+@time R,t = ver2(X,Y)
+
+
+res(R,t,X,Y)
+
+
+newX=R*X.+t
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,newX'))
+	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
+	GL.GLFrame2
+]);
+
+
+X = rand(2,1000)
+
+Y,_=Lar.apply(Lar.t(1,2),Lar.apply(Lar.r(pi/4),(X,[[1]])))
+
+GL.VIEW([
+	GL.GLPoints(convert(Lar.Points,newX'))
+	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
+	GL.GLFrame2
+]);
