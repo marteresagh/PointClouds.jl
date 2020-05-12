@@ -104,3 +104,68 @@ function savebbJSON(path::String, aabb::Tuple{Array{Float64,2},Array{Float64,2}}
   		JSON.print(f, data,4)
 	end
 end
+
+
+"""
+camera parameters from JSON.
+"""
+function cameraparameters(path::String)
+	dict=Dict{String,Any}[]
+	open(path, "r") do f
+	    dict = JSON.parse(f)  # parse and transform data
+	end
+	position = dict["position"]
+	target = dict["target"]
+	return position, target
+end
+
+
+"""
+camera parameters from JSON.
+"""
+function cameramatrix(path::String)
+	dict = Dict{String,Any}[]
+	open(path, "r") do f
+	    dict = JSON.parse(f)  # parse and transform data
+	end
+	mat = dict["object"]["matrix"]
+	return [mat[1] mat[5] mat[9] mat[13];
+			mat[2] mat[6] mat[10] mat[14];
+			mat[3] mat[7] mat[11] mat[15];
+			mat[4] mat[8] mat[12] mat[16]]
+end
+
+"""
+extract verteces from area tools.
+"""
+function vertspolygonfromareaJSON(file::String)
+	dict = Dict{String,Any}[]
+	open(file, "r") do f
+	    dict = JSON.parse(f)  # parse and transform data
+	end
+	features = dict["features"]
+	for feature in features
+		type = feature["geometry"]["type"]
+		if type == "Polygon"
+			points = feature["geometry"]["coordinates"]
+			V = hcat(points[1][1:end-1]...)
+			return V
+		end
+	end
+end
+
+
+"""
+create polygon model.
+"""
+function polygon(file::String)
+	verts = vertspolygonfromareaJSON(file)
+	EV = [[i,i+1] for i in 1:size(verts,2)-1]
+	push!(EV,[size(verts,2),1])
+	axis,centroid = PointClouds.planefit(verts)
+	if Lar.dot(axis,Lar.cross(verts[:,1]-centroid,verts[:,2]-centroid))<0
+		axis = -axis
+	end
+	PointClouds.projectpointson(verts,(axis,centroid),"plane")
+	return verts,EV
+end

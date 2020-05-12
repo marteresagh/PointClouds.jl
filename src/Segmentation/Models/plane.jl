@@ -62,3 +62,15 @@ function larmodelplane(pointsonplane::Lar.Points, params, u=0.01)
  	FV = PointClouds.DTprojxy(V)
     return V, sort.(FV)
 end
+
+
+"""
+Determinate the positive halfspace determinated by plane.
+"""
+function orientedplane(V)
+	axis,centroid = PointClouds.planefit(verts)
+	if Lar.dot(axis,Lar.cross(verts[:,1]-centroid,verts[:,2]-centroid))<0
+		axis = -axis
+	end
+	return axis,centroid
+end
