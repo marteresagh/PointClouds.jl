@@ -4,34 +4,88 @@ using PointClouds
 using ViewerGL
 GL = ViewerGL
 
+## boolops
+# 2D
+n,m,p = 1,1,1
+V,(VV,EV,FV,CV) = Lar.cuboidGrid([n,m,p],true)
+cube = V,FV,EV
+
+# three cubes in "assembly"
+assembly = Lar.Struct([ cube,
+    Lar.t(.3,.4,.25), Lar.r(pi/5,0,0), Lar.r(0,0,pi/12), cube,
+    Lar.t(-.2,.4,-.2), Lar.r(0,pi/5,0), Lar.r(0,pi/12,0), cube
+])
+
+V,FV,EV = Lar.struct2lar(assembly)
+GL.VIEW([ GL.GLGrid(V,FV), GL.GLFrame ]);
+
+function bool3d(assembly)
+	# input of affine assembly
+	@show "init"
+	#-------------------------------------------------------------------------------
+	V,FV,EV = Lar.struct2lar(assembly)
+	cop_EV = convert(Lar.ChainOp, Lar.coboundary_0(EV::Lar.Cells));
+	cop_FE = Lar.coboundary_1(V, FV::Lar.Cells, EV::Lar.Cells); ## TODO: debug
+	W = convert(Lar.Points, V');
+	@show "spatial arrangement"
+	# generate the 3D space arrangement
+	#-------------------------------------------------------------------------------
+	V, copEV, copFE, copCF = Lar.Arrangement.spatial_arrangement( W, cop_EV, cop_FE)
+	@show "fine spatial"
+	W = convert(Lar.Points, V');
+	#V,CVs,FVs,EVs = Lar.pols2tria(W, copEV, copFE, copCF)
+	innerpoints,intersectedfaces = Lar.internalpoints(W,copEV,copFE,copCF[2:end,:])
+	# associate internal points to 3-cells
+	#-------------------------------------------------------------------------------
+	listOfModels = Lar.evalStruct(assembly)
+	inputfacenumbers = [length(listOfModels[k][2]) for k=1:length(listOfModels)]
+	cumulative = cumsum([0;inputfacenumbers]).+1
+	fspans = collect(zip(cumulative[1:end-1], cumulative[2:end].-1))
+	span(h) = [j for j=1:length(fspans) if fspans[j][1]<=h<=fspans[j][2] ]
+	@show "test"
+	# test input data for containment of reference points
+	#-------------------------------------------------------------------------------
+	V,FV,EV = Lar.struct2lar(assembly)
+	containmenttest = Lar.testinternalpoint(V,EV,FV)
+	# currently copCF contains the outercell in first column ...
+	# TODO remove first row and column, in case (look at file src/)
+	boolmatrix = BitArray(undef, length(innerpoints)+1, length(fspans)+1)
+	boolmatrix[1,1] = 1
+	for (k,point) in enumerate(innerpoints) # k runs on columns
+		cells = containmenttest(point) # contents of columns
+		#println(k," ",faces)
+		rows = [span(h) for h in cells]
+		for l in cat(rows)
+			boolmatrix[k+1,l+1] = 1
+		end
+	end
+	return W, (copEV, copFE, copCF), boolmatrix
+end
+
+V,FV,EV = Lar.struct2lar(assembly)
+cop_EV = convert(Lar.ChainOp, Lar.coboundary_0(EV::Lar.Cells));
+cop_FE = Lar.coboundary_1(V, FV::Lar.Cells, EV::Lar.Cells); ## TODO: debug
+W = convert(Lar.Points, V');
+
+V, copEV, copFE, copCF = spatial_arrangement( W, cop_EV, cop_FE)
 
 
-###  Json
-aabb=(hcat([.5,.5,.5]),hcat([1,4.,10]))
-volume = "C:/Users/marte/Documents/SegmentCloud/CAVA/CAVA.json"
-V,CV,FV,EV=PointClouds.volumemodel(volume)
 
-GL.VIEW(
-	[
-		#colorview(Voriginal.-centroid,VV,rgb)
-		GL.GLPoints(convert(Lar.Points,T1'))
-		GL.GLGrid(T,FT,GL.Point4d(1,1,1,1))
-		#GL.GLLar2gl(V,CV)
-		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+W, (copEV, copFE, copCF), boolmatrix = bool3d(assembly)
+Matrix(boolmatrix)
+#three-chains = [ for k = 1:3]
 
-	]
-)
-
-potree = "C:/Users/marte/Documents/potreeDirectory/pointclouds/point-cloud-private"
-folder = "C:/Users/marte/Documents/SegmentCloud/CAVA"
-volume = "C:/Users/marte/Documents/FilePotree/cava.json"
-
-aabb=(hcat([295370.8436816006, 4781124.438537028, 225.44601794335939]),hcat([295632.16918208889, 4781385.764037516, 486.77151843164065]))
-aabb=(hcat([0,0,0.]),hcat([1,1.,1]))
-
-"295370.8436816006 4781124.438537028 225.44601794335939 295632.16918208889 4781385.764037516 486.77151843164065"
-
-
+A = boolmatrix[:,2]
+B = boolmatrix[:,3]
+C = boolmatrix[:,4]
+AorB = A .| B
+AandB = A .& B
+AxorB = AorB .⊻ (.!AandB) # = A .⊻ B
+AorBorC = A .| B .| C
+AorBorC = .|(A, B, C)
+AandBandC = A .& B .& C
+AandBandC = .&(A, B, C)
+AminBminC = .&(A, .!B, .!C) # A - B - C
 ## image julia
 using LinearAlgebraicRepresentation #AlphaStructures
 Lar = LinearAlgebraicRepresentation
@@ -39,40 +93,10 @@ using PointClouds
 using Images
 using ViewerGL
 GL = ViewerGL
-include("viewfunction.jl")
-n = 300
-V = rand(3,n)
-VV=[[i] for i in 1:n]
 
-example=Lar.apply(Lar.r(0,0,pi/4),Lar.apply(Lar.s(2.,5.,3.),(V,VV)))
-GL.VIEW(
-	[
-		#GL.GLPoints(convert(Lar.Points,V[:,4]'))
-		viewRGB(example...,V)
-		#GL.GLGrid(model[1],model[3],GL.Point4d(1,1,1,1))
-		#viewRGB(axismodel...,[0 1. 0 0;0 0. 1 0;0 0. 0 1])
-		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+RGBtensor=ones(3,2000,2000)
 
-	]
-)
-
-
-GSD = 0.05
-PO = "YZ-"
-#coordsystemmatrix = PointClouds.newcoordsyst(PO)
-
-coordsystemmatrix = (Lar.r(pi/4,0,0)*Lar.r(0,0,pi/3))[1:3,1:3]
-coordsystemmatrix = (Lar.r(0,pi/4,0)*Lar.r(0,0,pi/2))[1:3,1:3]
-axisv = [0.0  1.0  0.0  0.0; 0.0  0.0  1.0  0.0; 0.0  0.0  0.0  1.0]
-axismodel=(10*coordsystemmatrix[3,:].+(coordsystemmatrix'*axisv),[[1,2],[1,3],[1,4]])
-
-aabb = Lar.boundingbox(example[1])
-model = PointClouds.getmodel(aabb)
-
-
-RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
-RGBtensor = PointClouds.image(example[1], V, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, GSD)
-save("otherview2.png", colorview(RGB, RGBtensor))
+save("otherview.png", colorview(RGB, RGBtensor))
 
 GL.VIEW(
 	[
@@ -97,9 +121,9 @@ bbin=tightBB
 bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
 bbin = (hcat([458117.67; 4.49376852e6; 196.67]), hcat([458452.44; 4.49417179e6; 237.5]))
 GSD = 0.3
-PO = "XZ+"
-outputimage = "prova$PO.png"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO)
+PO = "XY+"
+outputimage = "prova$PO.jpg"
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, camera)
 "295370.8436816006 4.781124438537028e6 225.44601794335938 295632.16918208887 4.781385764037516e6 486.77151843164063" #colombella
 "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" #cava
 
@@ -110,33 +134,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
 
-## models intersection
-using LinearAlgebraicRepresentation
-Lar = LinearAlgebraicRepresentation
-using PointClouds
-using ViewerGL
-GL = ViewerGL
-V,(VV,EV,FV,CV) = Lar.apply(Lar.t(-0.5,-0.5,-0.5),Lar.apply(Lar.r(0,0,0),Lar.cuboid([4,4,4],true)))
-tightAABB = (hcat([0,0,0.]),hcat([1,1,1.]))
-modelAABB = PointClouds.getmodel(tightAABB)
-model = V,EV,FV
 
-
-V = rand(3,10)
-
-PointClouds.inmodel(model).([V[:,i] for i in 1:size(V,2)])
-PointClouds.inmodel(model)([-0.5,0.5,1])
-PointClouds.inmodel(model)([-30.,-30,-30])
-
-GL.VIEW(
-	[
-		GL.GLPoints(convert(Lar.Points,[0.5,0.5,0.5]'))
-		#GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
-		GL.GLGrid(model[1],model[2],GL.Point4d(1,1,1,1))
-		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-
-	]
-)
 ## tree structures for file .hrc
 using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
@@ -151,59 +149,187 @@ potree = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\COLOMBELLA"
 trie = PointClouds.triepotree(potree)
 
 
+pos = [458248.400, 4494143.514, 328.906]
+tar = [458289.258, 4493982.125, 220.795]
+camera = (pos,tar)
 
-using PointClouds
-using Images
+function viewcoordinatesystem(camera)
+    position,target = camera
+	up = [0,0,1.]
+	dir = target-position
+	x = dir/Lar.norm(dir)
+	if x != [0,0,1] && x != [0,0,-1]
+		y = Lar.cross(x,up)
+		z = Lar.cross(y,x)
+	end
+    return [y';z';-x']
+end
+
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
+viewcoordinatesystem(camera)
+
+
+function coordsystemcamera(file::String)
+    mat = PointClouds.cameramatrix(file)
+    return convert{Array{Float64,2},mat[1:3,1:3]'}
+end
+
+
+function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, camera::String )
+    # check validity
+    @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
+
+    # initialization
+    println("initialization")
+    potreedirs = PointClouds.getdirectories(txtpotreedirs)
+    model = PointClouds.getmodel(bbin)
+    coordsystemmatrix = coordsystemcamera(camera)
+    RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
+    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY
+
+
+
+    #image creation
+    println("image creation")
+    RGBtensor = PointClouds.imagecreation(potreedirs,params)
+    save(outputimage, Images.colorview(RGB, RGBtensor))
+
+    println("image saved in $outputimage")
+end
+
 
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
-bbin = (hcat([458117.68; 4.49376853e6; 196.68]), hcat([458452.43; 4.49417178e6; 230.49]))
-PointClouds.modelsdetection(PointClouds.getmodel(bbin), tightBB)
+file = "C:\\Users\\marte\\Documents\\FilePotree\\json.json"
+bbin=tightBB
+GSD = 0.3
+PO = "XY+"
+outputimage = "prova$PO.jpg"
+@time orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, file)
+
+PointClouds.newcoordsyst("XZ-")
 
 
+## allinea piano medio con piano  OK
+## aggiornare il json volume
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
+using PointClouds
+using ViewerGL
+GL = ViewerGL
+V,(VV,EV,FV,CV) = Lar.apply(Lar.t(-0.5,-0.5,-0.05),Lar.apply(Lar.r(pi/4,0,0)*Lar.r(0,pi/3,0),Lar.cuboid([1,1,0.1],true)))
 
-PointClouds.inmodel(PointClouds.getmodel(bbin))()
-bbin = tightBB
+p3 = rand(3,7)
 
-bbin = AABB
-model=PointClouds.getmodel(tightBB)
-PointClouds.inmodel(PointClouds.getmodel(bbin)).([model[1][:,i] for i in 1:8])
-modelAABB = PointClouds.getmodel(bbin)
-modelBB = PointClouds.getmodel(tightBB)
+params1 = PointClouds.planefit(p3)
+axisref,centroidref = params1
+params2 = PointClouds.planefit(V)
+axissource,centroidsource = params2
+
+Vplane,FVplane = PointClouds.larmodelplane(V,params2)
+Vplaneref,FVplaneref = PointClouds.larmodelplane(p3,params1)
+
+rot = PointClouds.rotoTraslation(params2,params1)
+alignebox = Lar.apply(rot,(V,EV))
+
 GL.VIEW(
 	[
-		GL.GLPoints(convert(Lar.Points,model[1][:,1]'))
-		GL.GLGrid(modelAABB[1],modelAABB[2],GL.Point4d(1,1,1,1))
-		GL.GLGrid(modelBB[1],modelBB[2],GL.Point4d(1,1,1,1))
-		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-	]
-)
+		GL.GLGrid(alignebox...,GL.Point4d(1,1,1,1))
+		GL.GLGrid(Vplane,FVplane,GL.Point4d(1,1,1,1))
+		GL.GLGrid(Vplaneref,FVplaneref,GL.Point4d(1,1,1,1))
 
-
-V,(VV,EV,FV,CV) = Lar.cuboid([1,1,1],true)
-PointClouds.testinternalpoint(V,EV,FV)([0.4,0.4,1])
-
-GL.VIEW(
-	[
-		GL.GLPoints(convert(Lar.Points,[1,0.9,0.9]'))
 		GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
-		#GL.GLGrid(modelBB[1],modelBB[2],GL.Point4d(1,1,1,1))
 		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 
 	]
 )
 
 
-using LasIO
-using LazIO
+#prova reale
 
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA\\data\\r\\r.las"
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVALAZ\\data\\r\\r.laz"
+pianovolume = "C:/Users/marte/Documents/FilePotree/piano-volume.json"
 
-header, laspoints =  PointClouds.readpotreefile(fname)
- rgb=PointClouds.color(laspoints[1], header)
-PointClouds.xyz(p[1], h)
+p3 = [	291260.822 291266.726 291266.038;
+		4630323.935 4630326.879 4630326.534;
+		105.593 105.251 106.865]
 
-typeformat(fname)
-typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON("C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVALAZ")
+V,EV,FV = PointClouds.getmodel(pianovolume)
+
+
+params1 = PointClouds.planefit(p3)
+axisref,centroidref = params1
+params2 = PointClouds.planefit(V)
+axissource,centroidsource = params2
+
+Vplane,FVplane = PointClouds.larmodelplane(V,params2)
+Vplaneref,FVplaneref = PointClouds.larmodelplane(p3,params1)
+
+rot = PointClouds.rotoTraslation(params2,params1)
+alignebox = Lar.apply(Lar.t(-centroidsource...),Lar.apply(rot,(V,FV)))
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
+level = 1
+allfile = PointClouds.filelevel(fname,level,false)
+_,_,_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+spacing = spacing/2^level
+
+Voriginal,VV,rgb = PointClouds.loadlas(allfile...)
+_,V = PointClouds.subtractaverage(Voriginal)
+
+GL.VIEW(
+	[
+		GL.GLGrid(Lar.apply(Lar.t(-centroidsource...),(Voriginal,VV))...,GL.Point4d(1,1,1,1))
+		GL.GLGrid(alignebox...,GL.Point4d(1,1,1,1))
+		#GL.GLGrid(Vplane,FVplane,GL.Point4d(1,1,1,1))
+		#GL.GLGrid(Vplaneref,FVplaneref,GL.Point4d(1,1,1,1))
+
+		GL.GLGrid(Lar.apply(Lar.t(-centroidsource...),(V,FV))...,GL.Point4d(1,1,1,1))
+		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+
+	]
+)
+
+
+## descrizione poligono estruso
+using JSON
+file = "C:/Users/marte/Documents/FilePotree/poligon.json"
+
+function vertspolygonfromareaJSON(file::String)
+	dict=Dict{String,Any}[]
+	open(file, "r") do f
+	    dict = JSON.parse(f)  # parse and transform data
+	end
+	features = dict["features"]
+	for feature in features
+		type = feature["geometry"]["type"]
+		if type == "Polygon"
+			points = feature["geometry"]["coordinates"]
+			V = hcat(points[1][1:end-1]...)
+			return V
+		end
+	end
+end
+V = vertspolygonfromareaJSON(file)
+axis,centroid = PointClouds.planefit(V)
+
+function polygon(file::String)
+	verts = vertspolygonfromareaJSON(file)
+	EV = [[i,i+1] for i in 1:size(verts,2)-1]
+	push!(EV,[size(verts,2),1])
+	axis,centroid = PointClouds.planefit(verts)
+	if Lar.dot(axis,Lar.cross(verts[:,1]-centroid[:,1],verts[:,2]-centroid[:,1]))<0
+		axis = -axis
+	end
+	PointClouds.projectpointson(verts,(axis,centroid),"plane")
+	return verts,EV
+end
+
+include("viewfunction.jl")
+V,EV=polygon(file)
+GL.VIEW(
+	[
+		viewnormals(centroid,axis)
+		GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
+	]
+)

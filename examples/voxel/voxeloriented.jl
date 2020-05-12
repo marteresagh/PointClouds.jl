@@ -46,7 +46,7 @@ p = 0.5 #spacing cupola 0.4, spacing casaletto 0.27404680848121645,
 
 
 W,CW = PointClouds.voxeloriented(allshapes,p,0)
-#T,CT = PointClouds.pointclouds2cubegrid(Vcurrent2,p,0)
+#T,CT = PointClouds.voxelization(Vcurrent2,p,0)
 W, ∂FW = PointClouds.extractsurfaceboundary(W,CW)
 
 GL.VIEW(
