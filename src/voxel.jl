@@ -5,22 +5,29 @@ function K(CV::Lar.Cells)
 	return sparse(I,J,Vals)
 end
 
-function voxelgrid(V::Lar.Points,p::Float64)
-	npoints = size(V,2)
-	dict = DataStructures.SortedDict{Array{Int64,1},Int64}()
+function voxelrep(P::Lar.Points,d::Float64,T::Int64)
+	npoints = size(P,2)
+	voxs = DataStructures.SortedDict{Array{Float64,1},Int64}()
 	for i in 1:npoints
-		point = V[:,i]
-		coord =  floor.(Int,point/p) # poi moltiplica tutto per il passo
-		if haskey(dict,coord)
-			dict[coord]+=1
+		point = P[:,i]
+		s = floor.(Int,point/d) * d # compute representative vertex
+		if haskey(voxs,s)
+			voxs[s]+=1
 		else
-			dict[coord]=1
+			voxs[s]=1
 		end
 	end
-	return dict
+	out = Array{Float64,1}[]
+
+	for (k,v) in voxs
+		if v >= T
+			push!(out, k)
+		end
+	end
+	return hcat(out...) # voxels activated
 end
 
-function pointclouds2cubegrid(V::Lar.Points,p::Float64,N::Int64)#RINOMINA COME voxelization
+function voxelization(V::Lar.Points,p::Float64,N::Int64)
 	grid = PointClouds.voxelgrid(V,p)
 	out = Array{Lar.Struct,1}()
 
@@ -50,7 +57,7 @@ function voxeloriented(allplanes,p,N)
 		matrixaffine = vcat(hcat(rot,[0.,0.,0.]),[0.,0.,0.,1.]')
 		shape = Lar.Struct([Lar.inv(matrixaffine),Lar.t(-centroid...),model])
 		model=Lar.struct2lar(shape)
-		W,CW = PointClouds.pointclouds2cubegrid(model[1],p,N)
+		W,CW = PointClouds.voxelization(model[1],p,N)
 		shape = Lar.Struct([Lar.t(centroid...),matrixaffine,(W,CW)])# viene rimpicciolito per il passo devi mantenere le stesse dimensioni
 		push!(out,shape)
 	end
