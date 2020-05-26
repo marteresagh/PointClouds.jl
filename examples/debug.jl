@@ -4,88 +4,6 @@ using PointClouds
 using ViewerGL
 GL = ViewerGL
 
-## boolops
-# 2D
-n,m,p = 1,1,1
-V,(VV,EV,FV,CV) = Lar.cuboidGrid([n,m,p],true)
-cube = V,FV,EV
-
-# three cubes in "assembly"
-assembly = Lar.Struct([ cube,
-    Lar.t(.3,.4,.25), Lar.r(pi/5,0,0), Lar.r(0,0,pi/12), cube,
-    Lar.t(-.2,.4,-.2), Lar.r(0,pi/5,0), Lar.r(0,pi/12,0), cube
-])
-
-V,FV,EV = Lar.struct2lar(assembly)
-GL.VIEW([ GL.GLGrid(V,FV), GL.GLFrame ]);
-
-function bool3d(assembly)
-	# input of affine assembly
-	@show "init"
-	#-------------------------------------------------------------------------------
-	V,FV,EV = Lar.struct2lar(assembly)
-	cop_EV = convert(Lar.ChainOp, Lar.coboundary_0(EV::Lar.Cells));
-	cop_FE = Lar.coboundary_1(V, FV::Lar.Cells, EV::Lar.Cells); ## TODO: debug
-	W = convert(Lar.Points, V');
-	@show "spatial arrangement"
-	# generate the 3D space arrangement
-	#-------------------------------------------------------------------------------
-	V, copEV, copFE, copCF = Lar.Arrangement.spatial_arrangement( W, cop_EV, cop_FE)
-	@show "fine spatial"
-	W = convert(Lar.Points, V');
-	#V,CVs,FVs,EVs = Lar.pols2tria(W, copEV, copFE, copCF)
-	innerpoints,intersectedfaces = Lar.internalpoints(W,copEV,copFE,copCF[2:end,:])
-	# associate internal points to 3-cells
-	#-------------------------------------------------------------------------------
-	listOfModels = Lar.evalStruct(assembly)
-	inputfacenumbers = [length(listOfModels[k][2]) for k=1:length(listOfModels)]
-	cumulative = cumsum([0;inputfacenumbers]).+1
-	fspans = collect(zip(cumulative[1:end-1], cumulative[2:end].-1))
-	span(h) = [j for j=1:length(fspans) if fspans[j][1]<=h<=fspans[j][2] ]
-	@show "test"
-	# test input data for containment of reference points
-	#-------------------------------------------------------------------------------
-	V,FV,EV = Lar.struct2lar(assembly)
-	containmenttest = Lar.testinternalpoint(V,EV,FV)
-	# currently copCF contains the outercell in first column ...
-	# TODO remove first row and column, in case (look at file src/)
-	boolmatrix = BitArray(undef, length(innerpoints)+1, length(fspans)+1)
-	boolmatrix[1,1] = 1
-	for (k,point) in enumerate(innerpoints) # k runs on columns
-		cells = containmenttest(point) # contents of columns
-		#println(k," ",faces)
-		rows = [span(h) for h in cells]
-		for l in cat(rows)
-			boolmatrix[k+1,l+1] = 1
-		end
-	end
-	return W, (copEV, copFE, copCF), boolmatrix
-end
-
-V,FV,EV = Lar.struct2lar(assembly)
-cop_EV = convert(Lar.ChainOp, Lar.coboundary_0(EV::Lar.Cells));
-cop_FE = Lar.coboundary_1(V, FV::Lar.Cells, EV::Lar.Cells); ## TODO: debug
-W = convert(Lar.Points, V');
-
-V, copEV, copFE, copCF = spatial_arrangement( W, cop_EV, cop_FE)
-
-
-
-W, (copEV, copFE, copCF), boolmatrix = bool3d(assembly)
-Matrix(boolmatrix)
-#three-chains = [ for k = 1:3]
-
-A = boolmatrix[:,2]
-B = boolmatrix[:,3]
-C = boolmatrix[:,4]
-AorB = A .| B
-AandB = A .& B
-AxorB = AorB .⊻ (.!AandB) # = A .⊻ B
-AorBorC = A .| B .| C
-AorBorC = .|(A, B, C)
-AandBandC = A .& B .& C
-AandBandC = .&(A, B, C)
-AminBminC = .&(A, .!B, .!C) # A - B - C
 ## image julia
 using LinearAlgebraicRepresentation #AlphaStructures
 Lar = LinearAlgebraicRepresentation
@@ -324,6 +242,8 @@ function polygon(file::String)
 	PointClouds.projectpointson(verts,(axis,centroid),"plane")
 	return verts,EV
 end
+
+
 
 include("viewfunction.jl")
 V,EV=polygon(file)
