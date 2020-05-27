@@ -10,6 +10,10 @@ module PointClouds
 	using Polynomials, LsqFit
 	using Images
 
+	flushprintln(s...) = begin
+		println(stdout,s...)
+		flush(stdout)
+	end
 
 	include("navigatedirectory.jl")
 	include("extractpc.jl")

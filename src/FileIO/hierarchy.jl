@@ -31,7 +31,8 @@ function triepotree(potree::String)
 
 	trie = DataStructures.Trie{String}()
 
-	println("search in $tree ")
+	PointClouds.flushprintln("search in $tree ")
+
 
 	# 2.- check all file
 	if typeofpoints == "LAS"

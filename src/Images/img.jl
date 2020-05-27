@@ -7,9 +7,10 @@ function orthoprojectionimage(
 	 bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}},
 	 GSD::Float64,
 	 PO::String,
-	 quota::Float64,
-	 thickness::Float64
+	 quota::Union{Float64,Nothing},
+	 thickness::Union{Float64,Nothing}
 	  )
+
     # check validity
     @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
     @assert length(PO)==3 "orthoprojectionimage: $PO not valid view "
@@ -22,8 +23,10 @@ function orthoprojectionimage(
 		q_l = -Inf
 		q_u = Inf
 	end
+
 	# initialization
-    println("initialization")
+    PointClouds.flushprintln("initialization")
+
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
@@ -35,11 +38,11 @@ function orthoprojectionimage(
 	end
 
     #image creation
-    println("image creation")
+    PointClouds.flushprintln("image creation")
     RGBtensor = PointClouds.imagecreation(potreedirs,params)
     save(outputimage, Images.colorview(RGB, RGBtensor))
 
-    println("image saved in $outputimage")
+    PointClouds.flushprintln("image saved in $outputimage")
 end
 
 """
@@ -181,24 +184,24 @@ imagecreation con i trie
 function imagecreation(potreedirs::Array{String,1},params)
 	model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
     for potree in potreedirs
-        println("======== PROJECT $potree ========")
+        PointClouds.flushprintln( "======== PROJECT $potree ========")
 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree)
 
 		trie = PointClouds.triepotree(potree)
 		if PointClouds.modelsdetection(model, tightBB) == 2
-			println("FULL model")
+			PointClouds.flushprintln("FULL model")
 			i=1
 			l=length(keys(trie))
 			for k in keys(trie)
 				if i%100==0
-					println(i," files processed of ",l)
+					PointClouds.flushprintln(i," files processed of ",l)
 				end
 				file = trie[k]
 				PointClouds.updateimage!(params,file)
 				i=i+1
 			end
 		else
-			println("DFS")
+			PointClouds.flushprintln("DFS")
 			PointClouds.dfsimage(trie,params)
 		end
 	end

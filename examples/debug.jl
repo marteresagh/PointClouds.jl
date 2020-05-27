@@ -35,13 +35,13 @@ using Images
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
-bbin=tightBB
+bbin = tightBB
 bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
 bbin = (hcat([458117.67; 4.49376852e6; 196.67]), hcat([458452.44; 4.49417179e6; 237.5]))
 GSD = 0.3
 PO = "XY+"
 outputimage = "prova$PO.jpg"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, camera)
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, nothing, nothing )
 "295370.8436816006 4.781124438537028e6 225.44601794335938 295632.16918208887 4.781385764037516e6 486.77151843164063" #colombella
 "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" #cava
 
@@ -50,7 +50,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 "295400.8436816006 4.781124438537028e6 225.44601794335938 295500.16918208887 4.7813767190012e6 300.3583829030762"
 
-julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+
+julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "295370.8436816006 4.781124438537028e6 225.44601794335938 295632.16918208887 4.781385764037516e6 486.77151843164063" --gsd 0.3 --po XY+
 
 
 ## tree structures for file .hrc
@@ -125,7 +125,7 @@ bbin=tightBB
 GSD = 0.3
 PO = "XY+"
 outputimage = "prova$PO.jpg"
-@time orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, file)
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 211.100, 2.0)
 
 PointClouds.newcoordsyst("XZ-")
 
