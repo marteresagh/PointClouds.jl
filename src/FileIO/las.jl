@@ -108,11 +108,11 @@ end
 
 Merge more file .las.
 """
-function mergelas(headers,pointdata,bb,scale)
+function mergelas(headers,pointdata)
 	@assert length(headers) == length(pointdata) "mergelas: inconsistent data"
 
 	# header of merging las
-	hmerge = createheader(headers,pointdata,bb,scale)
+	hmerge = createheader(headers,pointdata)
 	data = LasIO.LasPoint[]
 
 	# Las point data merge
@@ -131,25 +131,9 @@ end
 
 crea header coerente con i miei punti.
 """
-function createheader(headers,pointdata,bb,scale)
+function createheader(headers,pointdata)
 	type = pointformat(headers[1])
 	h = deepcopy(headers[1])
-
-	h.x_scale = scale
-    h.y_scale = scale
-    h.z_scale = scale
-
-	h.x_offset = bb[1][1]
-    h.y_offset = bb[1][2]
-    h.z_offset = bb[1][3]
-
-    h.x_max = bb[2][1]
-    h.x_min = bb[1][1]
-    h.y_max = bb[2][2]
-    h.y_min = bb[1][2]
-    h.z_max = bb[2][3]
-    h.z_min = bb[1][3]
-
 	h.records_count = sum(length.(pointdata))
 	return h
 end

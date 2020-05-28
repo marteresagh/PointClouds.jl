@@ -8,7 +8,8 @@ function orthoprojectionimage(
 	 GSD::Float64,
 	 PO::String,
 	 quota::Union{Float64,Nothing},
-	 thickness::Union{Float64,Nothing}
+	 thickness::Union{Float64,Nothing},
+	 pc::Bool
 	  )
 
     # check validity
@@ -31,7 +32,9 @@ function orthoprojectionimage(
     model = PointClouds.getmodel(bbin)
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
     RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
-    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u
+	headers = LasIO.LasHeader[] # all headers
+	arraylaspoint = Array{LasIO.LasPoint,1}[]
+    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, arraylaspoint, headers
 
 	if PO == "XY+"
 		savetfw(outputimage, GSD, refX, refY)
@@ -43,6 +46,14 @@ function orthoprojectionimage(
     save(outputimage, Images.colorview(RGB, RGBtensor))
 
     PointClouds.flushprintln("image saved in $outputimage")
+
+
+	if pc
+		outputlas = splitext(outputimage)[1]*".las"
+		header, pointdata = PointClouds.mergelas(headers,arraylaspoint)
+		PointClouds.savenewlas(outputlas,header,pointdata)
+		PointClouds.flushprintln("point cloud saved in $outputlas")
+	end
 end
 
 """
@@ -134,7 +145,13 @@ aggiorna l'immagine.
 """
 function updateimagewithfilter!(params,file)
 	header, laspoints =  PointClouds.readpotreefile(file)
-    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u = params
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, arraylaspoint, headers = params
+
+	pointstaken = LasIO.LasPoint[]
+
+	if pc
+		push!(headers,header)
+	end
 
     for laspoint in laspoints
         point = PointClouds.xyz(laspoint,header)
@@ -145,6 +162,9 @@ function updateimagewithfilter!(params,file)
             ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
 
 			if p[3] >= q_l && p[3] <= q_u
+				if pc
+					push!(pointstaken,laspoint)
+				end
 				if rasterquote[ycoord,xcoord] < p[3]
 	            	rasterquote[ycoord,xcoord] = p[3]
 	                RGBtensor[1, ycoord, xcoord] = rgb[1]
@@ -154,11 +174,19 @@ function updateimagewithfilter!(params,file)
 			end
         end
     end
+
+	if pc
+		push!(arraylaspoint,pointstaken)
+	end
 end
 
 function updateimage!(params,file)
 	header, laspoints =  PointClouds.readpotreefile(file)
-    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u = params
+    model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, arraylaspoint, headers = params
+	pointstaken = LasIO.LasPoint[]
+	if pc
+		push!(headers,header)
+	end
 
     for laspoint in laspoints
         point = PointClouds.xyz(laspoint,header)
@@ -168,6 +196,9 @@ function updateimage!(params,file)
         ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
 
 		if p[3] >= q_l && p[3] <= q_u
+			if pc
+				push!(pointstaken,laspoint)
+			end
 	        if rasterquote[ycoord,xcoord] < p[3]
 	        	rasterquote[ycoord,xcoord] = p[3]
 	            RGBtensor[1, ycoord, xcoord] = rgb[1]
@@ -176,6 +207,9 @@ function updateimage!(params,file)
 	        end
 		end
     end
+	if pc
+		push!(arraylaspoint,pointstaken)
+	end
 end
 
 """

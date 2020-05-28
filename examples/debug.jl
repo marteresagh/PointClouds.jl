@@ -50,7 +50,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 "295400.8436816006 4.781124438537028e6 225.44601794335938 295500.16918208887 4.7813767190012e6 300.3583829030762"
 
-julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "295370.8436816006 4.781124438537028e6 225.44601794335938 295632.16918208887 4.781385764037516e6 486.77151843164063" --gsd 0.3 --po XY+
+julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+ --quote 211 --thickness 2
 
 
 ## tree structures for file .hrc
@@ -93,30 +93,6 @@ function coordsystemcamera(file::String)
     return convert{Array{Float64,2},mat[1:3,1:3]'}
 end
 
-
-function orthoprojectionimage(txtpotreedirs::String, outputimage::String, bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}}, GSD::Float64, camera::String )
-    # check validity
-    @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
-
-    # initialization
-    println("initialization")
-    potreedirs = PointClouds.getdirectories(txtpotreedirs)
-    model = PointClouds.getmodel(bbin)
-    coordsystemmatrix = coordsystemcamera(camera)
-    RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
-    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY
-
-
-
-    #image creation
-    println("image creation")
-    RGBtensor = PointClouds.imagecreation(potreedirs,params)
-    save(outputimage, Images.colorview(RGB, RGBtensor))
-
-    println("image saved in $outputimage")
-end
-
-
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
@@ -125,7 +101,7 @@ bbin=tightBB
 GSD = 0.3
 PO = "XY+"
 outputimage = "prova$PO.jpg"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 211.100, 2.0)
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 211.100, 2.0,true)
 
 PointClouds.newcoordsyst("XZ-")
 
@@ -253,3 +229,30 @@ GL.VIEW(
 		GL.GLGrid(V,EV,GL.Point4d(1,1,1,1))
 	]
 )
+
+
+
+## save file
+using LasIO
+
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE\\data\\r\\r.las"
+header,pointdata = LasIO.FileIO.load(fname)
+LasIO.FileIO.save("prova.las",h,p)
+s="prova.las"
+
+header_n = header.records_count
+n = length(pointdata)
+msg = "number of records in header ($header_n) does not match data length ($n)"
+@assert header_n == n msg
+
+# write header
+write(s, LasIO.magic(LasIO.format"LAS"))
+write(s, header)
+
+    # write points
+for p in pointdata
+    write(s, p)
+end
+
+h1,p1 = LasIO.FileIO.load(s)
+outputlas = splitext(outputimage)[1]*".las"
