@@ -16,7 +16,7 @@ module PointClouds
 	end
 
 	include("navigatedirectory.jl")
-	include("extractpc.jl")
+	# include("extractpc.jl")
 
 	include("Geometry/geometry.jl")
 	include("Geometry/extractionsimplex.jl")
@@ -47,5 +47,6 @@ module PointClouds
 	include("FileIO/hierarchy.jl")
 
 	include("Images/img.jl")
+	include("Images/extractpc.jl")
 
 end

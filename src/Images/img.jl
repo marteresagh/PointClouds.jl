@@ -216,7 +216,7 @@ end
 imagecreation con i trie
 """
 function imagecreation(potreedirs::Array{String,1},params)
-	model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY = params
+	model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, arraylaspoint, headers = params
     for potree in potreedirs
         PointClouds.flushprintln( "======== PROJECT $potree ========")
 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree)
