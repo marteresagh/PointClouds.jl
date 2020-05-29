@@ -33,7 +33,6 @@ function extractpointcloud(
     	n,header = PointClouds.processfiles(potreedirs,params,s,n)
 	end
 
-	@show n
 	PointClouds.flushprintln("create las file")
 	#n = quello che mi ritorna
 	header.records_count = n
@@ -73,10 +72,10 @@ function processfiles(potreedirs::Array{String,1},params,s,n::Int64)
 		header = LasIO.read_header(trie[""])
 		global header
 		params = model, q_l, q_u, header
+		l=length(keys(trie))
 		if PointClouds.modelsdetection(model, tightBB) == 2
 			PointClouds.flushprintln("FULL model")
 			i=1
-			l=length(keys(trie))
 			for k in keys(trie)
 				if i%100==0
 					PointClouds.flushprintln(i," files processed of ",l)
@@ -87,7 +86,7 @@ function processfiles(potreedirs::Array{String,1},params,s,n::Int64)
 			end
 		else
 			PointClouds.flushprintln("DFS")
-			n = PointClouds.dfsextraction(trie,params,s,n)
+			n,_ = PointClouds.dfsextraction(trie,params,s,n,0,l)
 		end
 	end
 	return n,header
@@ -129,21 +128,29 @@ end
 """
 Trie DFS.
 """
-function dfsextraction(t,params,s,n)
+function dfsextraction(t,params,s,n,nfiles,l)
 	model, _ = params
 	file = t.value
 	nodebb = PointClouds.las2aabb(file)
 	inter = PointClouds.modelsdetection(model, nodebb)
 	if inter == 1
+		nfiles = nfiles+1
+		if nfiles%100==0
+			PointClouds.flushprintln(nfiles," files processed of ",l)
+		end
 		n = PointClouds.updatepointswithfilter!(params,file,s,n)
 		for key in collect(keys(t.children))
-			n = PointClouds.dfsextraction(t.children[key],params,s,n)
+			n,nfiles = PointClouds.dfsextraction(t.children[key],params,s,n,nfiles,l)
 		end
 	elseif inter == 2
 		for k in keys(t)
+			nfiles = nfiles+1
+			if nfiles%100==0
+				PointClouds.flushprintln(nfiles," files processed of ",l)
+			end
 			file = t[k]
 			n = PointClouds.updatepoints!(params,file,s,n)
 		end
 	end
-	return n
+	return n, nfiles
 end
