@@ -16,14 +16,6 @@ function orthoprojectionimage(
     @assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
     @assert length(PO)==3 "orthoprojectionimage: $PO not valid view "
 
-	if !isnothing(quota)
-		@assert !isnothing(thickness) "orthoprojectionimage: thickness missing"
-		q_l = quota - thickness/2
-		q_u = quota + thickness/2
-	else
-		q_l = -Inf
-		q_u = Inf
-	end
 
 	# initialization
     PointClouds.flushprintln("initialization")
@@ -31,6 +23,25 @@ function orthoprojectionimage(
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
+
+	if !isnothing(quota)
+		if PO == "XY+" || PO == "XY-"
+			puntoquota = [0,0,quota]
+		elseif PO == "XZ+" || PO == "XZ-"
+			puntoquota = [0, quota, 0]
+		elseif PO == "YZ+" || PO == "YZ-"
+			puntoquota = [quota, 0, 0]
+		end
+
+		@assert !isnothing(thickness) "orthoprojectionimage: thickness missing"
+		q_l = (coordsystemmatrix*puntoquota)[3] - thickness/2
+		q_u = (coordsystemmatrix*puntoquota)[3] + thickness/2
+	else
+		q_l = -Inf
+		q_u = Inf
+	end
+
+
     RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
 	headers = LasIO.LasHeader[] # all headers
 	arraylaspoint = Array{LasIO.LasPoint,1}[]

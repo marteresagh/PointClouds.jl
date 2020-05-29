@@ -58,52 +58,17 @@ using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
 using PointClouds
 using DataStructures
-txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
-potreedirs = PointClouds.getdirectories(txtpotreedirs)
-typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
-potree = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CAVA"
-
-potree = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\COLOMBELLA"
-trie = PointClouds.triepotree(potree)
-
-
-pos = [458248.400, 4494143.514, 328.906]
-tar = [458289.258, 4493982.125, 220.795]
-camera = (pos,tar)
-
-function viewcoordinatesystem(camera)
-    position,target = camera
-	up = [0,0,1.]
-	dir = target-position
-	x = dir/Lar.norm(dir)
-	if x != [0,0,1] && x != [0,0,-1]
-		y = Lar.cross(x,up)
-		z = Lar.cross(y,x)
-	end
-    return [y';z';-x']
-end
-
-using LinearAlgebraicRepresentation
-Lar = LinearAlgebraicRepresentation
-viewcoordinatesystem(camera)
-
-
-function coordsystemcamera(file::String)
-    mat = PointClouds.cameramatrix(file)
-    return convert{Array{Float64,2},mat[1:3,1:3]'}
-end
 
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
 file = "C:\\Users\\marte\\Documents\\FilePotree\\json.json"
-bbin=tightBB
+bbin = tightBB
 GSD = 0.3
 PO = "XY+"
 outputimage = "prova$PO.jpg"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 211.100, 2.0,true)
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 211.100, 2.0, true)
 
-PointClouds.newcoordsyst("XZ-")
 
 
 ## allinea piano medio con piano  OK
@@ -189,6 +154,32 @@ GL.VIEW(
 using JSON
 file = "C:/Users/marte/Documents/FilePotree/poligon.json"
 
+pos = [458248.400, 4494143.514, 328.906]
+tar = [458289.258, 4493982.125, 220.795]
+camera = (pos,tar)
+
+function viewcoordinatesystem(camera)
+    position,target = camera
+	up = [0,0,1.]
+	dir = target-position
+	x = dir/Lar.norm(dir)
+	if x != [0,0,1] && x != [0,0,-1]
+		y = Lar.cross(x,up)
+		z = Lar.cross(y,x)
+	end
+    return [y';z';-x']
+end
+
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
+viewcoordinatesystem(camera)
+
+
+function coordsystemcamera(file::String)
+    mat = PointClouds.cameramatrix(file)
+    return convert{Array{Float64,2},mat[1:3,1:3]'}
+end
+
 function vertspolygonfromareaJSON(file::String)
 	dict=Dict{String,Any}[]
 	open(file, "r") do f
@@ -237,7 +228,7 @@ using LasIO
 
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE\\data\\r\\r.las"
 header,pointdata = LasIO.FileIO.load(fname)
-LasIO.FileIO.save("prova.las",h,p)
+LasIO.FileIO.save("prova.las",header,pointdata[1:9135])
 s="prova.las"
 
 header_n = header.records_count
