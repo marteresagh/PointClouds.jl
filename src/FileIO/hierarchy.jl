@@ -70,26 +70,3 @@ function dfsimage(t,params)
 		end
 	end
 end
-
-
-
-"""
-Trie DFS.
-"""
-function dfsextraction(t,params)
-	model, _ = params
-	file = t.value
-	nodebb = PointClouds.las2aabb(file)
-	inter = PointClouds.modelsdetection(model, nodebb)
-	if inter == 1
-		PointClouds.updatepointswithfilter!(params,file)
-		for key in collect(keys(t.children))
-			PointClouds.dfsextraction(t.children[key],params)
-		end
-	elseif inter == 2
-		for k in keys(t)
-			file = t[k]
-			PointClouds.updatepoints!(params,file)
-		end
-	end
-end

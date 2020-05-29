@@ -143,12 +143,12 @@ end
 
 Generate laspoint coerenti con il mio header (soprattutto per quanto riguarda la traslazione).
 """
-function createlasdata(p,h,hmerge)
+function createlasdata(p,h::LasIO.LasHeader,hmerge::LasIO.LasHeader)
 	type = pointformat(h)
 
-	x = xcoord(xcoord(p,h),hmerge)
-	y = ycoord(ycoord(p,h),hmerge)
-	z = zcoord(zcoord(p,h),hmerge)
+	x = LasIO.xcoord(xcoord(p,h),hmerge)
+	y = LasIO.ycoord(ycoord(p,h),hmerge)
+	z = LasIO.zcoord(zcoord(p,h),hmerge)
 	intensity = p.intensity
 	flag_byte = p.flag_byte
 	raw_classification = p.raw_classification

@@ -23,17 +23,36 @@ function extractpointcloud(
 
 	# initialization
     PointClouds.flushprintln("initialization")
-
+	temp = joinpath(splitdir(outputfile)[1],"temp.las")
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
-	headers = LasIO.LasHeader[] # all headers
-	arraylaspoint = Array{LasIO.LasPoint,1}[]
-    params = model, q_l, q_u, arraylaspoint, headers
+    params = model, q_l, q_u
+	n = 0
+	open(temp, "w") do s
+		write(s, LasIO.magic(LasIO.format"LAS"))
+    	n,header = PointClouds.processfiles(potreedirs,params,s,n)
+	end
 
-    RGBtensor = PointClouds.processfiles(potreedirs,params)
+	@show n
+	PointClouds.flushprintln("create las file")
+	#n = quello che mi ritorna
+	header.records_count = n
+    pointtype = pointformat(header)
 
-	header, pointdata = PointClouds.mergelas(headers,arraylaspoint)
-	PointClouds.savenewlas(outputfile,header,pointdata)
+	open(temp) do s
+		open(outputfile,"w") do t
+			write(t, LasIO.magic(LasIO.format"LAS"))
+			write(t, header)
+
+		    LasIO.skiplasf(s)
+		 	for i=1:n
+		        p = read(s, pointtype)
+				write(t,p)
+		    end
+		end
+	end
+
+	rm(temp)
 	PointClouds.flushprintln("point cloud saved in $outputfile")
 
 end
@@ -41,15 +60,19 @@ end
 
 
 """
-imagecreation con i trie
+process file in trie.
 """
-function processfiles(potreedirs::Array{String,1},params)
-	model, q_l, q_u, arraylaspoint, headers = params
+function processfiles(potreedirs::Array{String,1},params,s,n::Int64)
+	model, q_l, q_u = params
+
     for potree in potreedirs
         PointClouds.flushprintln( "======== PROJECT $potree ========")
 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree)
 
 		trie = PointClouds.triepotree(potree)
+		header = LasIO.read_header(trie[""])
+		global header
+		params = model, q_l, q_u, header
 		if PointClouds.modelsdetection(model, tightBB) == 2
 			PointClouds.flushprintln("FULL model")
 			i=1
@@ -59,76 +82,68 @@ function processfiles(potreedirs::Array{String,1},params)
 					PointClouds.flushprintln(i," files processed of ",l)
 				end
 				file = trie[k]
-				PointClouds.updatepoints!(params,file)
+				n = PointClouds.updatepoints!(params,file,s,n)
 				i=i+1
 			end
 		else
 			PointClouds.flushprintln("DFS")
-			PointClouds.dfsimage(trie,params)
+			n = PointClouds.dfsextraction(trie,params,s,n)
 		end
 	end
-    return RGBtensor
+	return n,header
 end
 
-
-
 """
-aggiorna l'immagine.
+save points in a temporary file
 """
-function updatepointswithfilter!(params,file)
-	header, laspoints =  PointClouds.readpotreefile(file)
-    model, q_l, q_u, arraylaspoint, headers = params
-
-	pointstaken = LasIO.LasPoint[]
-
-	if pc
-		push!(headers,header)
-	end
+function updatepointswithfilter!(params,file,s,n::Int64)
+	h, laspoints =  PointClouds.readpotreefile(file)
+    model, q_l, q_u, header = params
 
     for laspoint in laspoints
-        point = PointClouds.xyz(laspoint,header)
+        point = PointClouds.xyz(laspoint,h)
         if PointClouds.inmodel(model)(point) # se il punto è interno allora
-			if p[3] >= q_l && p[3] <= q_u
-				if pc
-					push!(pointstaken,laspoint)
-				end
-			end
+			#if p[3] >= q_l && p[3] <= q_u
+				p = PointClouds.createlasdata(laspoint,h,header)
+				write(s,p)
+				n=n+1
+			#end
         end
     end
-
-	if pc
-		push!(arraylaspoint,pointstaken)
-	end
+	return n
 end
 
-function updatepoints!(params,file)
-	header, laspoints =  PointClouds.readpotreefile(file)
-    model, q_l, q_u, arraylaspoint, headers = params
-	pointstaken = LasIO.LasPoint[]
-	if pc
-		push!(headers,header)
-	end
-
+function updatepoints!(params,file,s,n::Int64)
+	h, laspoints =  PointClouds.readpotreefile(file)
+    model, q_l, q_u, header = params
     for laspoint in laspoints
-        point = PointClouds.xyz(laspoint,header)
-        rgb = PointClouds.color(laspoint,header)
-        p = coordsystemmatrix*point
-        xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
-        ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
-
-		if p[3] >= q_l && p[3] <= q_u
-			if pc
-				push!(pointstaken,laspoint)
-			end
-	        if rasterquote[ycoord,xcoord] < p[3]
-	        	rasterquote[ycoord,xcoord] = p[3]
-	            RGBtensor[1, ycoord, xcoord] = rgb[1]
-	            RGBtensor[2, ycoord, xcoord] = rgb[2]
-	            RGBtensor[3, ycoord, xcoord] = rgb[3]
-	        end
-		end
+		#if p[3] >= q_l && p[3] <= q_u
+			p = PointClouds.createlasdata(laspoint,h,header)
+			write(s,p)
+			n=n+1
+		# end
     end
-	if pc
-		push!(arraylaspoint,pointstaken)
+	return n
+end
+
+"""
+Trie DFS.
+"""
+function dfsextraction(t,params,s,n)
+	model, _ = params
+	file = t.value
+	nodebb = PointClouds.las2aabb(file)
+	inter = PointClouds.modelsdetection(model, nodebb)
+	if inter == 1
+		n = PointClouds.updatepointswithfilter!(params,file,s,n)
+		for key in collect(keys(t.children))
+			n = PointClouds.dfsextraction(t.children[key],params,s,n)
+		end
+	elseif inter == 2
+		for k in keys(t)
+			file = t[k]
+			n = PointClouds.updatepoints!(params,file,s,n)
+		end
 	end
+	return n
 end

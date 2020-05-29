@@ -12,22 +12,6 @@ using Images
 using ViewerGL
 GL = ViewerGL
 
-RGBtensor=ones(3,2000,2000)
-
-save("otherview.png", colorview(RGB, RGBtensor))
-
-GL.VIEW(
-	[
-		#GL.GLPoints(convert(Lar.Points,V[:,4]'))
-		viewRGB(example...,V)
-		GL.GLGrid(model[1],model[3],GL.Point4d(1,1,1,1))
-		viewRGB(axismodel...,[0 1. 0 0;0 0. 1 0;0 0. 0 1])
-		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-
-	]
-)
-
-
 ## image potree
 using PointClouds
 using Images
@@ -61,15 +45,17 @@ using DataStructures
 
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
+trie = PointClouds.triepotree(potreedirs[1])
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
 file = "C:\\Users\\marte\\Documents\\FilePotree\\json.json"
 bbin = tightBB
 GSD = 0.3
-PO = "XY+"
+PO = "YZ+"
 outputimage = "prova$PO.jpg"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 211.100, 2.0, true)
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 458247.68, 2.0, true)
 
-
+outputfile = "estrazione.las"
+PointClouds.extractpointcloud(txtpotreedirs, outputfile, bbin, 211.0, 2.0)
 
 ## allinea piano medio con piano  OK
 ## aggiornare il json volume
@@ -224,12 +210,9 @@ GL.VIEW(
 
 
 ## save file
-using LasIO
 
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE\\data\\r\\r.las"
-header,pointdata = LasIO.FileIO.load(fname)
 LasIO.FileIO.save("prova.las",header,pointdata[1:9135])
-s="prova.las"
+
 
 header_n = header.records_count
 n = length(pointdata)
@@ -237,13 +220,34 @@ msg = "number of records in header ($header_n) does not match data length ($n)"
 @assert header_n == n msg
 
 # write header
-write(s, LasIO.magic(LasIO.format"LAS"))
-write(s, header)
 
-    # write points
-for p in pointdata
-    write(s, p)
+using LasIO
+
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE\\data\\r\\r.las"
+header,pointdata = LasIO.FileIO.load(fname)
+f = "temp.las"
+open(f, "w") do s
+	write(s, LasIO.magic(LasIO.format"LAS"))
+
+	for p in pointdata
+	    write(s, p)
+	end
 end
 
-h1,p1 = LasIO.FileIO.load(s)
-outputlas = splitext(outputimage)[1]*".las"
+LasIO.FileIO.save("prova2.las", header, pointdata)
+las = "pc.las"
+LasIO.write(las, LasIO.magic(LasIO.format"LAS"))
+LasIO.write(las, header)
+a = read(f)
+write(las, a)
+
+n = 9136
+pointtype = LasPoint2
+pointdata = Vector{pointtype}(undef, n)
+open(f) do s
+    LasIO.skiplasf(s)
+
+    for i=1:n
+        pointdata[i] = read(s, pointtype)
+    end
+end
