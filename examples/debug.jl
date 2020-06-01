@@ -48,14 +48,16 @@ potreedirs = PointClouds.getdirectories(txtpotreedirs)
 trie = PointClouds.triepotree(potreedirs[1])
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
 file = "C:\\Users\\marte\\Documents\\FilePotree\\json.json"
-bbin = tightBB
+b =[458200.68, 4.49376853e6, 196.68, 458452.43, 4.49417178e6, 237.49]
+bbin=AABB#(hcat([b[1],b[2],b[3]]),hcat([b[4],b[5],b[6]]))	#cava
+bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
 GSD = 0.3
-PO = "YZ+"
+PO = "XY+"
 outputimage = "prova$PO.jpg"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, 458247.68, 2.0, true)
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, nothing, nothing, true)
 
 outputfile = "estrazione.las"
-PointClouds.extractpointcloud(txtpotreedirs, outputfile, bbin, 211.0, 2.0)
+@time PointClouds.extractpointcloud(txtpotreedirs, outputfile, bbin, nothing, nothing)
 
 ## allinea piano medio con piano  OK
 ## aggiornare il json volume

@@ -48,25 +48,3 @@ function triepotree(potree::String)
 
 	return trie.children['r']
 end
-
-
-"""
-Trie DFS.
-"""
-function dfsimage(t,params)
-	model, _ = params
-	file = t.value
-	nodebb = PointClouds.las2aabb(file)
-	inter = PointClouds.modelsdetection(model, nodebb)
-	if inter == 1
-		PointClouds.updateimagewithfilter!(params,file)
-		for key in collect(keys(t.children))
-			PointClouds.dfsimage(t.children[key],params)
-		end
-	elseif inter == 2
-		for k in keys(t)
-			file = t[k]
-			PointClouds.updateimage!(params,file)
-		end
-	end
-end
