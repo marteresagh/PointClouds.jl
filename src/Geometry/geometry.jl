@@ -3,7 +3,7 @@
 
 Average of points.
 """
-centroid(points::Union{Lar.Points,Array{Float64,1}}) = sum(points,dims=2)/size(points,2)[:,1]
+centroid(points::Union{Lar.Points,Array{Float64,1}}) = (sum(points,dims=2)/size(points,2))[:,1]
 
 """
 	subtractaverage(points::Lar.Points)

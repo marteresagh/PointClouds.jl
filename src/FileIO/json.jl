@@ -169,3 +169,116 @@ function polygon(file::String)
 	PointClouds.projectpointson(verts,(axis,centroid),"plane")
 	return verts,EV
 end
+
+
+"""
+	ucsJSON(path::String)
+
+Read a file `.json` of UCS.
+
+
+# Example of a UCS file json structure.
+
+```
+{
+
+	"id":"270b6b7a-d00c-46f6-ba58-1c76310558aa",
+
+	"data":{
+
+		"plane":{
+
+			"A":0,
+
+			"B":0,
+
+			"C":0
+
+		},
+
+		"xAxis":{
+
+			"x":0.21194956712662227,
+
+			"y":-0.9771563332378362,
+
+			"z":-0.015584652964510243
+
+		},
+
+		"yAxis":{
+
+			"x":0.007193328934240251,
+
+			"y":-0.014386657868480502,
+
+			"z":0.9998706316790285
+
+		},
+
+		"zAxis":{
+
+			"x":-0.9772541312338778,
+
+			"y":-0.21203425310209192,
+
+			"z":0.003979761017532582
+
+		},
+
+		"origin":{
+
+			"x":2.250469923019409,
+
+			"y":-6.521675497293472,
+
+			"z":-1.4895449578762054
+
+		}
+
+	},
+
+	"name":"XY_PIANO_FINESTRA"
+
+}
+```
+"""
+function readucsJSON(file::String)
+	dict = Dict{String,Any}[]
+
+	open(file, "r") do f
+	    dict = JSON.parse(f)  # parse and transform data
+	end
+
+	return dict
+end
+
+function ucsJSON2matrix(file::String)
+	dict = readucsJSON(file)
+
+	origin = dict["data"]["origin"]
+	xAxis = dict["data"]["xAxis"]
+	yAxis = dict["data"]["yAxis"]
+	zAxis = dict["data"]["zAxis"]
+	M =  zeros(4,4)
+
+	M[1,1] = xAxis["x"]
+	M[1,2] = xAxis["y"]
+	M[1,3] = xAxis["z"]
+
+	M[2,1] = yAxis["x"]
+	M[2,2] = yAxis["y"]
+	M[2,3] = yAxis["z"]
+
+	M[3,1] = zAxis["x"]
+	M[3,2] = zAxis["y"]
+	M[3,3] = zAxis["z"]
+
+	O = M[1:3 , 1:3] * -[origin["x"], origin["y"], origin["z"]]
+	M[1,4] = O[1]
+	M[2,4] = O[2]
+	M[3,4] = O[3]
+
+	M[4,4] = 1.0
+	return M
+end

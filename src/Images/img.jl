@@ -1,4 +1,3 @@
-#TODO da finire il salvataggio nuovo della pc estratta if pc ecc...
 """
 Return the image of orthoprojection.
 """
@@ -10,7 +9,7 @@ function orthoprojectionimage(
 	 PO::String,
 	 quota::Union{Float64,Nothing},
 	 thickness::Union{Float64,Nothing},
-	 pc::Bool
+	 pc::Bool,
 	  )
 
     # check validity
@@ -24,6 +23,8 @@ function orthoprojectionimage(
     potreedirs = PointClouds.getdirectories(txtpotreedirs)
     model = PointClouds.getmodel(bbin)
     coordsystemmatrix = PointClouds.newcoordsyst(PO)
+
+
 
 	if !isnothing(quota)
 		if PO == "XY+" || PO == "XY-"
@@ -43,7 +44,7 @@ function orthoprojectionimage(
 	end
 
     RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
-    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc
+    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc #, ucsMatrix
 
 	if PO == "XY+"
 		savetfw(outputimage, GSD, refX, refY)

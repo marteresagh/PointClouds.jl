@@ -5,8 +5,7 @@ using ViewerGL
 GL = ViewerGL
 
 ## image julia
-using LinearAlgebraicRepresentation #AlphaStructures
-Lar = LinearAlgebraicRepresentation
+
 using PointClouds
 using Images
 using ViewerGL
@@ -36,6 +35,7 @@ julia --track-allocation=user extractpointcloud.jl C:/Users/marte/Documents/File
 
 julia extractpointcloud.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+ --quote 211 --thickness 2
 
+julia extractpc.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49"
 
 ## tree structures for file .hrc
 using LinearAlgebraicRepresentation
@@ -43,7 +43,7 @@ Lar = LinearAlgebraicRepresentation
 using PointClouds
 using DataStructures
 
-txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
+txtpotreedirs = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 trie = PointClouds.triepotree(potreedirs[1])
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
@@ -51,12 +51,12 @@ file = "C:\\Users\\marte\\Documents\\FilePotree\\json.json"
 b =[458200.68, 4.49376853e6, 196.68, 458452.43, 4.49417178e6, 237.49]
 bbin=AABB#(hcat([b[1],b[2],b[3]]),hcat([b[4],b[5],b[6]]))	#cava
 bbin = "C:/Users/marte/Documents/FilePotree/cava.json"
-GSD = 0.3
+GSD = 0.1
 PO = "XY+"
-outputimage = "prova$PO.jpg"
-@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, nothing, nothing, true)
+outputimage = "prova01$PO.png"
+@time PointClouds.orthoprojectionimage(txtpotreedirs, outputimage, bbin, GSD, PO, nothing, nothing, false)
 
-outputfile = "estrazione.las"
+outputfile = "estrazione.laz"
 @time PointClouds.extractpointcloud(txtpotreedirs, outputfile, bbin, nothing, nothing)
 
 ## allinea piano medio con piano  OK
@@ -225,7 +225,7 @@ msg = "number of records in header ($header_n) does not match data length ($n)"
 
 using LasIO
 
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\SCALE\\data\\r\\r.las"
+fname = "r.las"
 header,pointdata = LasIO.FileIO.load(fname)
 f = "temp.las"
 open(f, "w") do s
@@ -253,3 +253,111 @@ open(f) do s
         pointdata[i] = read(s, pointtype)
     end
 end
+
+
+##########################################################################
+
+using Images
+using Colors
+using FileIO
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
+
+# specify the path to your local image file
+function purewhite(img)
+	white = RGB{N0f8}(1.0,1.0,1.0)
+	mat = channelview(img)
+	n,m = size(img)
+	for i in 2:n-1
+		for j in 2:m-1
+			if sqrt(3)-sqrt((convert(Float64,mat[1,i,j])^2+convert(Float64,mat[2,i,j])^2+convert(Float64,mat[3,i,j])^2))<=0.1
+				img[i,j] = white
+			end
+		end
+	end
+	return img
+end
+
+function optimize(img)
+	white = RGB{N0f8}(1.0,1.0,1.0)
+	mat = channelview(img)
+	n,m = size(img)
+	for i in 2:n-1
+		for j in 2:m-1
+			if img[i,j]==white
+				fourNN = img[i-1,j]!=white && img[i,j-1]!=white && img[i+1,j]!=white && img[i,j+1]!=white
+				test1 = img[i-1,j]!=white && img[i,j-1]!=white
+				test2 = img[i+1,j]!=white && img[i,j-1]!=white
+				test3 = img[i-1,j]!=white && img[i,j+1]!=white
+				test4 = img[i-1,j]!=white && img[i,j-1]!=white
+				test5 = img[i-1,j]!=white && img[i,j-1]!=white
+				test6 = img[i-1,j]!=white && img[i,j-1]!=white
+				if fourNN
+					red = (convert(Float64,mat[1,i-1,j])+convert(Float64,mat[1,i,j-1])+convert(Float64,mat[1,i+1,j])+convert(Float64,mat[1,i,j+1]))
+					green = (convert(Float64,mat[2,i-1,j])+convert(Float64,mat[2,i,j-1])+convert(Float64,mat[2,i+1,j])+convert(Float64,mat[2,i,j+1]))
+					blue = (convert(Float64,mat[3,i-1,j])+convert(Float64,mat[3,i,j-1])+convert(Float64,mat[3,i+1,j])+convert(Float64,mat[3,i,j+1]))
+					img[i,j] = RGB{N0f8}(red/4,green/4,blue/4)
+				elseif test1
+					red = convert(Float64,mat[1,i-1,j])+convert(Float64,mat[1,i,j-1])
+					green = convert(Float64,mat[2,i-1,j])+convert(Float64,mat[2,i,j-1])
+					blue = convert(Float64,mat[3,i-1,j])+convert(Float64,mat[3,i,j-1])
+					img[i,j] = RGB{N0f8}(red/2,green/2,blue/2)
+				elseif test2
+					red = convert(Float64,mat[1,i+1,j])+convert(Float64,mat[1,i,j-1])
+					green = convert(Float64,mat[2,i+1,j])+convert(Float64,mat[2,i,j-1])
+					blue = convert(Float64,mat[3,i+1,j])+convert(Float64,mat[3,i,j-1])
+					img[i,j] = RGB{N0f8}(red/2,green/2,blue/2)
+				end
+			end
+		end
+	end
+	return img
+end
+
+img_path = "C:\\Users\\marte\\Documents\\GEOWEB\\prova01XY+.png"
+img = load(img_path)
+img2 = optimize(img)
+
+save("image_optimize.png", img2)
+
+
+img_path = "C:\\Users\\marte\\Documents\\GEOWEB\\image.jpg"
+img = load(img_path)
+
+purewhite(img)
+
+img2 = optimize(img)
+
+save("image_optimize.png", img2)
+
+
+seeds = [(CartesianIndex(1,1),1)]
+segments = ImageSegmentation.seeded_region_growing(img, seeds)
+
+segment_mean(segments)
+
+imshow(map(i->segment_mean(segments,i), labels_map(segments)));
+
+img_path = "C:\\Users\\marte\\Downloads\\horse.jpg"
+img = load(img_path)
+seeds = [(CartesianIndex(1,1),1)]
+using ImageSegmentation
+diff_fn(c1::CT1,c2::CT2) where {CT1<:Union{Colorant,Real}, CT2<:Union{Colorant,Real}} = 0.
+
+segments = ImageSegmentation.seeded_region_growing(img, seeds, ntuple(i->3,2), diff_fn)
+
+imshow(map(i->segment_mean(segments,i), labels_map(segments)));
+
+
+using ImageSegmentation, ImageView
+seeds = [(CartesianIndex(126,81),1)]
+segments = seeded_region_growing(img, seeds)
+
+imshow(map(i->segment_mean(segments,i), labels_map(segments)));
+
+
+using JSON
+using PointClouds
+path = "C:\\Users\\marte\\Documents\\POTREE\\ucsID.json"
+
+ucsMatrix = PointClouds.ucsJSON2matrix(path)
