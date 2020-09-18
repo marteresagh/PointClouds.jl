@@ -191,12 +191,11 @@ function pointselection(params,s,n::Int64)
 	return RGBtensor,n
 end
 
-
 """
 Trie DFS.
 """
 function dfsimage(t,params,s,n::Int64,nfiles,l)
-	model, _ = params
+	_, model, _ = params
 	file = t.value
 	nodebb = PointClouds.las2aabb(file)
 	inter = PointClouds.modelsdetection(model, nodebb)
@@ -225,6 +224,35 @@ end
 """
 API
 """
+function orthophoto_main(
+	potreedirs,
+	model::Lar.LAR,
+	coordsystemmatrix,
+	GSD,
+	RGBtensor,
+	rasterquote,
+	refX,
+	refY,
+	q_l,
+	q_u,
+	pc::Bool
+	)
+
+	params = potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc
+
+	if pc
+		temp = joinpath(splitdir(outputimage)[1],"temp.las")
+		open(temp, "w") do s
+			write(s, LasIO.magic(LasIO.format"LAS"))
+			RGBtensor,n = PointClouds.pointselection(params,s,n)
+		end
+	else
+		RGBtensor,n = PointClouds.pointselection(params,nothing,n)
+	end
+
+	return RGBtensor, n
+end
+
 function orthophoto(
 	txtpotreedirs::String,
 	outputimage::String,
@@ -245,16 +273,7 @@ function orthophoto(
 	PointClouds.flushprintln("========= image creation =========")
 
 	n = 0 #number of extracted points
-	params = potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc
-	if pc
-		temp = joinpath(splitdir(outputimage)[1],"temp.las")
-		open(temp, "w") do s
-			write(s, LasIO.magic(LasIO.format"LAS"))
-			RGBtensor,n = PointClouds.pointselection(params,s,n)
-		end
-	else
-		RGBtensor,n = PointClouds.pointselection(potreedirs,params,nothing,n)
-	end
+	RGBtensor, n = orthophoto_main(potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, n)
 
 	PointClouds.flushprintln("========= saving =========")
 	PointClouds.saveorthophoto( outputimage, PO, RGBtensor, GSD, refX, refY)
