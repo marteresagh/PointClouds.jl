@@ -44,7 +44,7 @@ function orthoprojectionimage(
 	end
 
     RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
-    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc #, ucsMatrix
+    params = model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc
 
 	if PO == "XY+"
 		savetfw(outputimage, GSD, refX, refY)
@@ -177,7 +177,7 @@ function searchfile(path::String,key::String)
 end
 
 """
-aggiorna l'immagine.
+update image tensor.
 """
 function updateimagewithfilter!(params,file,s,n::Int64)
 	h, laspoints =  PointClouds.readpotreefile(file)

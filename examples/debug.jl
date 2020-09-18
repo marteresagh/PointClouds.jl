@@ -1,19 +1,10 @@
-using LinearAlgebraicRepresentation #AlphaStructures
+using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
 using PointClouds
-using ViewerGL
-GL = ViewerGL
-
-## image julia
-
-using PointClouds
 using Images
 using ViewerGL
 GL = ViewerGL
 
-## image potree
-using PointClouds
-using Images
 
 txtpotreedirs = "C:/Users/marte/Documents/FilePotree/directory.txt"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
