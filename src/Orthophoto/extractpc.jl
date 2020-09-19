@@ -102,11 +102,11 @@ function updatepointswithfilter!(params,file,s,n::Int64)
     for laspoint in laspoints
         point = PointClouds.xyz(laspoint,h)
         if PointClouds.inmodel(model)(point) # se il punto è interno allora
-			#if p[3] >= q_l && p[3] <= q_u
+			if point[3] >= q_l && point[3] <= q_u
 				p = PointClouds.createlasdata(laspoint,h,header)
 				write(s,p)
 				n=n+1
-			#end
+			end
         end
     end
 	return n
@@ -116,11 +116,12 @@ function updatepoints!(params,file,s,n::Int64)
 	h, laspoints =  PointClouds.readpotreefile(file)
     model, q_l, q_u, header = params
     for laspoint in laspoints
-		#if p[3] >= q_l && p[3] <= q_u
+		point = PointClouds.xyz(laspoint,h)
+		if point[3] >= q_l && point[3] <= q_u
 			p = PointClouds.createlasdata(laspoint,h,header)
 			write(s,p)
 			n=n+1
-		# end
+		end
     end
 	return n
 end
