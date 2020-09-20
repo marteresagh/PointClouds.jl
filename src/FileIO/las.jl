@@ -1,4 +1,3 @@
-
 """
 	loadlas(fname::String...)::Tuple{Lar.Points,Array{LasIO.N0f16,2}}
 
@@ -211,6 +210,9 @@ function bbincremental!(coordpoint,bb)
 	return true
 end
 
+"""
+Read Potree file: LAS or LAZ.
+"""
 function readpotreefile(fname::String)
 	if endswith(fname,".las")
 		header, laspoints = LasIO.FileIO.load(fname)
@@ -218,4 +220,64 @@ function readpotreefile(fname::String)
 		header, laspoints = LazIO.load(fname)
 	end
 	return header,laspoints
+end
+
+
+
+"""
+.
+"""
+
+function set_z_zero(points::Array{LasPoint2,1},header::LasIO.LasHeader)
+	type = pointformat(header)
+	pvec = Vector{LasPoint}()
+	for p in points
+		x = p.x
+		y = p.y
+		z = 0
+		intensity = p.intensity
+		flag_byte = p.flag_byte
+		raw_classification = p.raw_classification
+		scan_angle = p.scan_angle
+		user_data = p.user_data
+		pt_src_id = p.pt_src_id
+
+		if type == LasIO.LasPoint0
+			laspoint = type(x, y, z,
+						intensity, flag_byte, raw_classification,
+						scan_angle, user_data, pt_src_id
+						)
+
+		elseif type == LasIO.LasPoint1
+			gps_time = p.gps_time
+			laspoint = type(x, y, z,
+						intensity, flag_byte, raw_classification,
+						scan_angle, user_data, pt_src_id, gps_time
+						)
+
+		elseif type == LasIO.LasPoint2
+			red = p.red
+			green = p.green
+			blue = p.blue
+			laspoint = type(x, y, z,
+						intensity, flag_byte, raw_classification,
+						scan_angle, user_data, pt_src_id,
+						red, green, blue
+						)
+
+		elseif type == LasIO.LasPoint3
+			gps_time = p.gps_time
+			red = p.red
+			green = p.green
+			blue = p.blue
+			laspoint = type(x, y, z,
+						intensity, flag_byte, raw_classification,
+						scan_angle, user_data, pt_src_id, gps_time,
+						red, green, blue
+						)
+
+		end
+		push!(pvec,laspoint)
+	end
+	return pvec
 end
