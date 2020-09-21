@@ -1,5 +1,37 @@
+
+# function linefit(points::Lar.Points)
+#
+# 	npoints = size(points,2)
+# 	@assert npoints>=2 "linefit: at least 2 points needed"
+# 	centroid = PointClouds.centroid(points)
+#
+# 	xxSum = 0
+# 	xhSum = 0
+#
+# 	for i in 1:npoints
+# 		diff = points[:,i] - centroid
+# 		xxSum += diff[1]^2
+# 		xhSum += diff[1]*diff[2]
+# 	end
+#
+# 	if xxSum > 0
+# 		barX = centroid[1]
+# 		barH = centroid[2]
+# 		barA = xhSum / xxSum
+# 	else
+# 		barX = 0
+# 		barH = 0
+# 		barA = 0
+# 	end
+#
+#     return barA, centroid[2]-barA*centroid[1]
+# end
+
 """
 Returns best line fitting `points`.
+Line description:
+- centroid
+- direction
 """
 function linefit(points::Lar.Points)
 
@@ -7,26 +39,17 @@ function linefit(points::Lar.Points)
 	@assert npoints>=2 "linefit: at least 2 points needed"
 	centroid = PointClouds.centroid(points)
 
-	xxSum = 0
-	xhSum = 0
-
+	C = zeros(2,2)
 	for i in 1:npoints
 		diff = points[:,i] - centroid
-		xxSum += diff[1]^2
-		xhSum += diff[1]*diff[2]
+		C += diff*diff'
 	end
 
-	if xxSum > 0
-		barX = centroid[1]
-		barH = centroid[2]
-		barA = xhSum / xxSum
-	else
-		barX = 0
-		barH = 0
-		barA = 0
-	end
 
-    return barA, centroid[2]-barA*centroid[1]
+	#Lar.eigvals(C)
+	eigvectors = Lar.eigvecs(C)
+	direction = eigvectors[:,2]
+    return centroid, direction
 end
 
 """
@@ -61,10 +84,6 @@ function linedetection(V::Lar.Points,EV::Lar.Cells,par::Float64;VALID=5::Int64)
 
 	push!(R,index)
 
-	println("============================================")
-	println(" Detection of line starting from $index ")
-	println("============================================")
-
 	seeds = [index]
 	visitedverts = copy(seeds)
 	while !isempty(seeds)
@@ -89,11 +108,15 @@ function linedetection(V::Lar.Points,EV::Lar.Cells,par::Float64;VALID=5::Int64)
     return  pointsonline,params
 end
 
+
+"""
+Orthogonal distance.
+"""
 function distpointtoline(p::Array{Float64,1},params)
-	a,b = params
-	num = Lar.abs(b + a*p[1]-p[2])
-	den = Lar.sqrt(1+a^2)
-	return num/den
+	centroid, direction = params
+	v = p - centroid
+	p_star = v - Lar.dot(direction,v)*direction
+	return Lar.norm(p_star)
 end
 """
 Check if point is close enough to model.
@@ -127,13 +150,6 @@ function seedpointforlinefitting(V::Lar.Points,adj::Array{Array{Int64,1},1})
 	return seed,params
 end
 
-
-"""
-Return indices neighbors list of `indverts`, removing verteces already visited.
-"""
-function findnearestof(indverts::Array{Int64,1},visitedverts::Array{Int64,1},adj::Array{Array{Int64,1},1})
-	return setdiff(union(adj[indverts]...),visitedverts)
-end
 
 """
 Iterative shape detection.

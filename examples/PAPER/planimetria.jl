@@ -38,20 +38,18 @@ filtration = AlphaStructures.alphaFilter(V, DT);
 α = 0.05
 VV, EV, FV = AlphaStructures.alphaSimplex(V, filtration, α);
 
-
-
-GL.VIEW(
-	[
-		GL.GLGrid(V,EV)
-		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-	]
-);
+# GL.VIEW(
+# 	[
+# 		GL.GLGrid(V,EV)
+# 		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+# 	]
+# );
 
 
 #pointsonline, params = PointClouds.linedetection(V,EV,0.02)
 
 
-lines = PointClouds.linessegmentation(V, EV, 15 , 0.02)
+lines = PointClouds.linessegmentation(V, EV, 15, 0.02)
 W,EW = PointClouds.drawlines(lines)
 
 GL.VIEW(
@@ -64,25 +62,29 @@ GL.VIEW(
 
 
 
-#
-# x = [1:10...]
-# a = rand()
-# b = rand()
-# y = Float64[]
-#
-# for i in 1:size(x,1)
-#     push!(y, x[i]*a + b + rand()) # points perturbation
-# end
-# pointsonline = vcat(x',y')
-#
-# a,b = PointClouds.linefit(vcat(x',y'))
-#
-# V,EV=PointClouds.larmodelsegment(pointsonline,(a,b))
-#
-# GL.VIEW(
-# 	[
-# 		GL.GLPoints(convert(Lar.Points,pointsonline'))
-# 		GL.GLGrid(V,EV)
-# 		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-# 	]
-# );
+
+x = [1:10...]
+a = 0
+b = 0
+y = Float64[]
+
+for i in 1:size(x,1)
+    push!(y, x[i]*a + b + 0*rand()) # points perturbation
+end
+pointsonline = vcat(x',y')
+
+centroid, direction = PointClouds.linefit(vcat(x',y'))
+
+dist = PointClouds.distpointtoline(pointsonline[:,4],(centroid,direction))
+
+V,EV = PointClouds.larmodelsegment(pointsonline,(a,b))
+
+dist = PointClouds.distpointtoline([1.3,0.1],([0.,0],[1,0]))
+
+GL.VIEW(
+	[
+		GL.GLPoints(convert(Lar.Points,pointsonline'))
+		#GL.GLGrid(V,EV)
+		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+	]
+);
