@@ -30,6 +30,7 @@ module PointClouds
 	include("Segmentation/Models/cylinder.jl")
 	include("Segmentation/Models/plane.jl")
 	include("Segmentation/Models/torus.jl")
+	include("Segmentation/Models/line.jl")
 	include("Segmentation/extractshape.jl")
 	include("Segmentation/segmentation.jl")
 	include("Segmentation/color.jl")
