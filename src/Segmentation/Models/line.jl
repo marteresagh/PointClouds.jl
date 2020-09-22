@@ -52,38 +52,12 @@ function linefit(points::Lar.Points)
     return centroid, direction
 end
 
-"""
-
-"""
-function larmodelsegment(pointsonline::Lar.Points, params)
-	centroid,direction = params
-	max_value = -Inf
-	min_value = +Inf
-	
-	for i in 1:size(pointsonline,2)
-		p = pointsonline[:,i] - centroid
-		value = Lar.dot(direction,p)
-
-		if value > max_value
-			max_value = value
-		end
-		if value < min_value
-			min_value = value
-		end
-	end
-
-	p_min = centroid + min_value*direction
-	p_max = centroid + max_value*direction
-	V = hcat(p_min,p_max)
-	EV = [[1,2]]
-    return V, EV
-end
 
 
 """
 Detect points on shape.
 """
-function linedetection(V::Lar.Points,EV::Lar.Cells,par::Float64;VALID=5::Int64)
+function linedetection(V::Lar.Points, EV::Lar.Cells, par::Float64; VALID=5::Int64)
 
 	# adjacency list
    	adj = Lar.verts2verts(EV)
@@ -238,13 +212,42 @@ end
 
 
 """
+Lar model of fitting segment line.
+"""
+function larmodelsegment(pointsonline::Lar.Points, params, u=0.02)
+
+	centroid,direction = params
+	max_value = -Inf
+	min_value = +Inf
+
+	for i in 1:size(pointsonline,2)
+		p = pointsonline[:,i] - centroid
+		value = Lar.dot(direction,p)
+
+		if value > max_value
+			max_value = value
+		end
+		if value < min_value
+			min_value = value
+		end
+	end
+
+	p_min = centroid + (min_value - u)*direction
+	p_max = centroid + (max_value + u)*direction
+	V = hcat(p_min,p_max)
+	EV = [[1,2]]
+    return V, EV
+end
+
+
+"""
 Extract boundary of flat shape.
 """
-function drawlines(lines)
+function drawlines(lines,u=0.02)
 	out = Array{Lar.Struct,1}()
 	for line in lines
 		pointsonline, params = line
-		V,EV = PointClouds.larmodelsegment(pointsonline, params)
+		V,EV = PointClouds.larmodelsegment(pointsonline, params, u)
 		cell = (V,EV)
 		push!(out, Lar.Struct([cell]))
 	end

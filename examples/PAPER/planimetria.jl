@@ -50,7 +50,7 @@ VV, EV, FV = AlphaStructures.alphaSimplex(V, filtration, α);
 
 
 lines = PointClouds.linessegmentation(V, EV, 15, 0.02)
-W,EW = PointClouds.drawlines(lines)
+W,EW = PointClouds.drawlines(lines,0.5)
 
 GL.VIEW(
 	[
