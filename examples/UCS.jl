@@ -45,3 +45,11 @@ GL.VIEW(
 		GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 	]
 );
+
+
+
+UCSpath = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\ucs_su_ucs.json"
+
+UCS = PointClouds.ucsJSON2matrix(UCSpath)
+
+invUCS = Lar.inv(UCS[1:3,1:3])

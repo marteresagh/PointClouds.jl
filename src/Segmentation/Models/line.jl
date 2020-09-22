@@ -55,16 +55,27 @@ end
 """
 
 """
-function larmodelsegment(pointsonline::Lar.Points, params, u=0.01)
-	a,b = params
-	# AABB = Lar.boundingbox(pointsonline).+([-u,-u],[u,u])
-    # V = PointClouds.intersectAABBplane(AABB,params)
-	xmin = minimum(pointsonline[1,:])-u
-	xmax = maximum(pointsonline[1,:])+u
-	ymin = xmin*a+b
-	ymax = xmax*a+b
-	V = [xmin xmax; ymin ymax]
- 	EV = [[1,2]]
+function larmodelsegment(pointsonline::Lar.Points, params)
+	centroid,direction = params
+	max_value = -Inf
+	min_value = +Inf
+	
+	for i in 1:size(pointsonline,2)
+		p = pointsonline[:,i] - centroid
+		value = Lar.dot(direction,p)
+
+		if value > max_value
+			max_value = value
+		end
+		if value < min_value
+			min_value = value
+		end
+	end
+
+	p_min = centroid + min_value*direction
+	p_max = centroid + max_value*direction
+	V = hcat(p_min,p_max)
+	EV = [[1,2]]
     return V, EV
 end
 
