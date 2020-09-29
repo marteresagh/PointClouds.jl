@@ -61,26 +61,26 @@ GL.VIEW(
 );
 
 
-
-x = rand(10)
-a = rand()
-b = rand()
-y = Float64[]
-
-for i in 1:size(x,1)
-    push!(y, x[i]*a + b + 0.01*rand()) # points perturbation
-end
-pointsonline = vcat(x',y')
-
-params = PointClouds.linefit(vcat(x',y'))
-
-V,EV = PointClouds.larmodelsegment(pointsonline,params)
-
-
-GL.VIEW(
-	[
-		GL.GLPoints(convert(Lar.Points,pointsonline'))
-		GL.GLGrid(V,EV)
-		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
-	]
-);
+#
+# x = rand(10)
+# a = rand()
+# b = rand()
+# y = Float64[]
+#
+# for i in 1:size(x,1)
+#     push!(y, x[i]*a + b + 0.01*rand()) # points perturbation
+# end
+# pointsonline = vcat(x',y')
+#
+# params = PointClouds.linefit(vcat(x',y'))
+#
+# V,EV = PointClouds.larmodelsegment(pointsonline,params)
+#
+#
+# GL.VIEW(
+# 	[
+# 		GL.GLPoints(convert(Lar.Points,pointsonline'))
+# 		GL.GLGrid(V,EV)
+# 		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
+# 	]
+# );

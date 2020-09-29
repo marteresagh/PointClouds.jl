@@ -8,6 +8,7 @@ function initparams(
 	PO::String,
 	quota::Union{Float64,Nothing},
 	thickness::Union{Float64,Nothing},
+	ucs::Union{Nothing,String}
 	)
 
 	# check validity
@@ -16,7 +17,14 @@ function initparams(
 
 	potreedirs = PointClouds.getdirectories(txtpotreedirs)
 	model = PointClouds.getmodel(bbin)
-	coordsystemmatrix = PointClouds.newcoordsyst(PO)
+
+	if isnothing(ucs)
+		coordsystemmatrix = PointClouds.string2matrix(PO)
+	else
+		UCS = PointClouds.ucsJSON2matrix(ucs)
+		coordsystemmatrix = PointClouds.string2matrix(PO,UCS)
+	end
+
 
 	if !isnothing(quota)
 		if PO == "XY+" || PO == "XY-"
@@ -51,13 +59,14 @@ function saveorthophoto(
 	refY,
 	)
 
-	PointClouds.flushprintln("========= Image: saving ... =========")
+	PointClouds.flushprintln("Image: saving ...")
 
 	if PO == "XY+"
 		savetfw(outputimage, GSD, refX, refY)
 	end
 
 	save(outputimage, Images.colorview(RGB, RGBtensor))
+	PointClouds.flushprintln("Image: done ...")
 end
 
 """
@@ -70,7 +79,7 @@ function savepointcloud(
 	potreedirs
 	)
 
-	PointClouds.flushprintln("========= Point cloud: saving ... =========")
+	PointClouds.flushprintln("Point cloud: saving ...")
 
 	outputfile = splitext(outputimage)[1]*".las"
 
@@ -92,6 +101,7 @@ function savepointcloud(
 	end
 
 	rm(temp)
+	PointClouds.flushprintln("Point cloud: done ...")
 end
 
 """
@@ -126,7 +136,6 @@ function updateimagewithfilter!(params,file,s,n::Int64)
     end
 
 	return n
-
 end
 
 function updateimage!(params,file,s,n::Int64)
@@ -235,7 +244,8 @@ function orthophoto_main(
 	refY,
 	q_l,
 	q_u,
-	pc::Bool
+	pc::Bool,
+	n::Int
 	)
 
 	params = potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc
@@ -261,21 +271,27 @@ function orthophoto(
 	PO::String,
 	quota::Union{Float64,Nothing},
 	thickness::Union{Float64,Nothing},
+	ucs::Union{String,Nothing},
 	pc::Bool
 	)
 
 	# initialization
-	PointClouds.flushprintln("========= initialization =========")
-	potreedirs, model, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, q_l, q_u = initparams( txtpotreedirs, outputimage, bbin, GSD, PO, quota, thickness, pc );
+	potreedirs, model, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, q_l, q_u = PointClouds.initparams( txtpotreedirs,
+		bbin,
+		GSD,
+		PO,
+		quota,
+		thickness,
+		ucs);
 
 
 	# image creation
-	PointClouds.flushprintln("========= image creation =========")
+	PointClouds.flushprintln("========= PROCESSING =========")
 
 	n = 0 #number of extracted points
-	RGBtensor, n = orthophoto_main(potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, n)
+	RGBtensor, n = PointClouds.orthophoto_main(potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, n)
 
-	PointClouds.flushprintln("========= saving =========")
+	PointClouds.flushprintln("========= SAVES =========")
 	PointClouds.saveorthophoto( outputimage, PO, RGBtensor, GSD, refX, refY)
 
 	if pc

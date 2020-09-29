@@ -243,7 +243,7 @@ Read a file `.json` of UCS.
 }
 ```
 """
-function readucsJSON(file::String)
+function readUcsJSON(file::String)
 	dict = Dict{String,Any}[]
 
 	open(file, "r") do f
@@ -254,7 +254,7 @@ function readucsJSON(file::String)
 end
 
 function ucsJSON2matrix(file::String)
-	dict = readucsJSON(file)
+	dict = readUcsJSON(file)
 
 	origin = dict["data"]["origin"]
 	xAxis = dict["data"]["xAxis"]
@@ -274,7 +274,7 @@ function ucsJSON2matrix(file::String)
 	M[3,2] = zAxis["y"]
 	M[3,3] = zAxis["z"]
 
-	O = M[1:3 , 1:3] * -[origin["x"], origin["y"], origin["z"]]
+	O = M[1:3, 1:3] * -[origin["x"], origin["y"], origin["z"]]
 	M[1,4] = O[1]
 	M[2,4] = O[2]
 	M[3,4] = O[3]

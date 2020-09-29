@@ -1,7 +1,7 @@
 """
 Basis.
 """
-function newcoordsyst(PO::String)
+function string2matrix(PO::String,UCS=Matrix{Float64}(Lar.I,4,4)::Matrix)
     planecode = PO[1:2]
     @assert planecode == "XY" || planecode == "XZ" || planecode == "YZ" "orthoprojectionimage: $PO not valid view "
 
@@ -33,7 +33,8 @@ function newcoordsyst(PO::String)
         R = [-1. 0 0; 0 1. 0; 0 0 -1]
         coordsystemmatrix = R*coordsystemmatrix
     end
-    return coordsystemmatrix
+	#TODO: controlla se è la trasposto o no
+    return coordsystemmatrix*UCS[1:3,1:3]
 end
 
 

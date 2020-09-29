@@ -347,8 +347,4 @@ segments = seeded_region_growing(img, seeds)
 imshow(map(i->segment_mean(segments,i), labels_map(segments)));
 
 
-using JSON
-using PointClouds
-path = "C:\\Users\\marte\\Documents\\POTREE\\ucsID.json"
-
-ucsMatrix = PointClouds.ucsJSON2matrix(path)
+julia orthophoto.jl C:/Users/marte/Documents/FilePotree/directory.txt -o C:/Users/marte/Documents/FilePotree/prova.png --bbin "458117.68 4.49376853e6 196.68 458452.43 4.49417178e6 237.49" --gsd 0.3 --po XY+ --ucs C:/Users/marte/Documents/FilePotree/prova.png
