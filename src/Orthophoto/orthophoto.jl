@@ -190,7 +190,7 @@ function pointselection(params,s,n::Int64)
 		end
 	end
 
-	return RGBtensor,n
+	return n #RGBtensor,n
 end
 
 """
@@ -249,12 +249,12 @@ function orthophoto_main(
 		temp = joinpath(splitdir(outputimage)[1],"temp.las")
 		open(temp, "w") do s
 			write(s, LasIO.magic(LasIO.format"LAS"))
-			RGBtensor,n = PointClouds.pointselection(params,s,n)
-			return RGBtensor, n, temp
+			n = PointClouds.pointselection(params,s,n) #RGBtensor,n = PointClouds.pointselection(params,s,n)
+			return n, temp #RGBtensor, n, temp
 		end
 	else
-		RGBtensor,n = PointClouds.pointselection(params,nothing,n)
-		return RGBtensor, n, nothing
+		n = PointClouds.pointselection(params,nothing,n) #RGBtensor,n = PointClouds.pointselection(params,nothing,n)
+		return n, nothing #RGBtensor, n, nothing
 	end
 
 end
@@ -280,7 +280,8 @@ function orthophoto(
 	PointClouds.flushprintln("========= PROCESSING =========")
 
 	n = 0 #number of extracted points
-	RGBtensor, n, temp = PointClouds.orthophoto_main(outputimage, potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader, n)
+	n, temp = PointClouds.orthophoto_main(outputimage, potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader, n)
+#RGBtensor, n, temp = PointClouds.orthophoto_main(outputimage, potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader, n)
 
 	PointClouds.flushprintln("========= SAVES =========")
 	PointClouds.saveorthophoto( outputimage, PO, RGBtensor, GSD, refX, refY)
