@@ -142,12 +142,12 @@ end
 
 Generate laspoint coerenti con il mio header (soprattutto per quanto riguarda la traslazione).
 """
-function createlasdata(p,h::LasIO.LasHeader,hmerge::LasIO.LasHeader)
+function createlasdata(p,h::LasIO.LasHeader,mainHeader::LasIO.LasHeader)
 	type = pointformat(h)
 
-	x = LasIO.xcoord(xcoord(p,h),hmerge)
-	y = LasIO.ycoord(ycoord(p,h),hmerge)
-	z = LasIO.zcoord(zcoord(p,h),hmerge)
+	x = LasIO.xcoord(xcoord(p,h),mainHeader)
+	y = LasIO.ycoord(ycoord(p,h),mainHeader)
+	z = LasIO.zcoord(zcoord(p,h),mainHeader)
 	intensity = p.intensity
 	flag_byte = p.flag_byte
 	raw_classification = p.raw_classification
@@ -280,4 +280,78 @@ function set_z_zero(points::Array{LasPoint2,1},header::LasIO.LasHeader)
 		push!(pvec,laspoint)
 	end
 	return pvec
+end
+
+
+
+function newheader(copyheader,aabb)
+
+	file_source_id=copyheader.file_source_id
+    global_encoding=copyheader.global_encoding
+    guid_1=copyheader.guid_1
+    guid_2=copyheader.guid_2
+    guid_3=copyheader.guid_3
+    guid_4=copyheader.guid_4
+    version_major=copyheader.version_major
+    version_minor=copyheader.version_minor
+    system_id=copyheader.system_id
+    software_id=copyheader.software_id
+    creation_dayofyear=copyheader.creation_dayofyear
+    creation_year=copyheader.creation_year
+    header_size=copyheader.header_size
+    data_offset=copyheader.header_size
+    n_vlr=copyheader.n_vlr
+    data_format_id=copyheader.data_format_id
+    data_record_length=copyheader.data_record_length
+    records_count=copyheader.records_count
+    point_return_count=copyheader.point_return_count
+    x_scale=0.001
+    y_scale=0.001
+    z_scale=0.001
+    x_offset=aabb[1][1]
+    y_offset=aabb[1][2]
+    z_offset=aabb[1][3]
+    x_max=aabb[2][1]
+    x_min=aabb[1][1]
+    y_max=aabb[2][2]
+    y_min=aabb[1][2]
+    z_max=aabb[2][3]
+    z_min=aabb[1][3]
+    variable_length_records=copyheader.variable_length_records
+    user_defined_bytes=copyheader.user_defined_bytes
+
+	return LasIO.LasHeader(file_source_id,
+    global_encoding,
+    guid_1,
+    guid_2,
+    guid_3,
+    guid_4,
+    version_major,
+    version_minor,
+    system_id,
+    software_id,
+    creation_dayofyear,
+    creation_year,
+    header_size,
+    data_offset,
+    n_vlr,
+    data_format_id,
+    data_record_length,
+    records_count,
+    point_return_count,
+    x_scale,
+    y_scale,
+    z_scale,
+    x_offset,
+    y_offset,
+    z_offset,
+    x_max,
+    x_min,
+    y_max,
+    y_min,
+    z_max,
+    z_min,
+    variable_length_records,
+    user_defined_bytes
+	)
 end

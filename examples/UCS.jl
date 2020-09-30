@@ -1,36 +1,3 @@
-using LinearAlgebraicRepresentation
-Lar = LinearAlgebraicRepresentation
-using PointClouds
-using ViewerGL
-GL = ViewerGL
-
-include("viewfunction.jl")
-
-
-txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/directory.txt"
-
-ucs = "C:/Users/marte/Documents/GEOWEB/FilePotree/primo_ucs.json"
-
-potreedirs = PointClouds.getdirectories(txtpotreedirs)
-typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
-bbin = tightBB
-
-
-quota = nothing
-thickness = nothing
-GSD = 0.3
-PO = "XY+"
-outputimage = "con_ucs$PO.jpg"
-PointClouds.orthophoto(txtpotreedirs,
-                        outputimage,
-                        bbin,
-                        GSD,
-                        PO,
-                        quota,
-                        thickness,
-                        ucs,
-                        false
-                        )
 #
 # ################################ load Volume debug
 #
@@ -103,3 +70,60 @@ PointClouds.orthophoto(txtpotreedirs,
 #
 # [0.822613, -0.00205205, -0.482899]*180/pi
 #
+
+
+using LinearAlgebraicRepresentation
+Lar = LinearAlgebraicRepresentation
+using PointClouds
+using ViewerGL
+GL = ViewerGL
+
+include("viewfunction.jl")
+
+
+txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/directory.txt"
+
+ucs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/primo_ucs.json"
+
+potreedirs = PointClouds.getdirectories(txtpotreedirs)
+typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
+bbin = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/orthophoto.json"
+
+quota = nothing
+thickness = nothing
+GSD = 0.3
+PO = "XY+"
+outputimage = "ucs_e_volume$PO.jpg"
+
+PointClouds.orthophoto( txtpotreedirs,
+                        outputimage,
+                        bbin,
+                        GSD,
+                        PO,
+                        quota,
+                        thickness,
+                        ucs,
+                        true
+                        )
+
+
+header_base = LasIO.read_header(PointClouds.filelevel(potreedirs[1],0)[1])
+aabb = Lar.boundingbox(model[1])
+mainHeader = PointClouds.newheader(header_base, aabb)
+
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\UCS\\data\\r\\r.las"
+
+
+
+function main()
+    M = Matrix{Int64}(Lar.I,3,3);
+    n = 0;
+    n = updatematrix(M,n);
+end
+
+function updatematrix(M,n)
+    n = 100;
+    M[1,1] = 3;
+    M[2,3] = 4 ;
+    return n
+end
