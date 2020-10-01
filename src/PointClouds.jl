@@ -9,6 +9,7 @@ module PointClouds
 	using MATLAB,AlphaStructures
 	using Polynomials, LsqFit
 	using Images
+	using Dates
 
 	flushprintln(s...) = begin
 		println(stdout,s...)
@@ -25,11 +26,11 @@ module PointClouds
 	include("Geometry/mapper.jl")
 	include("Geometry/normals.jl")
 
-	include("Segmentation/Models/cone.jl")
-	include("Segmentation/Models/sphere.jl")
-	include("Segmentation/Models/cylinder.jl")
-	include("Segmentation/Models/plane.jl")
-	include("Segmentation/Models/torus.jl")
+	# include("Segmentation/Models/cone.jl")
+	# include("Segmentation/Models/sphere.jl")
+	# include("Segmentation/Models/cylinder.jl")
+	# include("Segmentation/Models/plane.jl")
+	# include("Segmentation/Models/torus.jl")
 	include("Segmentation/Models/line.jl")
 	include("Segmentation/extractshape.jl")
 	include("Segmentation/segmentation.jl")
@@ -50,5 +51,6 @@ module PointClouds
 	include("Orthophoto/orthophoto.jl")
 	include("Orthophoto/geometry.jl")
 	include("Orthophoto/extractpc.jl")
+	include("Segmentation/PLANE.jl")
 
 end

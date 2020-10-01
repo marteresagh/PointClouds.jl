@@ -76,10 +76,8 @@ using LinearAlgebraicRepresentation
 Lar = LinearAlgebraicRepresentation
 using PointClouds
 using ViewerGL
-GL = ViewerGL
-
+GL=ViewerGL
 include("viewfunction.jl")
-
 
 txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/directory.txt"
 
@@ -88,7 +86,7 @@ ucs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/ucs_su_ucs.json"
 potreedirs = PointClouds.getdirectories(txtpotreedirs)
 typeofpoint,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potreedirs[1])
 bbin = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/orthophoto.json"
-
+model = PointClouds.getmodel(bbin)
 quota = nothing
 thickness = nothing
 GSD = 0.3
@@ -111,83 +109,16 @@ header_base = LasIO.read_header(PointClouds.filelevel(potreedirs[1],0)[1])
 aabb = Lar.boundingbox(model[1])
 mainHeader = PointClouds.newheader(header_base, aabb)
 
-fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\UCS\\data\\r\\r.las"
+mainHeader2 = PointClouds.new_header(aabb)
+
+h,p = LasIO.FileIO.load("ucs_e_volumeXZ+.las")
+
+Voriginal,VV,rgb = PointClouds.loadlas("ucs_e_volumeXZ+.las")
+_,V = PointClouds.subtractaverage(Voriginal)
 
 
-
-"""
-Come costruire un header???
-"""
-function newheader(aabb)
-
-	file_source_id,
-    global_encoding=copyheader.global_encoding
-    guid_1=copyheader.guid_1
-    guid_2=copyheader.guid_2
-    guid_3=copyheader.guid_3
-    guid_4=copyheader.guid_4
-    version_major=copyheader.version_major
-    version_minor=copyheader.version_minor
-    system_id=copyheader.system_id
-    software_id=copyheader.software_id
-    creation_dayofyear=copyheader.creation_dayofyear
-    creation_year=copyheader.creation_year
-    header_size=copyheader.header_size
-    data_offset=copyheader.header_size
-    n_vlr=copyheader.n_vlr
-    data_format_id=copyheader.data_format_id
-    data_record_length=copyheader.data_record_length
-    records_count=copyheader.records_count
-    point_return_count=copyheader.point_return_count
-    x_scale=0.001
-    y_scale=0.001
-    z_scale=0.001
-    x_offset,
-    y_offset,
-    z_offset,
-    x_max,
-    x_min,
-    y_max,
-    y_min,
-    z_max,
-    z_min,
-    variable_length_records=copyheader.variable_length_records
-    user_defined_bytes=copyheader.user_defined_bytes
-
-	return LasIO.LasHeader(file_source_id,
-    global_encoding,
-    guid_1,
-    guid_2,
-    guid_3,
-    guid_4,
-    version_major,
-    version_minor,
-    system_id,
-    software_id,
-    creation_dayofyear,
-    creation_year,
-    header_size,
-    data_offset,
-    n_vlr,
-    data_format_id,
-    data_record_length,
-    records_count,
-    point_return_count,
-    x_scale,
-    y_scale,
-    z_scale,
-    x_offset,
-    y_offset,
-    z_offset,
-    x_max,
-    x_min,
-    y_max,
-    y_min,
-    z_max,
-    z_min,
-    variable_length_records,
-    user_defined_bytes
-	)
-end
-
-newheader(header_base)
+GL.VIEW(
+	[
+		viewRGB(V,VV,rgb)
+	]
+);
