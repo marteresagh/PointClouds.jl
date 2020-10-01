@@ -284,81 +284,7 @@ end
 
 
 
-function newheader(copyheader,aabb)
-
-	file_source_id=copyheader.file_source_id
-    global_encoding=copyheader.global_encoding
-    guid_1=copyheader.guid_1
-    guid_2=copyheader.guid_2
-    guid_3=copyheader.guid_3
-    guid_4=copyheader.guid_4
-    version_major=copyheader.version_major
-    version_minor=copyheader.version_minor
-    system_id=copyheader.system_id
-    software_id=copyheader.software_id
-    creation_dayofyear=copyheader.creation_dayofyear
-    creation_year=copyheader.creation_year
-    header_size=copyheader.header_size
-    data_offset=copyheader.header_size
-    n_vlr=copyheader.n_vlr
-    data_format_id=copyheader.data_format_id
-    data_record_length=copyheader.data_record_length
-    records_count=copyheader.records_count
-    point_return_count=copyheader.point_return_count
-    x_scale=0.001
-    y_scale=0.001
-    z_scale=0.001
-    x_offset=aabb[1][1]
-    y_offset=aabb[1][2]
-    z_offset=aabb[1][3]
-    x_max=aabb[2][1]
-    x_min=aabb[1][1]
-    y_max=aabb[2][2]
-    y_min=aabb[1][2]
-    z_max=aabb[2][3]
-    z_min=aabb[1][3]
-    variable_length_records=copyheader.variable_length_records
-    user_defined_bytes=copyheader.user_defined_bytes
-
-	return LasIO.LasHeader(file_source_id,
-    global_encoding,
-    guid_1,
-    guid_2,
-    guid_3,
-    guid_4,
-    version_major,
-    version_minor,
-    system_id,
-    software_id,
-    creation_dayofyear,
-    creation_year,
-    header_size,
-    data_offset,
-    n_vlr,
-    data_format_id,
-    data_record_length,
-    records_count,
-    point_return_count,
-    x_scale,
-    y_scale,
-    z_scale,
-    x_offset,
-    y_offset,
-    z_offset,
-    x_max,
-    x_min,
-    y_max,
-    y_min,
-    z_max,
-    z_min,
-    variable_length_records,
-    user_defined_bytes
-	)
-end
-
-
-
-function new_header(aabb,software)
+function newHeader(aabb,software,sizePointRecord)
 
 	file_source_id=UInt16(0)
 	global_encoding=UInt16(0)
@@ -372,11 +298,11 @@ function new_header(aabb,software)
 	software_id = software
 	creation_dayofyear = UInt16(Dates.dayofyear(today()))
 	creation_year = UInt16(Dates.year(today()))
-	header_size=UInt16(227)
-	data_offset=UInt16(227)
+	header_size=UInt16(227) # valore fisso
+	data_offset=UInt16(227) #valore fisso
 	n_vlr=UInt32(0)
 	data_format_id=UInt8(2)
-	data_record_length=UInt16(26)
+	data_record_length=UInt16(sizePointRecord) #valore variabile
 	records_count=UInt32(0)
 	point_return_count=UInt32[0,0,0,0,0]
 	x_scale=0.001
@@ -432,24 +358,52 @@ function new_header(aabb,software)
 end
 
 
-function newPointRecord(p,h::LasIO.LasHeader,mainHeader::LasIO.LasHeader)
-	x = LasIO.xcoord(xcoord(p,h),mainHeader)
-	y = LasIO.ycoord(ycoord(p,h),mainHeader)
-	z = LasIO.zcoord(zcoord(p,h),mainHeader)
-	red = p.red
-	green = p.green
-	blue = p.blue
+function newPointRecord(laspoint::LasIO.LasPoint, header::LasIO.LasHeader, type, mainHeader::LasIO.LasHeader)
 
-	intensity = p.intensity
-	flag_byte = p.flag_byte
-	raw_classification = p.raw_classification
-	scan_angle = p.scan_angle
-	user_data = p.user_data
-	pt_src_id = p.pt_src_id
+	x = LasIO.xcoord(xcoord(laspoint,header),mainHeader)
+	y = LasIO.ycoord(ycoord(laspoint,header),mainHeader)
+	z = LasIO.zcoord(zcoord(laspoint,header),mainHeader)
+	intensity = laspoint.intensity
+	flag_byte = laspoint.flag_byte
+	raw_classification = laspoint.raw_classification
+	scan_angle = laspoint.scan_angle
+	user_data = laspoint.user_data
+	pt_src_id = laspoint.pt_src_id
 
-	return LasIO.LasPoint2(x, y, z,
-				intensity, flag_byte, raw_classification,
-				scan_angle, user_data, pt_src_id,
-				red, green, blue
-				)
+	if type == LasIO.LasPoint0
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id
+					)
+
+	elseif type == LasIO.LasPoint1
+		gps_time = laspoint.gps_time
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id, gps_time
+					)
+
+	elseif type == LasIO.LasPoint2
+		red = laspoint.red
+		green = laspoint.green
+		blue = laspoint.blue
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id,
+					red, green, blue
+					)
+
+	elseif type == LasIO.LasPoint3
+		gps_time = laspoint.gps_time
+		red = laspoint.red
+		green = laspoint.green
+		blue = laspoint.blue
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id, gps_time,
+					red, green, blue
+					)
+
+	end
+
 end

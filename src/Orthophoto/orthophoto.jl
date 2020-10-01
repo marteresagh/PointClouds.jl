@@ -44,10 +44,9 @@ function initparams(
 	end
 
 	RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
-	#header_base = LasIO.read_header(filelevel(potreedirs[1],0)[1])
+
 	aabb = Lar.boundingbox(model[1])
-	#mainHeader = newheader(header_base,aabb)
-	mainHeader = new_header(aabb,"ORTHOPHOTO")
+	mainHeader = newHeader(aabb,"ORTHOPHOTO",26)
 	return  potreedirs, model, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, q_l, q_u, mainHeader
 end
 
@@ -147,7 +146,7 @@ function update_main(params,laspoint,h,n,s)
 
 	if p[3] >= q_l && p[3] <= q_u
 		if pc
-			plas = PointClouds.newPointRecord(laspoint,h,mainHeader)
+			plas = PointClouds.newPointRecord(laspoint,h,LasIO.LasPoint2,mainHeader)
 			write(s,plas)
 			n=n+1
 		end

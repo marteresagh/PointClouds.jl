@@ -105,20 +105,4 @@ PointClouds.orthophoto( txtpotreedirs,
                         )
 
 using LasIO
-header_base = LasIO.read_header(PointClouds.filelevel(potreedirs[1],0)[1])
-aabb = Lar.boundingbox(model[1])
-mainHeader = PointClouds.newheader(header_base, aabb)
-
-mainHeader2 = PointClouds.new_header(aabb)
-
 h,p = LasIO.FileIO.load("ucs_e_volumeXZ+.las")
-
-Voriginal,VV,rgb = PointClouds.loadlas("ucs_e_volumeXZ+.las")
-_,V = PointClouds.subtractaverage(Voriginal)
-
-
-GL.VIEW(
-	[
-		viewRGB(V,VV,rgb)
-	]
-);
