@@ -49,8 +49,10 @@ module PointClouds
 	include("FileIO/hierarchy.jl")
 
 	include("Orthophoto/orthophoto.jl")
+	include("Orthophoto/extraction.jl")
+	include("Orthophoto/common.jl")
 	include("Orthophoto/geometry.jl")
-	include("Orthophoto/extractpc.jl")
+
 	include("Segmentation/PLANE.jl")
 
 end

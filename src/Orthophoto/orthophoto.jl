@@ -1,19 +1,43 @@
+mutable struct ParametersOrthophoto
+	PO::String
+	outputimage::String
+	outputfile::String
+	potreedirs::Array{String,1}
+	model::Lar.LAR
+	coordsystemmatrix::Array{Float64,2}
+	RGBtensor::Array{Float64,3}
+	rasterquote::Array{Float64,2}
+	GSD::Float64
+	refX::Float64
+	refY::Float64
+	q_l::Float64
+	q_u::Float64
+	pc::Bool
+	ucs::Union{Nothing,String}
+	mainHeader::LasIO.LasHeader
+end
+
 """
 Initialize usefull parameters.
 """
 function initparams(
 	txtpotreedirs::String,
+	outputimage::String,
 	bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}},
 	GSD::Float64,
 	PO::String,
 	quota::Union{Float64,Nothing},
 	thickness::Union{Float64,Nothing},
-	ucs::Union{Nothing,String}
+	ucs::Union{Nothing,String},
+	pc::Bool
 	)
 
 	# check validity
 	@assert isfile(txtpotreedirs) "orthoprojectionimage: $txtpotreedirs not an existing file"
 	@assert length(PO)==3 "orthoprojectionimage: $PO not valid view"
+
+
+	outputfile = splitext(outputimage)[1]*".las"
 
 	potreedirs = PointClouds.getdirectories(txtpotreedirs)
 	model = PointClouds.getmodel(bbin)
@@ -47,77 +71,50 @@ function initparams(
 
 	aabb = Lar.boundingbox(model[1])
 	mainHeader = newHeader(aabb,"ORTHOPHOTO",26)
-	return  potreedirs, model, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, q_l, q_u, mainHeader
+	return  ParametersOrthophoto(PO,
+					 outputimage,
+					 outputfile,
+					 potreedirs,
+					 model,
+					 coordsystemmatrix,
+					 RGBtensor,
+					 rasterquote,
+					 GSD,
+					 refX,
+					 refY,
+					 q_l,
+					 q_u,
+					 pc,
+					 ucs,
+					 mainHeader)
 end
 
 
 """
 Save orthophoto.
 """
-function saveorthophoto(
-	outputimage::String,
-	PO::String,
-	RGBtensor,
-	GSD::Float64,
-	refX,
-	refY,
-	)
+function saveorthophoto(params::ParametersOrthophoto)
 
 	PointClouds.flushprintln("Image: saving ...")
 
-	if PO == "XY+"
-		savetfw(outputimage, GSD, refX, refY)
+	if params.PO == "XY+"
+		savetfw(params.outputimage, params.GSD, params.refX, params.refY)
 	end
 
-	save(outputimage, Images.colorview(RGB, RGBtensor))
+	save(params.outputimage, Images.colorview(RGB, params.RGBtensor))
 	PointClouds.flushprintln("Image: done ...")
 end
 
-"""
-Save point cloud extracted.
-"""
-function savepointcloud(
-	outputimage::String,
-	n::Int64,
-	temp,
-	mainHeader
-	)
-
-
-	PointClouds.flushprintln("Point cloud: saving ...")
-
-	outputfile = splitext(outputimage)[1]*".las"
-
-	mainHeader.records_count = n
-	pointtype = pointformat(mainHeader)
-
-	open(temp) do s
-		open(outputfile,"w") do t
-			write(t, LasIO.magic(LasIO.format"LAS"))
-			write(t, mainHeader)
-
-			LasIO.skiplasf(s)
-			for i=1:n
-				p = read(s, pointtype)
-				write(t,p)
-			end
-		end
-	end
-
-	rm(temp)
-	PointClouds.flushprintln("Point cloud: done ...")
-end
 
 """
 update image tensor.
 """
 function updateimagewithfilter!(params,file,s,n::Int64)
 	h, laspoints =  PointClouds.readpotreefile(file)
-    _, model, _ = params
 
     for laspoint in laspoints
         point = PointClouds.xyz(laspoint,h)
-        if PointClouds.inmodel(model)(point) # se il punto è interno allora
+        if PointClouds.inmodel(params.model)(point) # se il punto è interno allora
 			n = update_main(params,laspoint,h,n,s)
         end
     end
@@ -127,7 +124,6 @@ end
 
 function updateimage!(params,file,s,n::Int64)
 	h, laspoints =  PointClouds.readpotreefile(file)
-    _, model, _ = params
 
     for laspoint in laspoints
 		n = update_main(params,laspoint,h,n,s)
@@ -137,24 +133,23 @@ function updateimage!(params,file,s,n::Int64)
 end
 
 function update_main(params,laspoint,h,n,s)
-	potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader = params
 	point = PointClouds.xyz(laspoint,h)
 	rgb = PointClouds.color(laspoint,h)
-	p = coordsystemmatrix*point
-	xcoord = map(Int∘trunc,(p[1]-refX) / GSD)+1
-	ycoord = map(Int∘trunc,(refY-p[2]) / GSD)+1
+	p = params.coordsystemmatrix*point
+	xcoord = map(Int∘trunc,(p[1]-params.refX) / params.GSD)+1
+	ycoord = map(Int∘trunc,(params.refY-p[2]) / params.GSD)+1
 
-	if p[3] >= q_l && p[3] <= q_u
-		if pc
-			plas = PointClouds.newPointRecord(laspoint,h,LasIO.LasPoint2,mainHeader)
+	if p[3] >= params.q_l && p[3] <= params.q_u
+		if params.pc
+			plas = PointClouds.newPointRecord(laspoint,h,LasIO.LasPoint2,params.mainHeader)
 			write(s,plas)
 			n=n+1
 		end
-		if rasterquote[ycoord,xcoord] < p[3]
-			rasterquote[ycoord,xcoord] = p[3]
-			RGBtensor[1, ycoord, xcoord] = rgb[1]
-	        RGBtensor[2, ycoord, xcoord] = rgb[2]
-	        RGBtensor[3, ycoord, xcoord] = rgb[3]
+		if params.rasterquote[ycoord,xcoord] < p[3]
+			params.rasterquote[ycoord,xcoord] = p[3]
+			params.RGBtensor[1, ycoord, xcoord] = rgb[1]
+	        params.RGBtensor[2, ycoord, xcoord] = rgb[2]
+	        params.RGBtensor[3, ycoord, xcoord] = rgb[3]
 		end
 	end
 	return n
@@ -163,16 +158,15 @@ end
 """
 imagecreation con i trie
 """
-function pointselection(params,s,n::Int64)
-	potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader = params
-    for potree in potreedirs
+function pointselection(params::ParametersOrthophoto,s,n::Int64)
+    for potree in params.potreedirs
         PointClouds.flushprintln( "======== PROJECT $potree ========")
 		typeofpoints,scale,npoints,AABB,tightBB,octreeDir,hierarchyStepSize,spacing = PointClouds.readcloudJSON(potree)
 
 		trie = PointClouds.triepotree(potree)
 
 		l=length(keys(trie))
-		if PointClouds.modelsdetection(model, tightBB) == 2
+		if PointClouds.modelsdetection(params.model, tightBB) == 2
 			PointClouds.flushprintln("FULL model")
 			i=1
 			for k in keys(trie)
@@ -195,11 +189,10 @@ end
 """
 Trie DFS.
 """
-function dfsimage(t,params,s,n::Int64,nfiles,l)
-	_, model, _ = params
+function dfsimage(t,params::ParametersOrthophoto,s,n::Int64,nfiles,l)
 	file = t.value
 	nodebb = PointClouds.las2aabb(file)
-	inter = PointClouds.modelsdetection(model, nodebb)
+	inter = PointClouds.modelsdetection(params.model, nodebb)
 	if inter == 1
 		nfiles = nfiles+1
 		if nfiles%100==0
@@ -225,27 +218,10 @@ end
 """
 API
 """
-function orthophoto_main(
-	outputimage::String,
-	potreedirs,
-	model::Lar.LAR,
-	coordsystemmatrix,
-	GSD,
-	RGBtensor,
-	rasterquote,
-	refX,
-	refY,
-	q_l,
-	q_u,
-	pc::Bool,
-	mainHeader::LasIO.LasHeader,
-	n::Int
-	)
+function orthophoto_main(params::ParametersOrthophoto,n::Int)
 
-	params = potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader
-
-	if pc
-		temp = joinpath(splitdir(outputimage)[1],"temp.las")
+	if params.pc
+		temp = joinpath(splitdir(params.outputimage)[1],"temp.las")
 		open(temp, "w") do s
 			write(s, LasIO.magic(LasIO.format"LAS"))
 			n = PointClouds.pointselection(params,s,n)
@@ -271,20 +247,19 @@ function orthophoto(
 	)
 
 	# initialization
-	potreedirs, model, coordsystemmatrix, RGBtensor, rasterquote, refX, refY, q_l, q_u, mainHeader =
-	PointClouds.initparams( txtpotreedirs,	bbin, GSD,	PO,	quota,	thickness,	ucs);
+	params = PointClouds.initparams( txtpotreedirs, outputimage, bbin, GSD,	PO,	quota,	thickness,	ucs, pc);
 
 
 	# image creation
 	PointClouds.flushprintln("========= PROCESSING =========")
 
 	n = 0 #number of extracted points
-	n, temp = PointClouds.orthophoto_main(outputimage, potreedirs, model, coordsystemmatrix, GSD, RGBtensor, rasterquote, refX, refY, q_l, q_u, pc, mainHeader, n)
+	n, temp = PointClouds.orthophoto_main(params, n)
 
 	PointClouds.flushprintln("========= SAVES =========")
-	PointClouds.saveorthophoto( outputimage, PO, RGBtensor, GSD, refX, refY)
+	PointClouds.saveorthophoto(params)
 
 	if pc
-		PointClouds.savepointcloud( outputimage, n, temp, mainHeader)
+		PointClouds.savepointcloud( params, n, temp)
 	end
 end

@@ -71,13 +71,12 @@
 # [0.822613, -0.00205205, -0.482899]*180/pi
 #
 
-
-using LinearAlgebraicRepresentation
-Lar = LinearAlgebraicRepresentation
+# using ViewerGL
+# GL=ViewerGL
+# using LinearAlgebraicRepresentation
+# Lar = LinearAlgebraicRepresentation
+# include("viewfunction.jl")
 using PointClouds
-using ViewerGL
-GL=ViewerGL
-include("viewfunction.jl")
 
 txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/directory.txt"
 
@@ -92,6 +91,7 @@ thickness = nothing
 GSD = 0.3
 PO = "XZ+"
 outputimage = "ucs_e_volume$PO.jpg"
+pc = true
 
 PointClouds.orthophoto( txtpotreedirs,
                         outputimage,
@@ -101,8 +101,13 @@ PointClouds.orthophoto( txtpotreedirs,
                         quota,
                         thickness,
                         ucs,
-                        true
+                        pc
                         )
 
-using LasIO
-h,p = LasIO.FileIO.load("ucs_e_volumeXZ+.las")
+outputfile = "extraction.las"
+PointClouds.pointExtraction( txtpotreedirs,
+						outputfile,
+						bbin,
+						quota,
+						thickness
+						)
