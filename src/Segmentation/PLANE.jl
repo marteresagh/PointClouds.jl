@@ -111,10 +111,10 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
 
 	for i in 1:size(givenPoints,2)
-		idxs, dists = nn(kdtree,givenPoints[:,i], 2, true)
-		push!(R,idxs)
+		idxs, dists = knn(kdtree,givenPoints[:,i], 2, true)
+		push!(R,idxs[1])
 	end
-
+	
 	planeDetected.normal = normal
 	planeDetected.centroid = centroid
 
@@ -146,11 +146,11 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 	return PlaneDetected(listPoint, planeDetected)
 end
 
-function IsNearToPlane(p::Array{Float64,1},plane::Plane,par::Float64)::Bool
+function IsNearToPlane(p::Array{Float64,1},plane,par::Float64)::Bool
     return PointClouds.DistPointPlane(p,plane) <= par
 end
 
-function DistPointPlane(point::Array{Float64,1},plane::Plane)
+function DistPointPlane(point::Array{Float64,1},plane)
 	return Lar.abs(Lar.dot(point,plane.normal)-Lar.dot(plane.normal,plane.centroid))
 end
 

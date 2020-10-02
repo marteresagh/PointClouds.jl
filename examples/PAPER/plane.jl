@@ -67,4 +67,4 @@ GL.VIEW(
 
 kdtree = KDTree(Vtrasl)
 
-idxs, dists = knn(kdtree, Vtrasl[:,3], 2, true)
+idxs, dists = nn(kdtree, Vtrasl[:,3], 2, true)

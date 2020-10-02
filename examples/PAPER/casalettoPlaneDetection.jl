@@ -64,11 +64,18 @@ GL.VIEW(
 
 
 
-
-kdtree = KDTree(Vtrasl)
-
-idxs, dists = knn(kdtree, Vtrasl[:,3], 2, true)
-
-
 filename = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthophoto\\PuntiPerEstrazionePianiCasaletto_potree16.json"
 dataset = PointClouds.PointForPlanes(filename)
+planedetected = PointClouds.PlaneDetectionFromGivenPoints(V, FV, dataset[1], 0.02)
+
+AABB = Lar.boundingbox(V)
+#AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
+Vplane,FVplane = PointClouds.DrawPlane(planedetected.plane,AABB)
+GL.VIEW(
+	[
+		viewRGB(Vtrasl,VV,rgb)
+		GL.GLGrid(Vplane,FVplane)
+		#GL.GLGrid(Vplane2,FVplane2,GL.COLORS[1])
+		GL.GLGrid(Vplane3,FVplane3,GL.COLORS[3])
+	]
+);

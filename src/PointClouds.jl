@@ -10,6 +10,7 @@ module PointClouds
 	using Polynomials, LsqFit
 	using Images
 	using Dates
+	using NearestNeighbors
 
 	flushprintln(s...) = begin
 		println(stdout,s...)
