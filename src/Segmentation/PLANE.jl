@@ -105,13 +105,14 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 	R = Int64[]
 	listPoint = Array{Float64,2}[]
 	planeDetected = Plane([0,0,0.],[0.,0.,0.])
+	kdtree = KDTree(V)
 
 	# firt sample
 	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
 
 	for i in 1:size(givenPoints,2)
-		index = PointClouds.matchcolumn(givenPoints[:,i],V)
-		push!(R,index)
+		idxs, dists = nn(kdtree,givenPoints[:,i], 2, true)
+		push!(R,idxs)
 	end
 
 	planeDetected.normal = normal

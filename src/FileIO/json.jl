@@ -286,6 +286,7 @@ end
 
 
 """
+measure JSON from Potree 1.6
 """
 function PointForPlanes(path::String)
 	dataset = Matrix[]

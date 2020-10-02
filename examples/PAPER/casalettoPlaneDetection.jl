@@ -71,6 +71,4 @@ idxs, dists = knn(kdtree, Vtrasl[:,3], 2, true)
 
 
 filename = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthophoto\\PuntiPerEstrazionePianiCasaletto_potree16.json"
-dict = PointClouds.PointForPlanes(filename)
-
-dict["features"]
+dataset = PointClouds.PointForPlanes(filename)
