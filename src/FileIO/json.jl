@@ -282,3 +282,31 @@ function ucsJSON2matrix(file::String)
 	M[4,4] = 1.0
 	return M
 end
+
+
+
+"""
+"""
+function PointForPlanes(path::String)
+	dataset = Matrix[]
+	dict=Dict{String,Any}[]
+	open(path, "r") do f
+	    dict = JSON.parse(f)  # parse and transform data
+	end
+
+	objects = dict["features"]
+
+	for obj in objects
+		geometry = obj["geometry"]
+		if geometry["type"] == "Polygon"
+			coords = []
+			vec_coords = geometry["coordinates"][1]
+			for element in vec_coords
+				push!(coords,element)
+			end
+			mycoords = hcat(coords...)
+			push!(dataset,mycoords)
+		end
+	end
+	return dataset
+end

@@ -3,6 +3,11 @@ mutable struct Plane
     centroid::Array{Float64,1}
 end
 
+struct PlaneDetected
+	points::Lar.Points
+	plane::Plane
+end
+
 function PlaneFromPoints(points::Lar.Points)
 
     npoints = size(points,2)
@@ -54,18 +59,18 @@ function PlaneDetectionRandom(V::Lar.Points, FV::Lar.Cells, par::Float64)
     adj = Lar.verts2verts(EV)
     R = Int64[]
     listPoint = Array{Float64,2}[]
-	PlaneDetected = Plane([0,0,0.],[0.,0.,0.])
+	planeDetected = Plane([0,0,0.],[0.,0.,0.])
 
     # firt sample
     index, normal, centroid = PointClouds.SeedPointForPlaneDetection(V,adj)
 
-	PlaneDetected.normal = normal
-	PlaneDetected.centroid = centroid
+	planeDetected.normal = normal
+	planeDetected.centroid = centroid
     push!(R,index)
 
-    println("=================================================")
-    println("= Detection of Plane starting from Random Point =")
-    println("=================================================")
+    PointClouds.flushprintln("========================================================")
+    PointClouds.flushprintln("= Detection of Plane starting from Random Point $index =")
+    PointClouds.flushprintln("========================================================")
 
     seeds = [index]
     visitedverts = copy(seeds)
@@ -74,7 +79,7 @@ function PlaneDetectionRandom(V::Lar.Points, FV::Lar.Cells, par::Float64)
             N = PointClouds.findnearestof([seed],visitedverts,adj)
             for i in N
                 p = V[:,i]
-                if PointClouds.IsNearToPlane(p,PlaneDetected,par)
+                if PointClouds.IsNearToPlane(p,planeDetected,par)
                     push!(seeds,i)
                     push!(R,i)
                 end
@@ -84,11 +89,11 @@ function PlaneDetectionRandom(V::Lar.Points, FV::Lar.Cells, par::Float64)
         end
         listPoint = V[:,R]
         normal, centroid = PointClouds.PlaneFromPoints(listPoint)
-		PlaneDetected.normal = normal
-		PlaneDetected.centroid = centroid
+		planeDetected.normal = normal
+		planeDetected.centroid = centroid
     end
 
-    return listPoint, PlaneDetected
+    return PlaneDetected(listPoint, planeDetected)
 end
 
 
@@ -99,7 +104,7 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 	adj = Lar.verts2verts(EV)
 	R = Int64[]
 	listPoint = Array{Float64,2}[]
-	PlaneDetected = Plane([0,0,0.],[0.,0.,0.])
+	planeDetected = Plane([0,0,0.],[0.,0.,0.])
 
 	# firt sample
 	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
@@ -109,8 +114,8 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 		push!(R,index)
 	end
 
-	PlaneDetected.normal = normal
-	PlaneDetected.centroid = centroid
+	planeDetected.normal = normal
+	planeDetected.centroid = centroid
 
 	println("=================================================")
 	println("= Detection of Plane starting from given Points =")
@@ -123,7 +128,7 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 			N = PointClouds.findnearestof([seed],visitedverts,adj)
 			for i in N
 				p = V[:,i]
-				if PointClouds.IsNearToPlane(p,PlaneDetected,par)
+				if PointClouds.IsNearToPlane(p,planeDetected,par)
 					push!(seeds,i)
 					push!(R,i)
 				end
@@ -133,11 +138,11 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 		end
 		listPoint = V[:,R]
 		normal, centroid = PointClouds.PlaneFromPoints(listPoint)
-		PlaneDetected.normal = normal
-		PlaneDetected.centroid = centroid
+		planeDetected.normal = normal
+		planeDetected.centroid = centroid
 	end
 
-	return listPoint, PlaneDetected
+	return PlaneDetected(listPoint, planeDetected)
 end
 
 function IsNearToPlane(p::Array{Float64,1},plane::Plane,par::Float64)::Bool
@@ -173,7 +178,7 @@ end
 
 """
 """
-function DrawPlane(listPoint::Lar.Points, plane::Plane, AABB)
+function DrawPlane(plane::Plane, AABB)
     V = PointClouds.intersectAABBplane(AABB,plane.normal,plane.centroid)
 	#triangulate vertex projected in plane XY
  	FV = PointClouds.DTprojxy(V)

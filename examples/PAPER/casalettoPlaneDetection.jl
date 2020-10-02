@@ -2,13 +2,14 @@ using LinearAlgebraicRepresentation, AlphaStructures, ViewerGL
 Lar = LinearAlgebraicRepresentation
 GL = ViewerGL
 using PointClouds
-
+using NearestNeighbors
+NN = NearestNeighbors
 include("../viewfunction.jl")
 
 ## input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
 allfile = PointClouds.filelevel(fname,0)
-_,_,_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+_,_,_,AABB,_,_,_,spacing = PointClouds.readcloudJSON(fname)
 V,VV,rgb = PointClouds.loadlas(allfile...)
 trasl,Vtrasl = PointClouds.subtractaverage(V)
 
@@ -33,33 +34,43 @@ GL.VIEW(
 );
 
 ## plane detection
+u=4.
+
+# RANDOM
 planedetected = PointClouds.PlaneDetectionRandom(Vtrasl, FV, 0.02)
 
-u=4.
-AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
+AABB = Lar.boundingbox(Vtrasl)
+#AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
 Vplane,FVplane = PointClouds.DrawPlane(planedetected.plane,AABB)
 
-GL.VIEW(
-	[
-		viewRGB(Vtrasl,FV,rgb);
-		GL.GLGrid(Vplane,FVplane)
-	]
-);
-
+#GIVEN POINTS
 givenPoints = planedetected.points[:,rand(1:size(planedetected.points,2),5)]
-initPlane = Plane(PointClouds.PlaneFromPoints(givenPoints))
-Vplane,FVplane = PointClouds.DrawPlane(initPlane.plane,AABB)
-
 planedetected2 = PointClouds.PlaneDetectionFromGivenPoints(Vtrasl, FV, givenPoints, 0.02)
 
 
-AABB = Lar.boundingbox(planedetected2.points).+([-u,-u,-u],[u,u,u])
-Vplane2,FVplane2 = PointClouds.DrawPlane(planedetected2.plane,AABB)
+#AABB = Lar.boundingbox(planedetected2.points).+([-u,-u,-u],[u,u,u])
+Vplane3,FVplane3 = PointClouds.DrawPlane(planedetected2.plane,AABB)
+
+
 
 GL.VIEW(
 	[
 		viewRGB(Vtrasl,VV,rgb)
 		GL.GLGrid(Vplane,FVplane)
-		GL.GLGrid(Vplane2,FVplane2,GL.COLORS[2])
+		#GL.GLGrid(Vplane2,FVplane2,GL.COLORS[1])
+		GL.GLGrid(Vplane3,FVplane3,GL.COLORS[3])
 	]
 );
+
+
+
+
+kdtree = KDTree(Vtrasl)
+
+idxs, dists = knn(kdtree, Vtrasl[:,3], 2, true)
+
+
+filename = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthophoto\\PuntiPerEstrazionePianiCasaletto_potree16.json"
+dict = PointClouds.PointForPlanes(filename)
+
+dict["features"]
