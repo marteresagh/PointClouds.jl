@@ -70,7 +70,7 @@ function initparams(
 	RGBtensor, rasterquote, refX, refY = PointClouds.initrasterarray(coordsystemmatrix,GSD,model)
 
 	aabb = Lar.boundingbox(model[1])
-	mainHeader = newHeader(aabb,"ORTHOPHOTO",26)
+	mainHeader = newHeader(aabb,"ORTHOPHOTO",SIZE_DATARECORD)
 	return  ParametersOrthophoto(PO,
 					 outputimage,
 					 outputfile,

@@ -1,3 +1,7 @@
+const HEADER_SIZE = 227
+const DATA_OFFSET = 227
+const SIZE_DATARECORD = 26
+
 """
 	loadlas(fname::String...)::Tuple{Lar.Points,Array{LasIO.N0f16,2}}
 
@@ -298,8 +302,8 @@ function newHeader(aabb,software,sizePointRecord)
 	software_id = software
 	creation_dayofyear = UInt16(Dates.dayofyear(today()))
 	creation_year = UInt16(Dates.year(today()))
-	header_size=UInt16(227) # valore fisso
-	data_offset=UInt16(227) #valore fisso
+	header_size=UInt16(HEADER_SIZE) # valore fisso
+	data_offset=UInt16(DATA_OFFSET) #valore fisso
 	n_vlr=UInt32(0)
 	data_format_id=UInt8(2)
 	data_record_length=UInt16(sizePointRecord) #valore variabile

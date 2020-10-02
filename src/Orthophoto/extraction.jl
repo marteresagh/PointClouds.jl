@@ -62,7 +62,7 @@ function initParamsExtraction(txtpotreedirs::String,
 	potreedirs = PointClouds.getdirectories(txtpotreedirs)
 	model = PointClouds.getmodel(bbin)
 	aabb = Lar.boundingbox(model[1])
-	mainHeader = newHeader(aabb,"EXTRACTION",26)
+	mainHeader = newHeader(aabb,"EXTRACTION",SIZE_DATARECORD)
 
 	return ParametersExtraction(outputfile,
 								potreedirs,
