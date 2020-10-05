@@ -12,21 +12,12 @@ module PointClouds
 	using Dates
 	using NearestNeighbors
 
-	mutable struct Plane
-	    normal::Array{Float64,1}
-	    centroid::Array{Float64,1}
-	end
-
-	struct PlaneDetected
-		points::Lar.Points
-		plane::Plane
-	end
-
 	flushprintln(s...) = begin
 		println(stdout,s...)
 		flush(stdout)
 	end
 
+	include("struct.jl")
 	include("navigatedirectory.jl")
 	# include("extractpc.jl")
 

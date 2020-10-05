@@ -70,6 +70,8 @@ for data in dataset
 	push!(PLANES,planedetected)
 end
 
+
+#=
 ucs = Matrix[]
 quotas = Float64[]
 for plane in PLANES
@@ -80,7 +82,6 @@ for plane in PLANES
 	push!(quotas,quota[3])
 end
 
-#=
 txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/directory.txt"
 thickness=0.02
 for i in 1:length(PLANES)
@@ -100,11 +101,27 @@ for i in 1:length(PLANES)
 end
 =#
 
+# ================== TUTTI I PIANI ==============================================
 Vplane,FVplane = PointClouds.DrawPlanes(PLANES,nothing,0.5)
 Vplane_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),Vplane)
+GL.VIEW(
+	[
+		#viewRGB(Vtrasl,VV,rgb)
+		GL.GLGrid(Vplane_trasl,FVplane)
+	]
+);
 
 
-W,FW = PointClouds.shapeof( PLANES[1],"PIANI_ESTRATTI/PIANO_1.las" , 0.1)
+# ================== ESTRAZIONE BORDO ==============================================
+fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\PIANO_1"
+
+level = 2
+allfile = PointClouds.filelevel(fname,level,false)
+_,_,_,_,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+spacing = spacing/2^level
+
+
+W,FW = PointClouds.shapeof(PLANES[1], fname, 2, 0.06)
 #W_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),W)
 Vbound,EVbound = PointClouds.boundaryflatshape(W,FW)
 Vbound_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),Vbound)
@@ -113,7 +130,7 @@ GL.VIEW(
 	[
 		#viewRGB(Vtrasl,VV,rgb)
 		#GL.GLGrid(Vplane_trasl,FVplane)
-		GL.GLGrid(Vbound,EVbound)
+		GL.GLGrid(Vbound_trasl,EVbound)
 
 	]
 );
