@@ -1,6 +1,7 @@
 mutable struct ParametersExtraction
 	outputfile::String
 	potreedirs::Array{String,1}
+	coordsystemmatrix::Array{Float64,2}
 	model::Lar.LAR
 	q_l::Float64
 	q_u::Float64
@@ -13,6 +14,7 @@ Save extracted pc in a file.
 function pointExtraction(
      txtpotreedirs::String,
 	 outputfile::String,
+	 coordsystemmatrix::Array{Float64,2},
 	 bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}},
 	 quota::Union{Float64,Nothing},
 	 thickness::Union{Float64,Nothing},
@@ -21,6 +23,7 @@ function pointExtraction(
 
     params = initParamsExtraction(   txtpotreedirs::String,
 									 outputfile::String,
+									 coordsystemmatrix::Array{Float64,2},
 									 bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}},
 									 quota::Union{Float64,Nothing},
 									 thickness::Union{Float64,Nothing}
@@ -43,6 +46,7 @@ init
 """
 function initParamsExtraction(txtpotreedirs::String,
 							 outputfile::String,
+							 coordsystemmatrix::Array{Float64,2},
 							 bbin::Union{String,Tuple{Array{Float64,2},Array{Float64,2}}},
 							 quota::Union{Float64,Nothing},
 							 thickness::Union{Float64,Nothing}
@@ -66,6 +70,7 @@ function initParamsExtraction(txtpotreedirs::String,
 
 	return ParametersExtraction(outputfile,
 								potreedirs,
+								coordsystemmatrix,
 								model,
 								q_l,
 								q_u,
@@ -109,10 +114,11 @@ function updatepointswithfilter!(params::ParametersExtraction,file,s,n::Int64)
 	h, laspoints =  PointClouds.readpotreefile(file)
     for laspoint in laspoints
         point = PointClouds.xyz(laspoint,h)
+		p = params.coordsystemmatrix*point
         if PointClouds.inmodel(params.model)(point) # se il punto è interno allora
-			if point[3] >= params.q_l && point[3] <= params.q_u
-				p = PointClouds.newPointRecord(laspoint,h,LasIO.LasPoint2,params.mainHeader)
-				write(s,p)
+			if p[3] >= params.q_l && p[3] <= params.q_u
+				plas = PointClouds.newPointRecord(laspoint,h,LasIO.LasPoint2,params.mainHeader)
+				write(s,plas)
 				n=n+1
 			end
         end
@@ -124,9 +130,10 @@ function updatepoints!(params::ParametersExtraction,file,s,n::Int64)
 	h, laspoints =  PointClouds.readpotreefile(file)
     for laspoint in laspoints
 		point = PointClouds.xyz(laspoint,h)
-		if point[3] >= params.q_l && point[3] <= params.q_u
-			p = PointClouds.createlasdata(laspoint,h,params.mainHeader)
-			write(s,p)
+		p = params.coordsystemmatrix*point
+		if p[3] >= params.q_l && p[3] <= params.q_u
+			plas = PointClouds.newPointRecord(laspoint,h,LasIO.LasPoint2,params.mainHeader)
+			write(s,plas)
 			n=n+1
 		end
     end

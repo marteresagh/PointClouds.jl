@@ -12,6 +12,8 @@ function savepointcloud(
 	params.mainHeader.records_count = n
 	pointtype = pointformat(params.mainHeader)
 
+	PointClouds.flushprintln("Extracted $n points")
+
 	open(temp) do s
 		open(params.outputfile,"w") do t
 			write(t, LasIO.magic(LasIO.format"LAS"))

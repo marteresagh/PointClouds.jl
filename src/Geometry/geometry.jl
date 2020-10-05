@@ -20,9 +20,20 @@ function subtractaverage(points::Lar.Points)
 end
 
 """
+Apply affine transformation to points V.
+"""
+function apply_matrix(affineMatrix, V)
+	m,n = size(V)
+	W = [V; fill(1.0, (1,n))]
+	T = (affineMatrix * W)[1:m,1:n]
+	return T
+end
+
+
+"""
 	intersectAABBplane(AABB::Tuple{Array{Float64,2},Array{Float64,2}}, plane::NTuple{4,Float64})
 
-Returns verteces of the intersection of a `plane` and an `AABB`.
+Return verteces of the intersection of a `plane` and an `AABB`.
 """
 function intersectAABBplane(AABB::Tuple{Array{Float64,2},Array{Float64,2}}, axis,centroid)
 

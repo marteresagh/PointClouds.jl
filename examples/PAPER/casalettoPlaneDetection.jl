@@ -9,7 +9,7 @@ include("../viewfunction.jl")
 ## input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
 allfile = PointClouds.filelevel(fname,0)
-_,_,_,AABB,_,_,_,spacing = PointClouds.readcloudJSON(fname)
+_,_,_,AABB,tightBB,_,_,spacing = PointClouds.readcloudJSON(fname)
 V,VV,rgb = PointClouds.loadlas(allfile...)
 trasl,Vtrasl = PointClouds.subtractaverage(V)
 
@@ -27,55 +27,87 @@ filtration = AlphaStructures.alphaFilter(V, DT);
 α = 0.3
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
-GL.VIEW(
-	[
-		viewRGB(Vtrasl,FV,rgb);
-	]
-);
+# GL.VIEW(
+# 	[
+# 		viewRGB(Vtrasl,FV,rgb);
+# 	]
+# );
 
-## plane detection
-u=4.
 
+# ======================= RANDOM =====================================
+#=
+AABB = Lar.boundingbox(Vtrasl)
 # RANDOM
 planedetected = PointClouds.PlaneDetectionRandom(Vtrasl, FV, 0.02)
-
-AABB = Lar.boundingbox(Vtrasl)
+#u=4.
 #AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
 Vplane,FVplane = PointClouds.DrawPlane(planedetected.plane,AABB)
 
-#GIVEN POINTS
+# GIVEN POINTS
 givenPoints = planedetected.points[:,rand(1:size(planedetected.points,2),5)]
 planedetected2 = PointClouds.PlaneDetectionFromGivenPoints(Vtrasl, FV, givenPoints, 0.02)
-
-
 #AABB = Lar.boundingbox(planedetected2.points).+([-u,-u,-u],[u,u,u])
-Vplane3,FVplane3 = PointClouds.DrawPlane(planedetected2.plane,AABB)
-
-
+Vplane2,FVplane2 = PointClouds.DrawPlane(planedetected2.plane,AABB)
 
 GL.VIEW(
 	[
 		viewRGB(Vtrasl,VV,rgb)
 		GL.GLGrid(Vplane,FVplane)
 		#GL.GLGrid(Vplane2,FVplane2,GL.COLORS[1])
-		GL.GLGrid(Vplane3,FVplane3,GL.COLORS[3])
 	]
 );
 
+=#
 
 
+
+# ======================= PUNTI DA FILE =====================================
 filename = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthophoto\\PuntiPerEstrazionePianiCasaletto_potree16.json"
 dataset = PointClouds.PointForPlanes(filename)
-planedetected = PointClouds.PlaneDetectionFromGivenPoints(V, FV, dataset[1], 0.02)
+PLANES = PointClouds.PlaneDetected[]
+for data in dataset
+	planedetected = PointClouds.PlaneDetectionFromGivenPoints(V, FV, data, 0.02)
+	push!(PLANES,planedetected)
+end
 
-AABB = Lar.boundingbox(V)
-#AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
-Vplane,FVplane = PointClouds.DrawPlane(planedetected.plane,AABB)
+ucs = Matrix[]
+quotas = Float64[]
+for plane in PLANES
+	pp = plane.plane
+	matrixaffine = convert(Matrix,hcat(Lar.nullspace(Matrix(pp.normal')),pp.normal)')
+	quota = matrixaffine*pp.centroid
+	push!(ucs,matrixaffine)
+	push!(quotas,quota[3])
+end
+
+
+txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/directory.txt"
+thickness=0.02
+
+
+for i in 1:length(PLANES)
+	PointClouds.flushprintln("################################################## PLANE_$i...")
+	bbin=Lar.boundingbox(PLANES[i].points)
+	outputfile = "PIANI_ESTRATTI/PIANO_$i.las"
+	coordsystemmatrix = ucs[i]
+	quota=quotas[i]
+	PointClouds.pointExtraction(
+		txtpotreedirs,
+		outputfile,
+		coordsystemmatrix,
+		bbin,
+		quota,
+		thickness,
+		 )
+end
+
+Vplane,FVplane = PointClouds.DrawPlanes(PLANES,tightBB)
+Vplane_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),Vplane)
+
 GL.VIEW(
 	[
 		viewRGB(Vtrasl,VV,rgb)
-		GL.GLGrid(Vplane,FVplane)
-		#GL.GLGrid(Vplane2,FVplane2,GL.COLORS[1])
-		GL.GLGrid(Vplane3,FVplane3,GL.COLORS[3])
+		GL.GLGrid(Vplane_trasl,FVplane)
+
 	]
 );

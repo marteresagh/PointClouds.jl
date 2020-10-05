@@ -114,7 +114,7 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 		idxs, dists = knn(kdtree,givenPoints[:,i], 2, true)
 		push!(R,idxs[1])
 	end
-	
+
 	planeDetected.normal = normal
 	planeDetected.centroid = centroid
 
@@ -184,4 +184,22 @@ function DrawPlane(plane::Plane, AABB)
 	#triangulate vertex projected in plane XY
  	FV = PointClouds.DTprojxy(V)
     return V, sort.(FV)
+end
+
+
+"""
+"""
+function DrawPlanes(planes::Array{PlaneDetected,1}, AABB)
+	out = Array{Lar.Struct,1}()
+	for plane in planes
+		pp = plane.plane
+    	V = PointClouds.intersectAABBplane(AABB,pp.normal,pp.centroid)
+		#triangulate vertex projected in plane XY
+ 		FV = PointClouds.DTprojxy(V)
+		cell = (V,sort.(FV))
+		push!(out, Lar.Struct([cell]))
+	end
+	out = Lar.Struct( out )
+	V,FV = Lar.struct2lar(out)
+    return V, FV
 end
