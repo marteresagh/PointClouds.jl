@@ -1,4 +1,4 @@
-
+#=
 """
 Shape reconstruction of an extracted region.
 """
@@ -24,6 +24,7 @@ function shapeof(region, α)
 	end
 end
 
+
 """
 Extract boundary of flat shape.
 """
@@ -51,45 +52,36 @@ function boundaryflatshape(region,α)
 
 	return points,EV
 end
+=#
 
-
+function ProjectPointsOnPlane(V::Lar.Points,plane::Plane)
+	return PointClouds.pointsproj(V,(plane.normal,plane.centroid))
+end
 
 """
 Shape reconstruction of an extracted region.
 """
-function shapeof(region, α)
-	shape, points, params = region
-	PointClouds.projectpointson(points,params,shape)
-		axis,centroid = params
-		# rotate points on XY plane
-		mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
-		W = Lar.inv(mrot)*(points)
+function shapeof( planeDetected::PlaneDetected, file::String, LOD, α)
+	allfile = PointClouds.filelevel(file,LOD)
+	pp = planeDetected.plane
+	V,VV,rgb = PointClouds.loadlas(allfile...)
+	PointClouds.ProjectPointsOnPlane(V,pp)
+	# rotate points on XY plane
+	mrot = hcat(Lar.nullspace(Matrix(pp.normal')),pp.normal)
+	W = Lar.inv(mrot)*(V)
 
-		# alpha shape
-		DT = PointClouds.delaunayMATLAB(W[[1,2],:])
-		filtration = AlphaStructures.alphaFilter(W[[1,2],:], DT);
-		_, _, FV = AlphaStructures.alphaSimplex(W[[1,2],:], filtration, α);
-		return points, FV
+	# alpha shape
+	DT = PointClouds.delaunayMATLAB(W[[1,2],:])
+	filtration = AlphaStructures.alphaFilter(W[[1,2],:], DT);
+	_, _, FV = AlphaStructures.alphaSimplex(W[[1,2],:], filtration, α);
+	return V, FV
 end
 
 """
 Extract boundary of flat shape.
 """
-function boundaryflatshape(region,α)
-	shape, points, params = region
-
-	@assert shape == "plane" "boundaryflatshape: is not flat region"
-	axis,centroid = params
-	#  projection points on plane
-	PointClouds.projectpointson(points,params,shape)
-	# rotate points on XY plane
-	mrot = hcat(Lar.nullspace(Matrix(axis')),axis)
-	W = Lar.inv(mrot)*(points)
-
-	# triangulation
-	DT = PointClouds.delaunayMATLAB( W[[1,2],:])
-	filtration = AlphaStructures.alphaFilter( W[[1,2],:], DT);
-	_, _, FV = AlphaStructures.alphaSimplex( W[[1,2],:], filtration, α);
+function boundaryflatshape(V, FV)
+	#V,FV = shapeof( planeDetected::PlaneDetected, file::String, α)
 
 	# extract boundary
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
@@ -97,5 +89,5 @@ function boundaryflatshape(region,α)
 	ev = (Mbound'*ones(length(FV))).%2
 	EV = EV[Bool.(ev)]
 
-	return points,EV
+	return V,EV
 end

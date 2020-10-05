@@ -103,10 +103,17 @@ end
 Vplane,FVplane = PointClouds.DrawPlanes(PLANES,nothing,0.5)
 Vplane_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),Vplane)
 
+
+W,FW = PointClouds.shapeof( PLANES[1],"PIANI_ESTRATTI/PIANO_1.las" , 0.1)
+#W_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),W)
+Vbound,EVbound = PointClouds.boundaryflatshape(W,FW)
+Vbound_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),Vbound)
+
 GL.VIEW(
 	[
 		#viewRGB(Vtrasl,VV,rgb)
-		GL.GLGrid(Vplane_trasl,FVplane)
+		#GL.GLGrid(Vplane_trasl,FVplane)
+		GL.GLGrid(Vbound,EVbound)
 
 	]
 );
