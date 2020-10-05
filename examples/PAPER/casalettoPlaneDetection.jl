@@ -80,11 +80,9 @@ for plane in PLANES
 	push!(quotas,quota[3])
 end
 
-
+#=
 txtpotreedirs = "C:/Users/marte/Documents/GEOWEB/FilePotree/orthophoto/directory.txt"
 thickness=0.02
-
-
 for i in 1:length(PLANES)
 	PointClouds.flushprintln("################################################## PLANE_$i...")
 	bbin=Lar.boundingbox(PLANES[i].points)
@@ -100,13 +98,14 @@ for i in 1:length(PLANES)
 		thickness,
 		 )
 end
+=#
 
-Vplane,FVplane = PointClouds.DrawPlanes(PLANES,tightBB)
+Vplane,FVplane = PointClouds.DrawPlanes(PLANES,nothing,0.5)
 Vplane_trasl = PointClouds.apply_matrix(Lar.t(-trasl...),Vplane)
 
 GL.VIEW(
 	[
-		viewRGB(Vtrasl,VV,rgb)
+		#viewRGB(Vtrasl,VV,rgb)
 		GL.GLGrid(Vplane_trasl,FVplane)
 
 	]

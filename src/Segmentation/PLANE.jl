@@ -189,11 +189,16 @@ end
 
 """
 """
-function DrawPlanes(planes::Array{PlaneDetected,1}, AABB)
+function DrawPlanes(planes::Array{PlaneDetected,1}, AABB, u=0.2)
 	out = Array{Lar.Struct,1}()
-	for plane in planes
-		pp = plane.plane
-    	V = PointClouds.intersectAABBplane(AABB,pp.normal,pp.centroid)
+	for obj in planes
+		pp = obj.plane
+		if !isnothing(AABB)
+    		V = PointClouds.intersectAABBplane(AABB,pp.normal,pp.centroid)
+		else
+			bb = Lar.boundingbox(obj.points).+([-u,-u,-u],[u,u,u])
+			V = PointClouds.intersectAABBplane(bb,pp.normal,pp.centroid)
+		end
 		#triangulate vertex projected in plane XY
  		FV = PointClouds.DTprojxy(V)
 		cell = (V,sort.(FV))
