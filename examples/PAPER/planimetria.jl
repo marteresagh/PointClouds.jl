@@ -56,7 +56,7 @@ W, EW = PointClouds.drawlines(lines,0.5)
 GL.VIEW(
 	[
 	#	GL.GLPoints(convert(Lar.Points,V'))
-		GL.GLGrid(W,EW)
+		GL.GLGrid(W,EW,GL.COLORS[12])
 		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 	]
 );

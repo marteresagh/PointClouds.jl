@@ -20,6 +20,16 @@ GL.VIEW(
 	]
 );
 
+PLANES = PointClouds.RandomPlanesDetection(Vtrasl, 10, 0.02, spacing, 200)
+Vplane,FVplane = PointClouds.DrawPlanes(PLANES,nothing,0.5)
+GL.VIEW(
+	[
+		viewRGB(Vtrasl,VV,rgb)
+		GL.GLGrid(Vplane,FVplane,GL.COLORS[2])
+	]
+);
+plane = PointClouds.PlaneDetectionFromRandomInitPoint(V,0.02,2*spacing)
+
 
 ## alpha shape
 DT = PointClouds.delaunayMATLAB(V)
@@ -27,18 +37,18 @@ filtration = AlphaStructures.alphaFilter(V, DT);
 α = 0.3
 VV, EV, FV, TV = AlphaStructures.alphaSimplex(V, filtration, α)
 
-# GL.VIEW(
-# 	[
-# 		viewRGB(Vtrasl,FV,rgb);
-# 	]
-# );
+GL.VIEW(
+	[
+		viewRGB(Vtrasl,FV,rgb);
+	]
+);
 
 
 # ======================= RANDOM =====================================
 #=
 AABB = Lar.boundingbox(Vtrasl)
 # RANDOM
-planedetected = PointClouds.PlaneDetectionRandom(Vtrasl, FV, 0.02)
+planedetected = PointClouds.PlaneDetectionFromRandomInitPoint(Vtrasl, FV, 0.02)
 #u=4.
 #AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
 Vplane,FVplane = PointClouds.DrawPlane(planedetected.plane,AABB)
@@ -59,6 +69,14 @@ GL.VIEW(
 
 =#
 
+PLANES = PointClouds.RandomPlanesDetection(Vtrasl, FV, 10, 0.02, 100)
+Vplane, FVplane = PointClouds.DrawPlanes(PLANES,nothing,0.5)
+GL.VIEW(
+	[
+		viewRGB(Vtrasl,VV,rgb)
+		GL.GLGrid(Vplane,FVplane)
+	]
+);
 
 
 # ======================= PUNTI DA FILE =====================================

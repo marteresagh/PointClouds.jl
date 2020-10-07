@@ -42,20 +42,17 @@ function PlaneFromPoints(points::Lar.Points)
     return N, centroid
 end
 
-function PlaneDetectionRandom(V::Lar.Points, FV::Lar.Cells, par::Float64)
+function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,spacing)
 
     # Init
-    EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
-    adj = Lar.verts2verts(EV)
+	kdtree = KDTree(V)
+
     R = Int64[]
     listPoint = Array{Float64,2}[]
-	planeDetected = Plane([0,0,0.],[0.,0.,0.])
 
     # firt sample
-    index, normal, centroid = PointClouds.SeedPointForPlaneDetection(V,adj)
-
-	planeDetected.normal = normal
-	planeDetected.centroid = centroid
+    index, normal, centroid = PointClouds.SeedPointForPlaneDetection(V,spacing)
+	planeDetected = Plane(normal,centroid)
     push!(R,index)
 
     PointClouds.flushprintln("========================================================")
@@ -66,7 +63,9 @@ function PlaneDetectionRandom(V::Lar.Points, FV::Lar.Cells, par::Float64)
     visitedverts = copy(seeds)
     while !isempty(seeds)
         for seed in seeds
-            N = PointClouds.findnearestof([seed],visitedverts,adj)
+            idxs, dists = knn(kdtree, V[:,seed], 10, false, i -> i in visitedverts)
+			filter = [dist<=spacing for dist in dists]
+			N = idxs[filter]
             for i in N
                 p = V[:,i]
                 if PointClouds.IsNearToPlane(p,planeDetected,par)
@@ -86,18 +85,22 @@ function PlaneDetectionRandom(V::Lar.Points, FV::Lar.Cells, par::Float64)
     return PlaneDetected(listPoint, planeDetected)
 end
 
+function listAdjacency(FV)
+	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
+	adj = Lar.verts2verts(EV)
+	return adj
+end
 
 function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints::Lar.Points, par::Float64)
 
 	# Init
-	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))
-	adj = Lar.verts2verts(EV)
+	adj = listAdjacency(FV)
 	R = Int64[]
 	listPoint = Array{Float64,2}[]
 	planeDetected = Plane([0,0,0.],[0.,0.,0.])
 	kdtree = KDTree(V)
 
-	# firt sample
+	# first sample
 	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
 
 	for i in 1:size(givenPoints,2)
@@ -144,7 +147,8 @@ function DistPointPlane(point::Array{Float64,1},plane)
 	return Lar.abs(Lar.dot(point,plane.normal)-Lar.dot(plane.normal,plane.centroid))
 end
 
-function SeedPointForPlaneDetection(V::Lar.Points,adj::Array{Array{Int64,1},1})
+function SeedPointForPlaneDetection(V::Lar.Points, spacing)
+
 
 	"""
 	Return index of point in V with minor residual.
@@ -152,11 +156,12 @@ function SeedPointForPlaneDetection(V::Lar.Points,adj::Array{Array{Int64,1},1})
 	function minresidual(V::Lar.Points,plane::Plane)
 			return findmin([PointClouds.DistPointPlane(V[:,i],plane) for i in 1:size(V,2)])[2]
 	end
-
+	kdtree = KDTree(V)
 	randindex = rand(1:size(V,2))
 
-	idxneighbors = PointClouds.findnearestof([randindex],[randindex],adj)
-	idxseeds = union(randindex,idxneighbors)
+	idxs, dists = knn(kdtree, V[:,randindex], 10, false)
+	filter = [dist<=spacing for dist in dists]
+	idxseeds = idxs[filter]
 	seeds = V[:,idxseeds]
 
 	normal,centroid = PointClouds.PlaneFromPoints(seeds)
@@ -197,4 +202,73 @@ function DrawPlanes(planes::Array{PlaneDetected,1}, AABB, u=0.2)
 	out = Lar.Struct( out )
 	V,FV = Lar.struct2lar(out)
     return V, FV
+end
+
+
+"""
+Iterative shape detection.
+"""
+function RandomPlanesDetection(V::Lar.Points, N::Int, par::Float64, spacing::Float64, validPoints::Int64)
+
+	# 1. - initialization
+	Vcurrent = copy(V)
+	PLANES = PlaneDetected[]
+
+	i = 0
+	# find N shapes
+	while i < N
+		global planedetected
+		notfound = true
+		while notfound
+			try
+				planedetected = PlaneDetectionFromRandomInitPoint(V,par,spacing)
+				if size(planedetected.points,2) > validPoints
+					notfound = false
+				end
+			catch y
+				if !isa(y, AssertionError)
+					notfound = false
+				end
+			end
+		end
+
+		i = i+1
+		println("$i planes found")
+		push!(PLANES,planedetected)
+
+		# delete points of region found from current model
+		tokeep = setdiff([1:size(Vcurrent,2)...],[PointClouds.matchcolumn(planedetected.points[:,i],Vcurrent) for i in 1:size(planedetected.points,2)])
+		Vcurrent = Vcurrent[:,tokeep]
+	end
+
+	return PLANES
+end
+
+
+function deleteModelVertices!(V::Lar.Points, FV::Lar.Cells, todel::Array{Int,1})
+	cscFV = Lar.characteristicMatrix(FV)
+	tokeep = setdiff(collect(1:cscFV.n), todel)
+    cscFV0 = cscFV[:,tokeep]
+
+	faceind = 1:cscFV0.m
+	vertinds = 1:cscFV.n
+    keepface = Array{Int64, 1}()
+	for i in faceind
+    	if length(cscFV0[i, :].nzind) == 3
+           push!(keepface, i)
+       end
+    end
+   	cscFV = cscFV[keepface,:]
+	isolatedpoints = Array{Int64, 1}()
+	for i in vertinds
+    	if length(cscFV[:, i].nzind) == 0
+           push!(isolatedpoints, i)
+       end
+    end
+
+   	union!(todel,isolatedpoints)
+	tokeep = setdiff(vertinds, todel)
+
+    Vremained = V[:, tokeep]
+	FVremained = Lar.cop2lar(cscFV[:, tokeep])
 end

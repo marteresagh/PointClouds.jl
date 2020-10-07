@@ -37,7 +37,7 @@ GL.VIEW(
 u=4.
 
 # RANDOM
-planedetected = PointClouds.PlaneDetectionRandom(Vtrasl, FV, 0.02)
+planedetected = PointClouds.PlaneDetectionFromRandomInitPoint(Vtrasl, FV, 0.02)
 
 AABB = Lar.boundingbox(Vtrasl)
 #AABB = Lar.boundingbox(planedetected.points).+([-u,-u,-u],[u,u,u])
