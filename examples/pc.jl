@@ -340,3 +340,39 @@ GL.VIEW([
 	GL.GLPoints(convert(Lar.Points,Y'), GL.COLORS[2])
 	GL.GLFrame2
 ]);
+
+
+
+## orthonormal basis per Three.js
+
+z=rand(3)
+z/=Lar.norm(z)
+rnd = rand(3)
+rnd /= Lar.norm(rnd)
+x = Lar.cross(z,rnd) #controlla che non sia il vettore nullo
+x /=Lar.norm(x)
+y = Lar.cross(z,x)
+y /=Lar.norm(y)
+V = [0;0;0.]
+
+V=hcat(V,x,y,z)
+
+GL.VIEW([
+	GL.GLGrid(V,[[1,2]],GL.COLORS[2]),
+	GL.GLGrid(V,[[1,3]],GL.COLORS[3]),
+	GL.GLGrid(V,[[1,4]],GL.COLORS[4])
+]);
+
+
+M =vcat(hcat(x,y,z,[0,0,0]),[0,0,0,1]')
+
+C,(CC,EC,FC) = Lar.cuboid([1,1],true)
+C=vcat(C,[0,0,0,0]')
+
+C= PointClouds.apply_matrix(M,C)
+GL.VIEW([
+	GL.GLGrid(V,[[1,2]],GL.COLORS[2]),
+	GL.GLGrid(V,[[1,3]],GL.COLORS[3]),
+	GL.GLGrid(V,[[1,4]],GL.COLORS[4]),
+	GL.GLGrid(C,FC,GL.COLORS[4]),
+]);
