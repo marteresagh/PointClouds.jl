@@ -82,7 +82,7 @@ function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,spacing)
 		planeDetected.centroid = centroid
     end
 
-    return PlaneDetected(listPoint, planeDetected)
+    return PlaneDataset(listPoint, planeDetected)
 end
 
 function listAdjacency(FV)
@@ -136,7 +136,7 @@ function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints
 		planeDetected.centroid = centroid
 	end
 
-	return PlaneDetected(listPoint, planeDetected)
+	return PlaneDataset(listPoint, planeDetected)
 end
 
 function IsNearToPlane(p::Array{Float64,1},plane,par::Float64)::Bool
@@ -184,7 +184,7 @@ end
 
 """
 """
-function DrawPlanes(planes::Array{PlaneDetected,1}, AABB, u=0.2)
+function DrawPlanes(planes::Array{PlaneDataset,1}, AABB, u=0.2)
 	out = Array{Lar.Struct,1}()
 	for obj in planes
 		pp = obj.plane
@@ -212,7 +212,7 @@ function RandomPlanesDetection(V::Lar.Points, N::Int, par::Float64, spacing::Flo
 
 	# 1. - initialization
 	Vcurrent = copy(V)
-	PLANES = PlaneDetected[]
+	PLANES = PlaneDataset[]
 
 	i = 0
 	# find N shapes

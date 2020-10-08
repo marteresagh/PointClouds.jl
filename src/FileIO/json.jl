@@ -357,7 +357,7 @@ end
 """
 measure JSON from Potree 1.6
 """
-function PointForPlanes(path::String)
+function seedPointsFromFile(path::String)
 	dataset = Matrix[]
 	dict=Dict{String,Any}[]
 	open(path, "r") do f

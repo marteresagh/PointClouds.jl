@@ -3,7 +3,7 @@ mutable struct Plane
     centroid::Array{Float64,1}
 end
 
-struct PlaneDetected
+struct PlaneDataset
     points::Lar.Points
     plane::Plane
 end
@@ -29,5 +29,3 @@ struct CloudMetadata
     scale::Float64
     hierarchyStepSize::Int32
 end
-
-    

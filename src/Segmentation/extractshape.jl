@@ -5,7 +5,7 @@ end
 """
 Shape reconstruction of an extracted region.
 """
-function shapeof( planeDetected::PlaneDetected, file::String, LOD, α)
+function shapeof( planeDetected::PlaneDataset, file::String, LOD, α)
 	allfile = PointClouds.filelevel(file,LOD)
 	pp = planeDetected.plane
 	V,VV,rgb = PointClouds.loadlas(allfile...)
@@ -25,7 +25,7 @@ end
 Extract boundary of flat shape.
 """
 function boundaryflatshape(V, FV)
-	#V,FV = shapeof( planeDetected::PlaneDetected, file::String, α)
+	#V,FV = shapeof( planeDetected::PlaneDataset, file::String, α)
 
 	# extract boundary
 	EV = convert(Array{Array{Int64,1},1}, collect(Set(PointClouds.CAT(map(PointClouds.FV2EV,FV)))))

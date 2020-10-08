@@ -81,8 +81,8 @@ GL.VIEW(
 
 # ======================= PUNTI DA FILE =====================================
 filename = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthophoto\\PuntiPerEstrazionePianiCasaletto_potree16.json"
-dataset = PointClouds.PointForPlanes(filename)
-PLANES = PointClouds.PlaneDetected[]
+dataset = PointClouds.seedPointsFromFile(filename)
+PLANES = PointClouds.PlaneDataset[]
 for data in dataset
 	planedetected = PointClouds.PlaneDetectionFromGivenPoints(V, FV, data, 0.02)
 	push!(PLANES,planedetected)
