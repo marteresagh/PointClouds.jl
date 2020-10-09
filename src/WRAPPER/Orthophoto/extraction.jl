@@ -68,6 +68,7 @@ function initParamsExtraction(txtpotreedirs::String,
 	aabb = Lar.boundingbox(model[1])
 	mainHeader = newHeader(aabb,"EXTRACTION",SIZE_DATARECORD)
 
+	# TODO salvataggio del BB del volume in formato json o ascii da rimettere
 	return ParametersExtraction(outputfile,
 								potreedirs,
 								coordsystemmatrix,

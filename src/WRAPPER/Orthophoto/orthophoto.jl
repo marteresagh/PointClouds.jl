@@ -71,6 +71,8 @@ function initparams(
 
 	aabb = Lar.boundingbox(model[1])
 	mainHeader = newHeader(aabb,"ORTHOPHOTO",SIZE_DATARECORD)
+	# TODO salvataggio del BB del volume in formato json o ascii da rimettere
+	
 	return  ParametersOrthophoto(PO,
 					 outputimage,
 					 outputfile,

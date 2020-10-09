@@ -1,11 +1,12 @@
 struct PlaneDetectionParams
 	pointcloud::Lar.Points
-	cloudMetadata::CloudMetadata
-	LOD::Int32,
+	cloudMetadata::PointClouds.CloudMetadata
+	LOD::Int32
 	output::String
 	rnd::Bool
 	seedPoints::Lar.Points
 	random::Bool
+	failed::Int32
 end
 
 function PlaneDetection(
@@ -27,12 +28,12 @@ function PlaneDetection(
 
 	if params.rnd
 		thres = params.cloudMetadata.spacing
-		planes = PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64, 2*thres)
+		planes = PlaneDetectionFromRandomInitPoint(V, par, 2*thres, failed)
 	else
-		planes = PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints::Lar.Points, par::Float64)
+		planes = PlaneDetectionFromGivenPoints(V, FV, givenPoints, par)
 	end
 
-	savePlanes(planes)
+	savePlanesDataset(planes)
 
 end
 
@@ -73,19 +74,25 @@ function init(
 	output,
 	rnd,
 	seedPoints,
-	random
+	random,
+	Int32(failed)
 	)
 end
 
-function savePlanes(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
+
+
+
+# ==============  SAVES DONE
+
+function savePlanesDataset(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
 	for i in 1:length(planes)
 		filename = params.output+"/plane$i"
-		saveplane(plane.plane,filename+."txt")
-		savepoints(plane.points,filename*".las")
+		savePlane(plane.plane,filename+."txt")
+		savePoints(plane.points,filename*".las")
 	end
 end
 
-function saveplane(plane::Plane, filename::String)
+function savePlane(plane::Plane, filename::String)
 	# plane2json(plane::Plane, filename::String)  JSON FORMAT
 	io = open(filename,"w")
 	write(io, "$(plane.normal[1]) $(plane.normal[2]) $(plane.normal[3]) ")
@@ -93,15 +100,15 @@ function saveplane(plane::Plane, filename::String)
 	close(io)
 end
 
-function savepoints(points::Lar.Points, filename::String)
+function savePoints(points::Lar.Points, filename::String)
 	aabb = Lar.boundingbox(points)
 	npoints = size(points,2)
 	header = PointClouds.newHeader(aabb,"PLANEDETECTION",SIZE_DATARECORD,npoints)
 
-	pvec = LasPoint[]
-	for i in 1:size(points,2)
+	pvec = Array{LasPoint,1}(undef,npoints)
+	for i in 1:npoints
 		point = PointClouds.newPointRecord(points[:,i], rgb[:,i], LasIO.LasPoint2, header)
-		push!(pvec,point)
+		pvec[i] = point
 	end
 
 	LasIO.save(filename,header,pvec)
