@@ -42,55 +42,6 @@ function PlaneFromPoints(points::Lar.Points)
 	return N, centroid
 end
 
-
-# function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints::Lar.Points, par::Float64)
-#
-# 	# Init
-# 	adj = listAdjacency(FV)
-# 	R = Int64[]
-# 	listPoint = Array{Float64,2}[]
-# 	planeDetected = Plane([0,0,0.],[0.,0.,0.])
-# 	kdtree = KDTree(V)
-#
-# 	# first sample
-# 	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
-#
-# 	for i in 1:size(givenPoints,2)
-# 		idxs, dists = knn(kdtree,givenPoints[:,i], 2, true)
-# 		push!(R,idxs[1])
-# 	end
-#
-# 	planeDetected.normal = normal
-# 	planeDetected.centroid = centroid
-#
-# 	println("=================================================")
-# 	println("= Detection of Plane starting from given Points =")
-# 	println("=================================================")
-#
-# 	seeds = copy(R)
-# 	visitedverts = copy(R)
-# 	while !isempty(seeds)
-# 		for seed in seeds
-# 			N = PointClouds.findnearestof([seed],visitedverts,adj)
-# 			for i in N
-# 				p = V[:,i]
-# 				if PointClouds.IsNearToPlane(p,planeDetected,par)
-# 					push!(seeds,i)
-# 					push!(R,i)
-# 				end
-# 				push!(visitedverts,i)
-# 			end
-# 			setdiff!(seeds,seed)
-# 		end
-# 		listPoint = V[:,R]
-# 		normal, centroid = PointClouds.PlaneFromPoints(listPoint)
-# 		planeDetected.normal = normal
-# 		planeDetected.centroid = centroid
-# 	end
-#
-# 	return PlaneDataset(listPoint, planeDetected)
-# end
-
 function IsNearToPlane(p::Array{Float64,1},plane::Plane,par::Float64)::Bool
 	return PointClouds.DistPointPlane(p,plane) <= par
 end
