@@ -42,7 +42,7 @@ function PlaneFromPoints(points::Lar.Points)
 	return N, centroid
 end
 
-function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,threshold::Float64)
+function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,threshold::Float64,failed::UInt16)
 
 	# Init
 	kdtree = KDTree(V)
@@ -236,4 +236,65 @@ function RandomPlanesDetection(V::Lar.Points, N::Int, par::Float64, spacing::Flo
 	end
 
 	return PLANES
+end
+
+
+
+function PlanesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64)
+
+	# 1. - initialization
+	PCcurrent = deepcopy(PC)
+	PLANES = PlaneDataset[]
+	planedetected = nothing
+
+	f = 0
+	i = 0
+	# find N shapes
+	search = true
+	while search
+
+		found = false
+
+		while !found || f < failed
+			try
+				planedetected = PlaneDetectionFromRandomInitPoint(PCcurrent,par,threshold)
+				pointsonplane = planedetected.points
+				@assert  pointsonplane.n > validPoints "not valid"
+
+				found = true
+
+			catch y
+				f=f+1
+				# if !isa(y, AssertionError)
+				# 	notfound = false
+				# end
+			end
+		end
+
+		if found
+			i = i+1
+			println("$i planes found")
+			push!(PLANES,planedetected)
+
+			# # delete points of region found from current model
+			# tokeep = setdiff([1:size(Vcurrent,2)...],[PointClouds.matchcolumn(planedetected.points[:,i],Vcurrent) for i in 1:size(planedetected.points,2)])
+			# Vcurrent = Vcurrent[:,tokeep]
+			f = 0
+			deletePoints!(PCcurrent,planedetected.points)
+		else
+			search = false
+		end
+
+	end
+
+	return PLANES
+end
+
+
+function deletePoints!(PCcurrent::PointCloud, todel::PointCloud)
+	tokeep = setdiff([1:PCcurrent.n...],[PointClouds.matchcolumn(todel.points[:,i], PCcurrent.points) for i in 1:todel.n])
+
+	PCcurrent.n = length(tokeep)
+	PCcurrent.points = PCcurrent.points[:,tokeep]
+	PCcurrent.rgbs = PCcurrent.rgbs[:,tokeep]
 end

@@ -1,12 +1,13 @@
 struct PlaneDetectionParams
-	pointcloud::Lar.Points
+	pointcloud::PointCloud
 	cloudMetadata::PointClouds.CloudMetadata
-	LOD::Int32
+	LOD::UInt16
+	par::Float64,
 	output::String
 	rnd::Bool
 	seedPoints::Lar.Points
 	random::Bool
-	failed::Int32
+	failed::UInt16
 end
 
 function PlaneDetection(
@@ -27,8 +28,8 @@ function PlaneDetection(
 	maxnumplanetofind::Int64)
 
 	if params.rnd
-		thres = params.cloudMetadata.spacing
-		planes = PlaneDetectionFromRandomInitPoint(V, par, 2*thres, failed)
+		thres = 2*params.cloudMetadata.spacing
+		planes = PlanesDetectionRandom(params.pointcloud, params.par, thres, params.failed)
 	else
 		planes = PlaneDetectionFromGivenPoints(V, FV, givenPoints, par)
 	end
@@ -70,12 +71,13 @@ function init(
 	return PlaneDetectionParams(
 	pointcloud,
 	cloudMetadata,
-	Int32(LOD),
+	UInt16(LOD),
+	par,
 	output,
 	rnd,
 	seedPoints,
 	random,
-	Int32(failed)
+	UInt16(failed)
 	)
 end
 
@@ -100,14 +102,17 @@ function savePlane(plane::Plane, filename::String)
 	close(io)
 end
 
-function savePoints(points::Lar.Points, filename::String)
-	aabb = Lar.boundingbox(points)
-	npoints = size(points,2)
+function savePoints(pc::PointCloud, filename::String)
+	points = pc.points
+	rgbs = pc.rgbs
+	npoints = pc.n
+
+	aabb = Lar.boundingbox(pc.points)
 	header = PointClouds.newHeader(aabb,"PLANEDETECTION",SIZE_DATARECORD,npoints)
 
 	pvec = Array{LasPoint,1}(undef,npoints)
 	for i in 1:npoints
-		point = PointClouds.newPointRecord(points[:,i], rgb[:,i], LasIO.LasPoint2, header)
+		point = PointClouds.newPointRecord(points[:,i], rgbs[:,i], LasIO.LasPoint2, header)
 		pvec[i] = point
 	end
 

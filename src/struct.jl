@@ -4,9 +4,17 @@ mutable struct Plane
 end
 
 struct PlaneDataset
-    points::Lar.Points
+    points::PointCloud
     plane::Plane
 end
+
+
+mutable struct PointCloud
+    n::Int64
+    points::Lar.Points
+    rgbs::Lar.Points
+end
+
 
 mutable struct AxisAlignedBoundingBox
     x_max::Float64

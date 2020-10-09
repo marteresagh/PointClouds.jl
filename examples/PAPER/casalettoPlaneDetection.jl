@@ -14,6 +14,7 @@ _,_,_,AABB,tightBB,_,_,spacing = PointClouds.readcloudJSON(fname)
 V,VV,rgb = PointClouds.loadlas(allfile...)
 trasl,Vtrasl = PointClouds.subtractaverage(V)
 
+
 GL.VIEW(
 	[
 		viewRGB(Vtrasl, VV, rgb)
@@ -153,3 +154,23 @@ GL.VIEW(
 
 	]
 );
+
+
+function prova()
+	i=0
+	a = false
+	while i < 6
+		try
+			@show "provo"
+			@assert 2>4 "NO"
+			a = true
+			@show "esco"
+		catch y
+			i=i+1
+			# if !isa(y, AssertionError)
+			# 	notfound = false
+			# end
+		end
+	end
+	@show a
+end
