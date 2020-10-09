@@ -56,5 +56,6 @@ module PointClouds
 	include("WRAPPER/Orthophoto/geometry.jl")
 
 	include("WRAPPER/PlaneDetection/PLANE.jl")
+	#include("WRAPPER/PlaneDetection/detection.jl")
 
 end

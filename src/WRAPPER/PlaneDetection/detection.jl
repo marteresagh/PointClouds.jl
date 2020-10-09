@@ -3,7 +3,7 @@ struct PlaneDetectionParams
 	cloudMetadata::CloudMetadata
 	LOD::Int32,
 	output::String
-	random::Bool
+	rnd::Bool
 	seedPoints::Lar.Points
 	random::Bool
 end
@@ -25,7 +25,7 @@ function PlaneDetection(
 	failed::Int64,
 	maxnumplanetofind::Int64)
 
-	if params.random
+	if params.rnd
 		thres = params.cloudMetadata.spacing
 		planes = PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64, 2*thres)
 	else
@@ -58,10 +58,10 @@ function init(
 	end
 
 	#seedpoints
-	random = true
+	rnd = true
 	seedPoints = Lar.Points
 	if !isnothing(fileseedpoints)
-		random = false
+		rnd = false
 		seedPoints = seedPointsFromFile(fileseedpoints)
 	end
 
@@ -71,7 +71,7 @@ function init(
 	cloudMetadata,
 	Int32(LOD),
 	output,
-	random,
+	rnd,
 	seedPoints,
 	random
 	)
@@ -86,6 +86,7 @@ function savePlanes(planes::Array{PlaneDataset,1},params::PlaneDetectionParams)
 end
 
 function saveplane(plane::Plane, filename::String)
+	# plane2json(plane::Plane, filename::String)  JSON FORMAT
 	io = open(filename,"w")
 	write(io, "$(plane.normal[1]) $(plane.normal[2]) $(plane.normal[3]) ")
 	write(io, "$(plane.centroid[1]) $(plane.centroid[2]) $(plane.centroid[3])")

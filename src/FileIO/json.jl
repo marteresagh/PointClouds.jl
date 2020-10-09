@@ -380,3 +380,30 @@ function seedPointsFromFile(path::String)
 	end
 	return dataset
 end
+
+
+"""
+{
+   "object":"plane",
+   "normal":{
+	  "x":0.000,
+	  "y":0.000,
+	  "z":1.000
+   },
+   "position":{
+      "x":0.0,
+      "y":0.0,
+      "z":0.0
+   },
+}
+"""
+function plane2json(plane::Plane, filename::String)
+	pos = plane.centroid
+	dir = plane.normal
+	position = DataStructures.OrderedDict{String,Any}("x"=>pos[1], "y"=>pos[2], "z"=>pos[3])
+	normal = DataStructures.OrderedDict{String,Any}("x"=>dir[1], "y"=>dir[2], "z"=>dir[3])
+	data = DataStructures.OrderedDict{String,Any}("object"=> "plane", "position"=>position,"normal"=>normal)
+	open(filename,"w") do f
+  		JSON.print(f, data,4)
+	end
+end
