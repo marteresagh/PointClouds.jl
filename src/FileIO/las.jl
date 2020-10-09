@@ -287,7 +287,7 @@ end
 
 
 
-function newHeader(aabb,software,sizePointRecord)
+function newHeader(aabb,software,sizePointRecord,npoints=0)
 
 	file_source_id=UInt16(0)
 	global_encoding=UInt16(0)
@@ -306,7 +306,7 @@ function newHeader(aabb,software,sizePointRecord)
 	n_vlr=UInt32(0)
 	data_format_id=UInt8(2)
 	data_record_length=UInt16(sizePointRecord) #valore variabile
-	records_count=UInt32(0)
+	records_count=UInt32(npoints)
 	point_return_count=UInt32[0,0,0,0,0]
 	x_scale=0.001
 	y_scale=0.001
@@ -361,7 +361,7 @@ function newHeader(aabb,software,sizePointRecord)
 end
 
 
-function newPointRecord(laspoint::LasIO.LasPoint, header::LasIO.LasHeader, type, mainHeader::LasIO.LasHeader)
+function newPointRecord(laspoint::LasIO.LasPoint, header::LasIO.LasHeader, type::DataType, mainHeader::LasIO.LasHeader)
 
 	x = LasIO.xcoord(xcoord(laspoint,header),mainHeader)
 	y = LasIO.ycoord(ycoord(laspoint,header),mainHeader)
@@ -401,6 +401,58 @@ function newPointRecord(laspoint::LasIO.LasPoint, header::LasIO.LasHeader, type,
 		red = laspoint.red
 		green = laspoint.green
 		blue = laspoint.blue
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id, gps_time,
+					red, green, blue
+					)
+
+	end
+
+end
+
+
+
+function newPointRecord(point::Array{Float64,1}, rgb::Array{N0f16,1} , type::DataType, mainHeader::LasIO.LasHeader) #crea oggetto pointcloud con vertici e colori
+
+	x = LasIO.xcoord(point[1],mainHeader)
+	y = LasIO.ycoord(point[2],mainHeader)
+	z = LasIO.zcoord(point[3],mainHeader)
+	intensity = UInt16(0)
+	flag_byte = UInt8(0)
+	raw_classification = UInt8(0)
+	scan_angle = Int8(0)
+	user_data = UInt8(0)
+	pt_src_id = UInt16(0)
+
+	if type == LasIO.LasPoint0
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id
+					)
+
+	elseif type == LasIO.LasPoint1
+		gps_time = Float64(0)
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id, gps_time
+					)
+
+	elseif type == LasIO.LasPoint2
+		red = rgb[1]
+		green = rgb[2]
+		blue = rgb[3]
+		return type(x, y, z,
+					intensity, flag_byte, raw_classification,
+					scan_angle, user_data, pt_src_id,
+					red, green, blue
+					)
+
+	elseif type == LasIO.LasPoint3
+		gps_time = Float64(0)
+		red = rgb[1]
+		green = rgb[2]
+		blue = rgb[3]
 		return type(x, y, z,
 					intensity, flag_byte, raw_classification,
 					scan_angle, user_data, pt_src_id, gps_time,

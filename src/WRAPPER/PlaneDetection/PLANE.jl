@@ -42,7 +42,7 @@ function PlaneFromPoints(points::Lar.Points)
 	return N, centroid
 end
 
-function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,spacing)
+function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,threshold::Float64)
 
 	# Init
 	kdtree = KDTree(V)
@@ -51,7 +51,7 @@ function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,spacing)
 	listPoint = Array{Float64,2}[]
 
 	# firt sample
-	index, normal, centroid = PointClouds.SeedPointForPlaneDetection(V,spacing)
+	index, normal, centroid = PointClouds.SeedPointForPlaneDetection(V,threshold)
 	planeDetected = Plane(normal,centroid)
 	push!(R,index)
 
@@ -64,7 +64,7 @@ function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,spacing)
 	while !isempty(seeds)
 		for seed in seeds
 			idxs, dists = knn(kdtree, V[:,seed], 10, false, i -> i in visitedverts)
-			filter = [dist<=spacing for dist in dists]
+			filter = [dist<=threshold for dist in dists]
 			N = idxs[filter]
 			for i in N
 				p = V[:,i]
@@ -143,18 +143,19 @@ function DistPointPlane(point::Array{Float64,1},plane)
 	return Lar.abs(Lar.dot(point,plane.normal)-Lar.dot(plane.normal,plane.centroid))
 end
 
-function SeedPointForPlaneDetection(V::Lar.Points, spacing)
+function SeedPointForPlaneDetection(V::Lar.Points, threshold::Float64)
 	"""
 	Return index of point in V with minor residual.
 	"""
 	function minresidual(V::Lar.Points,plane::Plane)
 		return findmin([PointClouds.DistPointPlane(V[:,i],plane) for i in 1:size(V,2)])[2]
 	end
+
 	kdtree = KDTree(V)
 	randindex = rand(1:size(V,2))
 
 	idxs, dists = knn(kdtree, V[:,randindex], 10, false)
-	filter = [dist<=spacing for dist in dists]
+	filter = [dist<=threshold for dist in dists]
 	idxseeds = idxs[filter]
 	seeds = V[:,idxseeds]
 
@@ -174,7 +175,6 @@ function DrawPlane(plane::Plane, AABB)
 	FV = PointClouds.DTprojxy(V)
 	return V, sort.(FV)
 end
-
 
 """
 """
