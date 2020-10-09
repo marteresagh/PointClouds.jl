@@ -8,6 +8,7 @@ include("../viewfunction.jl")
 
 ## input data
 fname = "C:\\Users\\marte\\Documents\\potreeDirectory\\pointclouds\\CASALETTO"
+metadata = PointClouds.CloudMetadata(fname)
 allfile = PointClouds.filelevel(fname,0)
 _,_,_,AABB,tightBB,_,_,spacing = PointClouds.readcloudJSON(fname)
 V,VV,rgb = PointClouds.loadlas(allfile...)
