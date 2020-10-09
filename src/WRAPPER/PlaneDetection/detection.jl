@@ -27,11 +27,15 @@ function PlaneDetection(
 	failed::Int64,
 	maxnumplanetofind::Int64)
 
+	thres = 2*params.cloudMetadata.spacing
 	if params.rnd
-		thres = 2*params.cloudMetadata.spacing
 		planes = PlanesDetectionRandom(params.pointcloud, params.par, thres, params.failed)
 	else
-		planes = PlaneDetectionFromGivenPoints(V, FV, givenPoints, par)
+		planes = PlaneDataset[]
+		for data in params.seedPoints
+			plane = PlaneDetectionFromGivenPoints(params.pointcloud, data, params.par, thres)
+			push!(planes,plane)
+		end
 	end
 
 	savePlanesDataset(planes)

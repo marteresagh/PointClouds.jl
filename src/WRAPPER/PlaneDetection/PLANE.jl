@@ -42,104 +42,60 @@ function PlaneFromPoints(points::Lar.Points)
 	return N, centroid
 end
 
-function PlaneDetectionFromRandomInitPoint(V::Lar.Points, par::Float64,threshold::Float64,failed::UInt16)
 
-	# Init
-	kdtree = KDTree(V)
+# function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints::Lar.Points, par::Float64)
+#
+# 	# Init
+# 	adj = listAdjacency(FV)
+# 	R = Int64[]
+# 	listPoint = Array{Float64,2}[]
+# 	planeDetected = Plane([0,0,0.],[0.,0.,0.])
+# 	kdtree = KDTree(V)
+#
+# 	# first sample
+# 	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
+#
+# 	for i in 1:size(givenPoints,2)
+# 		idxs, dists = knn(kdtree,givenPoints[:,i], 2, true)
+# 		push!(R,idxs[1])
+# 	end
+#
+# 	planeDetected.normal = normal
+# 	planeDetected.centroid = centroid
+#
+# 	println("=================================================")
+# 	println("= Detection of Plane starting from given Points =")
+# 	println("=================================================")
+#
+# 	seeds = copy(R)
+# 	visitedverts = copy(R)
+# 	while !isempty(seeds)
+# 		for seed in seeds
+# 			N = PointClouds.findnearestof([seed],visitedverts,adj)
+# 			for i in N
+# 				p = V[:,i]
+# 				if PointClouds.IsNearToPlane(p,planeDetected,par)
+# 					push!(seeds,i)
+# 					push!(R,i)
+# 				end
+# 				push!(visitedverts,i)
+# 			end
+# 			setdiff!(seeds,seed)
+# 		end
+# 		listPoint = V[:,R]
+# 		normal, centroid = PointClouds.PlaneFromPoints(listPoint)
+# 		planeDetected.normal = normal
+# 		planeDetected.centroid = centroid
+# 	end
+#
+# 	return PlaneDataset(listPoint, planeDetected)
+# end
 
-	R = Int64[]
-	listPoint = Array{Float64,2}[]
-
-	# firt sample
-	index, normal, centroid = PointClouds.SeedPointForPlaneDetection(V,threshold)
-	planeDetected = Plane(normal,centroid)
-	push!(R,index)
-
-	PointClouds.flushprintln("========================================================")
-	PointClouds.flushprintln("= Detection of Plane starting from Random Point $index =")
-	PointClouds.flushprintln("========================================================")
-
-	seeds = [index]
-	visitedverts = copy(seeds)
-	while !isempty(seeds)
-		for seed in seeds
-			idxs, dists = knn(kdtree, V[:,seed], 10, false, i -> i in visitedverts)
-			filter = [dist<=threshold for dist in dists]
-			N = idxs[filter]
-			for i in N
-				p = V[:,i]
-				if PointClouds.IsNearToPlane(p,planeDetected,par)
-					push!(seeds,i)
-					push!(R,i)
-				end
-				push!(visitedverts,i)
-			end
-			setdiff!(seeds,seed)
-		end
-		listPoint = V[:,R]
-		normal, centroid = PointClouds.PlaneFromPoints(listPoint)
-		planeDetected.normal = normal
-		planeDetected.centroid = centroid
-	end
-
-	return PlaneDataset(listPoint, planeDetected)
-end
-
-
-
-function PlaneDetectionFromGivenPoints(V::Lar.Points, FV::Lar.Cells, givenPoints::Lar.Points, par::Float64)
-
-	# Init
-	adj = listAdjacency(FV)
-	R = Int64[]
-	listPoint = Array{Float64,2}[]
-	planeDetected = Plane([0,0,0.],[0.,0.,0.])
-	kdtree = KDTree(V)
-
-	# first sample
-	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
-
-	for i in 1:size(givenPoints,2)
-		idxs, dists = knn(kdtree,givenPoints[:,i], 2, true)
-		push!(R,idxs[1])
-	end
-
-	planeDetected.normal = normal
-	planeDetected.centroid = centroid
-
-	println("=================================================")
-	println("= Detection of Plane starting from given Points =")
-	println("=================================================")
-
-	seeds = copy(R)
-	visitedverts = copy(seeds)
-	while !isempty(seeds)
-		for seed in seeds
-			N = PointClouds.findnearestof([seed],visitedverts,adj)
-			for i in N
-				p = V[:,i]
-				if PointClouds.IsNearToPlane(p,planeDetected,par)
-					push!(seeds,i)
-					push!(R,i)
-				end
-				push!(visitedverts,i)
-			end
-			setdiff!(seeds,seed)
-		end
-		listPoint = V[:,R]
-		normal, centroid = PointClouds.PlaneFromPoints(listPoint)
-		planeDetected.normal = normal
-		planeDetected.centroid = centroid
-	end
-
-	return PlaneDataset(listPoint, planeDetected)
-end
-
-function IsNearToPlane(p::Array{Float64,1},plane,par::Float64)::Bool
+function IsNearToPlane(p::Array{Float64,1},plane::Plane,par::Float64)::Bool
 	return PointClouds.DistPointPlane(p,plane) <= par
 end
 
-function DistPointPlane(point::Array{Float64,1},plane)
+function DistPointPlane(point::Array{Float64,1},plane::Plane)
 	return Lar.abs(Lar.dot(point,plane.normal)-Lar.dot(plane.normal,plane.centroid))
 end
 
@@ -198,48 +154,7 @@ function DrawPlanes(planes::Array{PlaneDataset,1}, AABB, u=0.2)
 	return V, FV
 end
 
-
-"""
-Iterative shape detection.
-"""
-function RandomPlanesDetection(V::Lar.Points, N::Int, par::Float64, spacing::Float64, validPoints::Int64)
-
-	# 1. - initialization
-	Vcurrent = copy(V)
-	PLANES = PlaneDataset[]
-
-	i = 0
-	# find N shapes
-	while i < N
-		global planedetected
-		notfound = true
-		while notfound
-			try
-				planedetected = PlaneDetectionFromRandomInitPoint(V,par,spacing)
-				if size(planedetected.points,2) > validPoints
-					notfound = false
-				end
-			catch y
-				if !isa(y, AssertionError)
-					notfound = false
-				end
-			end
-		end
-
-		i = i+1
-		println("$i planes found")
-		push!(PLANES,planedetected)
-
-		# delete points of region found from current model
-		tokeep = setdiff([1:size(Vcurrent,2)...],[PointClouds.matchcolumn(planedetected.points[:,i],Vcurrent) for i in 1:size(planedetected.points,2)])
-		Vcurrent = Vcurrent[:,tokeep]
-	end
-
-	return PLANES
-end
-
-
-
+# fatta
 function PlanesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64, failed::Int64)
 
 	# 1. - initialization
@@ -249,6 +164,7 @@ function PlanesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64,
 
 	f = 0
 	i = 0
+
 	# find N shapes
 	search = true
 	while search
@@ -257,14 +173,17 @@ function PlanesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64,
 
 		while !found || f < failed
 			try
+
 				planedetected = PlaneDetectionFromRandomInitPoint(PCcurrent,par,threshold)
 				pointsonplane = planedetected.points
-				@assert  pointsonplane.n > validPoints "not valid"
+				@assert  pointsonplane.n > 100 "not valid"  #da automatizzare
 
 				found = true
 
 			catch y
-				f=f+1
+
+				f = f+1
+
 				# if !isa(y, AssertionError)
 				# 	notfound = false
 				# end
@@ -272,15 +191,12 @@ function PlanesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64,
 		end
 
 		if found
-			i = i+1
 			println("$i planes found")
 			push!(PLANES,planedetected)
-
-			# # delete points of region found from current model
-			# tokeep = setdiff([1:size(Vcurrent,2)...],[PointClouds.matchcolumn(planedetected.points[:,i],Vcurrent) for i in 1:size(planedetected.points,2)])
-			# Vcurrent = Vcurrent[:,tokeep]
-			f = 0
 			deletePoints!(PCcurrent,planedetected.points)
+
+			f = 0
+			i = i+1
 		else
 			search = false
 		end
@@ -290,11 +206,92 @@ function PlanesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64,
 	return PLANES
 end
 
-
+#fatta
 function deletePoints!(PCcurrent::PointCloud, todel::PointCloud)
 	tokeep = setdiff([1:PCcurrent.n...],[PointClouds.matchcolumn(todel.points[:,i], PCcurrent.points) for i in 1:todel.n])
 
 	PCcurrent.n = length(tokeep)
 	PCcurrent.points = PCcurrent.points[:,tokeep]
 	PCcurrent.rgbs = PCcurrent.rgbs[:,tokeep]
+end
+
+
+function PlaneDetectionFromGivenPoints(PC::PointCloud, givenPoints::Lar.Points, par::Float64, threshold::Float64)
+
+	# Init
+	R = Int64[]
+	listPoint = Array{Float64,2}[]
+
+
+	# first sample
+	normal, centroid = PointClouds.PlaneFromPoints(givenPoints)
+	planeDetected = Plane(normal,centroid)
+
+	kdtree = KDTree(PC.points)
+	for i in 1:size(givenPoints,2)
+		idxs, dists = knn(kdtree,givenPoints[:,i], 2, true)
+		push!(R,idxs[1])
+	end
+
+	println("=================================================")
+	println("= Detection of Plane starting from given Points =")
+	println("=================================================")
+
+	seeds = copy(R)
+	visitedverts = copy(R)
+
+	pcOnPlane = searchPointsOnPlane(PC, R, planeDetected, par, threshold)
+
+	return PlaneDataset(pcOnPlane, planeDetected)
+end
+
+
+function PlaneDetectionFromRandomInitPoint(PC::PointCloud, par::Float64,threshold::Float64)
+
+	# Init
+	listPoint = Array{Float64,2}[]
+
+	# firt sample
+	index, normal, centroid = PointClouds.SeedPointForPlaneDetection(PC.points,threshold)
+	R = [index]
+	planeDetected = Plane(normal,centroid)
+
+
+	PointClouds.flushprintln("========================================================")
+	PointClouds.flushprintln("= Detection of Plane starting from Random Point $index =")
+	PointClouds.flushprintln("========================================================")
+
+
+	pcOnPlane = searchPointsOnPlane(PC, R, planeDetected, par, threshold)
+
+	return PlaneDataset(pcOnPlane, planeDetected)
+end
+
+
+function searchPointsOnPlane(PC::PointCloud, R, planeDetected::Plane, par::Float64, threshold::Float64)
+	kdtree = KDTree(PC.points)
+	seeds = copy(R)
+	visitedverts = copy(R)
+	while !isempty(seeds)
+		for seed in seeds
+			idxs, dists = knn(kdtree, PC.points[:,seed], 10, false, i -> i in visitedverts)
+			filter = [dist<=threshold for dist in dists]
+			N = idxs[filter]
+			for i in N
+				p = PC.points[:,i]
+				if PointClouds.IsNearToPlane(p,planeDetected.plane,par)
+					push!(seeds,i)
+					push!(R,i)
+				end
+				push!(visitedverts,i)
+			end
+			setdiff!(seeds,seed)
+		end
+		listPoint = PC.points[:,R]
+		normal, centroid = PointClouds.PlaneFromPoints(listPoint)
+		planeDetected.normal = normal
+		planeDetected.centroid = centroid
+	end
+	listRGB = PC.rgbs[:,R]
+	return PointCloud(length(R), listPoint, listRGB)
 end
