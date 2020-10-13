@@ -230,7 +230,7 @@ function searchPointsOnPlane(PC::PointCloud, R, planeDetected::Plane, par::Float
 			N = idxs[filter]
 			for i in N
 				p = PC.points[:,i]
-				if PointClouds.IsNearToPlane(p,planeDetected.plane,par)
+				if PointClouds.IsNearToPlane(p,planeDetected,par)
 					push!(seeds,i)
 					push!(R,i)
 				end

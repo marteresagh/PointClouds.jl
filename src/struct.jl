@@ -3,16 +3,17 @@ mutable struct Plane
     centroid::Array{Float64,1}
 end
 
-struct PlaneDataset
-    points::PointCloud
-    plane::Plane
-end
-
 
 mutable struct PointCloud
     n::Int64
     points::Lar.Points
     rgbs::Lar.Points
+end
+
+
+struct PlaneDataset
+    points::PointCloud
+    plane::Plane
 end
 
 

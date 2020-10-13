@@ -154,3 +154,21 @@ GL.VIEW(
 
 	]
 );
+
+
+
+points = [1 3 -5; 4 9 3 ; 4 6 3]
+normal, centroid = PointClouds.PlaneFromPoints(points)
+c = Lar.dot(normal, centroid)
+
+PointClouds.DistPointPlane([0,0,0.],PointClouds.Plane(normal,centroid))
+
+GL.VIEW(
+	[
+		GL.GLPoints(convert(Lar.Points,(points)'),GL.COLORS[4]),
+		GL.GLPoints(convert(Lar.Points,(c*normal)'),GL.COLORS[2]),
+		GL.GLPoints(convert(Lar.Points,(normal)'),GL.COLORS[1]),
+		GL.GLPoints(convert(Lar.Points,centroid')),
+		GL.GLAxis(GL.Point3d(0,0,0), GL.Point3d(1,1,1))
+	]
+);
