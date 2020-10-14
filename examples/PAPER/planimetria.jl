@@ -3,7 +3,7 @@ Lar = LinearAlgebraicRepresentation
 using PointClouds
 using ViewerGL
 GL = ViewerGL
-using AlphaStructures
+# using AlphaStructures
 
 # ============= SEZIONE ==============================================================
 # txtpotreedirs = "C:\\Users\\marte\\Documents\\GEOWEB\\FilePotree\\orthophoto\\directory.txt"
@@ -38,19 +38,36 @@ GL.VIEW(
 );
 
 # ============= PLANIMETRIA ==============================================================
-LINES = PointClouds.LinesDetectionRandom(PC, 0.15, 2*0.03, 200, 100)
+LINES = PointClouds.LinesDetectionRandom(PC, 0.02, 2*0.03, 200, 1000)
 # LINES = PointClouds.LinesDetectionRandom(PC, 0.02, 2*0.05, 200, 20) #casaletto
 
-L,EL = PointClouds.DrawLines(LINES)
+L,EL = PointClouds.DrawLines(LINES,1.0)
 
 GL.VIEW(
 	[
-		#GL.GLPoints(convert(Lar.Points,V'))
+
 		GL.GLGrid(L,EL)
+		GL.GLPoints(convert(Lar.Points,V'))
+
+		#GL.GLPoints(convert(Lar.Points,pointsonline.points'))
 		#GL.GLAxis(GL.Point3d(0,0,0),GL.Point3d(1,1,1))
 	]
 );
 
+function ViewLine(LINES::Array{PointClouds.LineDataset,1})
+
+	mesh = []
+	for line in LINES
+		pc = line.points
+		V,EV = PointClouds.DrawLine(pc.points,line.line,1.0)
+		col=GL.COLORS[rand(1:12)]
+		push!(mesh,GL.GLGrid(V,EV,col));
+		push!(mesh,	GL.GLPoints(convert(Lar.Points,pc.points'),col));
+	end
+
+	GL.VIEW(mesh)
+end
+ViewLine(LINES)
 
 # ================== ARRANGEMENT ============================================================
 

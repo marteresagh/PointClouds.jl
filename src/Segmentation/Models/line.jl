@@ -89,7 +89,6 @@ function LineDetectionFromRandomInitPoint(PC::PointCloud, par::Float64,threshold
 	# PointClouds.flushprintln("= Detection of Plane starting from Random Point $index =")
 	# PointClouds.flushprintln("========================================================")
 
-
 	pcOnLine = searchPointsOnLine(PC, R, lineDetected, par, threshold)
 
 	return LineDataset(pcOnLine, lineDetected)
@@ -102,24 +101,25 @@ function searchPointsOnLine(PC::PointCloud, R, lineDetected::Line, par::Float64,
 	visitedverts = copy(R)
 	listPoint = nothing
 	while !isempty(seeds)
-		for seed in seeds
-			idxs, dists = knn(kdtree, PC.points[:,seed], 10, false, i -> i in visitedverts)
-			filter = [dist<=threshold for dist in dists]
-			N = idxs[filter]
-			for i in N
-				p = PC.points[:,i]
-				if PointClouds.isclosetoline(p,lineDetected,par)
-					push!(seeds,i)
-					push!(R,i)
-				end
-				push!(visitedverts,i)
+		tmp = Int[]
+		N = PointClouds.neigbhborsOf(seeds,kdtree,PC,visitedverts,threshold)
+		#filter = [dist<=threshold for dist in dists]
+		#N = idxs[filter]
+		for i in N
+			p = PC.points[:,i]
+			if PointClouds.isclosetoline(p,lineDetected,par)
+				push!(tmp,i)
+				push!(R,i)
+				#@show length(R)
 			end
-			setdiff!(seeds,seed)
+			push!(visitedverts,i)
 		end
 		listPoint = PC.points[:,R]
 		direction, centroid = PointClouds.linefit(listPoint)
 		lineDetected.direction = direction
 		lineDetected.centroid = centroid
+		seeds = tmp
+		#setdiff!(seeds,seed)
 	end
 	listRGB = PC.rgbs[:,R]
 	return PointCloud(length(R), listPoint, listRGB)
@@ -140,21 +140,30 @@ function LinesDetectionRandom(PC::PointCloud, par::Float64, threshold::Float64, 
 	PointClouds.flushprintln("======= Start search =======")
 	search = true
 	while search
-
 		found = false
 
 		while !found && f < failed
 			try
-				linedetected = LineDetectionFromRandomInitPoint(PCcurrent,par,threshold)
+				#PointClouds.flushprintln("ECCOMI")
+				linedetected = PointClouds.LineDetectionFromRandomInitPoint(PCcurrent,par,threshold)
+
+				# VALIDITY
 				pointsonline = linedetected.points
+				#@show linedetected
 				@assert  pointsonline.n > N "not valid"  #da automatizzare
+				# line = linedetected.line
+				# E,_ = PointClouds.DrawLine(pointsonline.points, line, 0.0)
+				# dist = Lar.norm(E[:,1]-E[:,2])
+				# rho = pointsonline.n/dist
+				# PointClouds.flushprintln("rho = $rho")
+				# @assert  rho > N "not valid"  #da automatizzare
 
 				found = true
 
 			catch y
 
 				f = f+1
-
+				PointClouds.flushprintln("failed = $f")
 				# if !isa(y, AssertionError)
 				# 	notfound = false
 				# end
@@ -179,7 +188,7 @@ end
 """
 Lar model of fitting segment line.
 """
-function larmodelsegment(pointsonline::Lar.Points, line::Line, u=0.02)
+function DrawLine(pointsonline::Lar.Points, line::Line, u=0.02)
 
 	max_value = -Inf
 	min_value = +Inf
@@ -210,7 +219,7 @@ Extract boundary of flat shape.
 function DrawLines(lines::Array{LineDataset,1}, u=0.2)
 	out = Array{Lar.Struct,1}()
 	for obj in lines
-		V,EV = PointClouds.larmodelsegment(obj.points.points, obj.line, u)
+		V,EV = PointClouds.DrawLine(obj.points.points, obj.line, u)
 		cell = (V,EV)
 		push!(out, Lar.Struct([cell]))
 	end
@@ -219,40 +228,12 @@ function DrawLines(lines::Array{LineDataset,1}, u=0.2)
 	return V,EV
 end
 
-
-#
-# """
-# Return LAR remained model after removing points.
-# """
-# function deletepointstomodel(V::Lar.Points,EV::Lar.Cells,pointstodel::Lar.Points)
-# 	npoints = size(V,2)
-# 	cscEV = Lar.characteristicMatrix(EV)
-# 	todel = [PointClouds.matchcolumn(pointstodel[:,i],V) for i in 1:size(pointstodel,2)] # index of points to delete
-# 	tokeep = setdiff(collect(1:cscEV.n), todel)
-#     cscEV0 = cscEV[:,tokeep]
-#
-# 	edgeind = 1:cscEV0.m
-# 	vertinds = 1:cscEV.n
-#     keepedges = Array{Int64, 1}()
-# 	for i in edgeind
-#     	if length(cscEV0[i, :].nzind) == 2
-#            push!(keepedges, i)
-#        end
-#     end
-#    	cscEV = cscEV[keepedges,:]
-# 	isolatedpoints = Array{Int64, 1}()
-# 	for i in vertinds
-#     	if length(cscEV[:, i].nzind) == 0
-#            push!(isolatedpoints, i)
-#        end
-#     end
-#
-#    	union!(todel,isolatedpoints)
-# 	tokeep = setdiff(vertinds, todel)
-#
-#     Vremained = V[:, tokeep]
-# 	EVremained = Lar.cop2lar(cscEV[:, tokeep])
-#
-# 	return Vremained,EVremained
-# end
-#
+function neigbhborsOf(seeds,kdtree,PC,visitedverts,threshold) #TODO da copiare nel file buono
+	idxs, dists = knn(kdtree, PC.points[:,seeds], 10, false, i -> i in visitedverts)
+	N = Int[]
+	for i in 1:length(idxs)
+		filter = [dist<=threshold for dist in dists[i]]
+		union!(N,idxs[i][filter])
+	end
+	return N
+end
